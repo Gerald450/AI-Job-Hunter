@@ -31,9 +31,3 @@ def fetch_readme():
     content = base64.b64decode(data["content"]).decode("utf-8")
 
     return content
-
-
-if __name__ == "__main__":
-    readme = fetch_readme()
-    print("=" * 100)
-    print(readme[:10000])
