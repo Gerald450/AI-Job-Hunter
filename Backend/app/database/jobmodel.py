@@ -1,4 +1,5 @@
 from database.models import Base
+from model.job import Job
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,3 +20,20 @@ class JobModel(Base):
     citizenship_required: Mapped[bool] = mapped_column(Boolean)
     advanced_degree: Mapped[bool] = mapped_column(Boolean)
     closed: Mapped[bool] = mapped_column(Boolean)
+
+    @classmethod
+    def from_job(cls, job: Job) -> "JobModel":
+
+        return cls(
+            company=job.company,
+            role=job.role,
+            location=job.location,
+            apply_url=job.apply_url,
+            age=job.age,
+            source=job.source,
+            faang=job.faang,
+            no_sponsorship=job.no_sponsorship,
+            citizenship_required=job.citizenship_required,
+            advanced_degree=job.advanced_degree,
+            closed=job.closed,
+        )
