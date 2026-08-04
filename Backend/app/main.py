@@ -1,6 +1,7 @@
-from clients.db import SessionLocal, create_database
+from clients.db import SessionLocal, create_database, drop_database
 from clients.pittcsc import fetch_readme
 from database.crud import insert_jobs
+from database.jobmodel import JobModel
 from processors.normalize import normalize_job
 from processors.pittParser import parse_jobs
 from rich import print
@@ -16,6 +17,10 @@ for job in jobs:
 
 print(len(normalized))
 
+# drop all tables for now
+# drop_database()
+
+
 # create tables if they dont exist
 print("Creating Database....")
 create_database()
@@ -28,5 +33,7 @@ db = SessionLocal()
 print("Inserting data......")
 try:
     insert_jobs(db, normalized)
+    count = db.query(JobModel).count()
+    print("Database current size: ", count)
 finally:
     db.close()

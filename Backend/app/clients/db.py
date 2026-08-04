@@ -15,5 +15,9 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
+def drop_database():
+    Base.metadata.drop_all(bind=engine)
+
+
 def create_database():
     Base.metadata.create_all(bind=engine)

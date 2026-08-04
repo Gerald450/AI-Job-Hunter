@@ -1,4 +1,5 @@
 from model.job import Job
+from utils.fingerprint import create_fingerprint
 
 # Emoji markers used by the Pitt CSC repo.
 
@@ -27,6 +28,7 @@ def normalize_job(job):
 
     normalized["company"] = company.strip()
     normalized["role"] = role.strip()
+    normalized["fingerprint"] = create_fingerprint(normalized)
 
     return Job(
         company=normalized["company"],
@@ -34,6 +36,7 @@ def normalize_job(job):
         location=normalized["location"],
         apply_url=normalized["apply_url"],
         age=normalized["age"],
+        fingerprint=normalized["fingerprint"],
         source=normalized.get("source", "pittcsc"),
         faang=normalized["faang"],
         no_sponsorship=normalized["no_sponsorship"],
