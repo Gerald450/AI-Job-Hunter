@@ -16,4 +16,3 @@ class Job(BaseModel):
     citizenship_required: bool
     closed: bool
     advanced_degree: bool
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
