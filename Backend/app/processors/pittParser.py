@@ -39,7 +39,7 @@ def parse_jobs(html):
                     "location": location,
                     "apply_url": link,
                     "age": age,
-                    "source": "pittscs",
+                    "source": "pittcsc",
                 }
             )
 
