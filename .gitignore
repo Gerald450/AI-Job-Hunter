@@ -3,3 +3,12 @@
 
 #venv
 job-hunter/
+
+#python scripts
+__pycache__
+
+#deps
+requirements.txt
+
+#yml
+*.yml
