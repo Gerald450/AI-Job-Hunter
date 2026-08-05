@@ -1,11 +1,68 @@
+import re
 from datetime import datetime, timezone
-from operator import index
-from textwrap import indent
 
 from database.jobmodel import JobModel
 from model.job import Job
+from sqlalchemy import not_, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
+
+
+def age_to_hours(age: str) -> int:
+    """Convert human age strings like '2d' / '1mo' into hours for sorting."""
+    match = re.fullmatch(r"(\d+)\s*([a-zA-Z]+)", (age or "").strip())
+    if not match:
+        return 10**9
+
+    value = int(match.group(1))
+    unit = match.group(2).lower()
+
+    if unit.startswith("h"):
+        return value
+    if unit.startswith("d"):
+        return value * 24
+    if unit.startswith("w"):
+        return value * 24 * 7
+    if unit.startswith("mo"):
+        return value * 24 * 30
+    if unit.startswith("y"):
+        return value * 24 * 365
+    return 10**9
+
+
+def get_jobs(
+    db: Session,
+    *,
+    sponsoring_only: bool = True,
+    exclude_closed: bool = True,
+    exclude_advanced_degree: bool = True,
+    exclude_internships: bool = True,
+) -> list[JobModel]:
+    query = db.query(JobModel)
+
+    if sponsoring_only:
+        query = query.filter(JobModel.no_sponsorship.is_(False))
+
+    if exclude_closed:
+        query = query.filter(JobModel.closed.is_(False))
+
+    if exclude_advanced_degree:
+        query = query.filter(JobModel.advanced_degree.is_(False))
+
+    if exclude_internships:
+        # No job_type column yet — exclude internship-like titles.
+        query = query.filter(
+            not_(
+                or_(
+                    JobModel.role.ilike("%intern%"),
+                    JobModel.role.ilike("%internship%"),
+                )
+            )
+        )
+
+    jobs = query.all()
+    jobs.sort(key=lambda job: (age_to_hours(job.age), job.company, job.role))
+    return jobs
 
 
 def insert_jobs(db: Session, jobs: list[Job]) -> None:
