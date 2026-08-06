@@ -61,6 +61,11 @@ def normalize_job(job: dict[str, Any]) -> Job:
     if not apply_url or not isinstance(apply_url, str):
         raise ValueError("Job is missing apply_url")
 
+    ats = normalized.get("ats")
+    external_id = normalized.get("external_id")
+    role_family = normalized.get("role_family")
+    description = normalized.get("description")
+
     return Job(
         company=normalized["company"],
         role=normalized["role"],
@@ -74,4 +79,9 @@ def normalize_job(job: dict[str, Any]) -> Job:
         citizenship_required=bool(normalized["citizenship_required"]),
         closed=bool(normalized["closed"]),
         advanced_degree=bool(normalized["advanced_degree"]),
+        ats=str(ats) if ats else None,
+        external_id=str(external_id) if external_id else None,
+        role_family=str(role_family) if role_family else None,
+        is_active=bool(normalized.get("is_active", True)),
+        description=str(description) if description else None,
     )
