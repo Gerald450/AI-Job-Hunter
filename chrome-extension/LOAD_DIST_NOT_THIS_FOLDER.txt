@@ -1,0 +1,6 @@
+DO NOT load this folder in chrome://extensions.
+
+Chrome can only load the compiled extension.
+
+1. Run:  pnpm build
+2. Load unpacked:  chrome-extension/dist
