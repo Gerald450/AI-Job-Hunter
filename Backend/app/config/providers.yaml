@@ -1,0 +1,28 @@
+# Per-provider runtime settings. Code reads these; no source edits needed to tune.
+
+defaults:
+  enabled: true
+  timeout_seconds: 30
+  max_retries: 2
+  request_delay_ms: 0
+
+providers:
+  pittcsc:
+    enabled: true
+  simplify:
+    enabled: true
+  greenhouse:
+    enabled: true
+    timeout_seconds: 30
+    max_retries: 2
+    request_delay_ms: 50
+  ashby:
+    enabled: true
+    timeout_seconds: 30
+    max_retries: 2
+    request_delay_ms: 50
+  lever:
+    enabled: true
+    timeout_seconds: 30
+    max_retries: 2
+    request_delay_ms: 50
