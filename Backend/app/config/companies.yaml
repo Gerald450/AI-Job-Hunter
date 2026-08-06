@@ -1,0 +1,137 @@
+# Curated ATS board tokens for direct listing aggregation.
+# One fetcher implementation per `ats`; companies only supply board identifiers.
+
+companies:
+  # --- Greenhouse ---
+  - name: Stripe
+    ats: greenhouse
+    board_token: stripe
+    enabled: true
+  - name: Notion
+    ats: greenhouse
+    board_token: notion
+    enabled: true
+  - name: Datadog
+    ats: greenhouse
+    board_token: datadog
+    enabled: true
+  - name: Cloudflare
+    ats: greenhouse
+    board_token: cloudflare
+    enabled: true
+  - name: Discord
+    ats: greenhouse
+    board_token: discord
+    enabled: true
+  - name: Figma
+    ats: greenhouse
+    board_token: figma
+    enabled: true
+  - name: Ramp
+    ats: greenhouse
+    board_token: ramp
+    enabled: true
+  - name: Brex
+    ats: greenhouse
+    board_token: brex
+    enabled: true
+  - name: Affirm
+    ats: greenhouse
+    board_token: affirm
+    enabled: true
+  - name: Coinbase
+    ats: greenhouse
+    board_token: coinbase
+    enabled: true
+  - name: Airbnb
+    ats: greenhouse
+    board_token: airbnb
+    enabled: true
+  - name: Dropbox
+    ats: greenhouse
+    board_token: dropbox
+    enabled: true
+  - name: Twitch
+    ats: greenhouse
+    board_token: twitch
+    enabled: true
+  - name: Robinhood
+    ats: greenhouse
+    board_token: robinhood
+    enabled: true
+
+  # --- Ashby ---
+  - name: Anthropic
+    ats: ashby
+    board_token: Anthropic
+    enabled: true
+  - name: OpenAI
+    ats: ashby
+    board_token: openai
+    enabled: true
+  - name: Cursor
+    ats: ashby
+    board_token: cursor
+    enabled: true
+  - name: Scale AI
+    ats: ashby
+    board_token: scaleai
+    enabled: true
+  - name: Perplexity
+    ats: ashby
+    board_token: Perplexity
+    enabled: true
+  - name: Notion Labs Ashby
+    ats: ashby
+    board_token: notion
+    enabled: false
+  - name: Linear
+    ats: ashby
+    board_token: linear
+    enabled: true
+  - name: Retool
+    ats: ashby
+    board_token: retool
+    enabled: true
+  - name: Ramp Ashby
+    ats: ashby
+    board_token: ramp
+    enabled: false
+  - name: Vercel
+    ats: ashby
+    board_token: vercel
+    enabled: true
+
+  # --- Lever ---
+  - name: Netflix
+    ats: lever
+    board_token: netflix
+    enabled: true
+  - name: Palantir
+    ats: lever
+    board_token: palantir
+    enabled: true
+  - name: Twitch Lever
+    ats: lever
+    board_token: twitch
+    enabled: false
+  - name: Duolingo
+    ats: lever
+    board_token: duolingo
+    enabled: true
+  - name: Shopify
+    ats: lever
+    board_token: shopify
+    enabled: true
+  - name: Lyft
+    ats: lever
+    board_token: lyft
+    enabled: true
+  - name: Crowdstrike
+    ats: lever
+    board_token: crowdstrike
+    enabled: true
+  - name: Anduril
+    ats: lever
+    board_token: anduril
+    enabled: true
