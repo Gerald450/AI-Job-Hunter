@@ -18,6 +18,12 @@ class Job(BaseModel):
     citizenship_required: bool
     closed: bool
     advanced_degree: bool
+    # Discovery metadata (board sources + classifiers).
+    ats: Optional[str] = None
+    external_id: Optional[str] = None
+    role_family: Optional[str] = None
+    is_active: bool = True
+    description: Optional[str] = None
     # Populated by the Sponsorship Detection Engine after description fetch.
     sponsorship_available: Optional[bool] = None
     sponsorship_match: Optional[str] = None
