@@ -11,6 +11,7 @@ from fetchers.greenhouse import GreenhouseFetcher
 from fetchers.lever import LeverFetcher
 from fetchers.router import FetcherRouter
 from fetchers.smartrecruiters import SmartRecruitersFetcher
+from fetchers.workday import WorkdayFetcher
 
 
 @pytest.mark.parametrize(
@@ -50,6 +51,16 @@ from fetchers.smartrecruiters import SmartRecruitersFetcher
             "https://www.smartrecruiters.com/AcmeCorp/107099726-maintenance-mechanic",
             "smartrecruiters",
             SmartRecruitersFetcher,
+        ),
+        (
+            "https://company.wd5.myworkdayjobs.com/en-US/Careers/job/Seattle-WA/Software-Engineer_R12345",
+            "workday",
+            WorkdayFetcher,
+        ),
+        (
+            "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US/Engineer_JR1",
+            "workday",
+            WorkdayFetcher,
         ),
         (
             "https://careers.example.com/jobs/123",

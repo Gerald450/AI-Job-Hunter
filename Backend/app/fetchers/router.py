@@ -14,6 +14,7 @@ from fetchers.generic import GenericFetcher
 from fetchers.greenhouse import GreenhouseFetcher
 from fetchers.lever import LeverFetcher
 from fetchers.smartrecruiters import SmartRecruitersFetcher
+from fetchers.workday import WorkdayFetcher
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class FetcherRouter:
             "lever": LeverFetcher(client=client),
             "ashby": AshbyFetcher(client=client),
             "smartrecruiters": SmartRecruitersFetcher(client=client),
+            "workday": WorkdayFetcher(client=client),
             "generic": GenericFetcher(client=client),
         }
 
@@ -53,6 +55,8 @@ class FetcherRouter:
             return "ashby"
         if "smartrecruiters.com" in host:
             return "smartrecruiters"
+        if "myworkdayjobs.com" in host or "workdayjobs.com" in host:
+            return "workday"
         return "generic"
 
     def get_fetcher(self, url: str) -> BaseFetcher:
@@ -63,6 +67,7 @@ class FetcherRouter:
             lever.co → LeverFetcher
             ashbyhq.com → AshbyFetcher
             smartrecruiters.com → SmartRecruitersFetcher
+            myworkdayjobs.com → WorkdayFetcher
             everything else → GenericFetcher
         """
         source = self.detect_source(url)

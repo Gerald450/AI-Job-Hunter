@@ -65,3 +65,26 @@ def smartrecruiters_payload() -> dict:
             "additionalInformation": "<p>Benefits included.</p>",
         },
     }
+
+
+@pytest.fixture
+def workday_payload() -> dict:
+    return {
+        "jobPostingInfo": {
+            "id": "12345",
+            "title": "Software Engineer",
+            "jobDescription": (
+                "<p>Build reliable systems.</p>"
+                "<ul><li>Python</li><li>Distributed systems</li></ul>"
+            ),
+            "responsibilities": "<p>Own services end-to-end.</p>",
+            "qualifications": "<ul><li>3+ years experience</li></ul>",
+            "bulletFields": [
+                {
+                    "label": "Time Type",
+                    "text": "Full time",
+                }
+            ],
+        },
+        "hiringOrganization": {"name": "Acme"},
+    }
