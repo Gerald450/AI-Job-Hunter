@@ -1,5 +1,7 @@
 import re
+import uuid
 from datetime import datetime, timezone
+from typing import List, Optional, Tuple
 
 from database.jobmodel import JobModel
 from model.job import Job
@@ -30,14 +32,14 @@ def age_to_hours(age: str) -> int:
     return 10**9
 
 
-def get_jobs(
+def _base_jobs_query(
     db: Session,
     *,
     sponsoring_only: bool = True,
     exclude_closed: bool = True,
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
-) -> list[JobModel]:
+):
     query = db.query(JobModel)
 
     if sponsoring_only:
@@ -60,12 +62,81 @@ def get_jobs(
             )
         )
 
+    return query
+
+
+def get_job_stats(
+    db: Session,
+    *,
+    sponsoring_only: bool = True,
+    exclude_closed: bool = True,
+    exclude_advanced_degree: bool = True,
+    exclude_internships: bool = True,
+) -> dict:
+    query = _base_jobs_query(
+        db,
+        sponsoring_only=sponsoring_only,
+        exclude_closed=exclude_closed,
+        exclude_advanced_degree=exclude_advanced_degree,
+        exclude_internships=exclude_internships,
+    )
+    jobs = query.all()
+    total = len(jobs)
+    applied = sum(1 for job in jobs if job.applied)
+    return {
+        "total": total,
+        "applied": applied,
+        "remaining": total - applied,
+    }
+
+
+def get_jobs(
+    db: Session,
+    *,
+    sponsoring_only: bool = True,
+    exclude_closed: bool = True,
+    exclude_advanced_degree: bool = True,
+    exclude_internships: bool = True,
+    applied: Optional[bool] = None,
+    limit: int = 25,
+    offset: int = 0,
+) -> Tuple[List[JobModel], int]:
+    query = _base_jobs_query(
+        db,
+        sponsoring_only=sponsoring_only,
+        exclude_closed=exclude_closed,
+        exclude_advanced_degree=exclude_advanced_degree,
+        exclude_internships=exclude_internships,
+    )
+
+    if applied is not None:
+        query = query.filter(JobModel.applied.is_(applied))
+
     jobs = query.all()
     jobs.sort(key=lambda job: (age_to_hours(job.age), job.company, job.role))
-    return jobs
+    total = len(jobs)
+    return jobs[offset : offset + limit], total
 
 
-def insert_jobs(db: Session, jobs: list[Job]) -> None:
+def get_job_by_id(db: Session, job_id: uuid.UUID) -> Optional[JobModel]:
+    return db.query(JobModel).filter(JobModel.id == job_id).first()
+
+
+def set_job_applied(
+    db: Session, job_id: uuid.UUID, applied: bool
+) -> Optional[JobModel]:
+    job = get_job_by_id(db, job_id)
+    if job is None:
+        return None
+
+    job.applied = applied
+    job.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+def insert_jobs(db: Session, jobs: List[Job]) -> None:
 
     db_jobs = [JobModel.from_job(job) for job in jobs]
     now = datetime.now(timezone.utc)
@@ -85,6 +156,10 @@ def insert_jobs(db: Session, jobs: list[Job]) -> None:
             "citizenship_required": job.citizenship_required,
             "advanced_degree": job.advanced_degree,
             "closed": job.closed,
+            "applied": False,
+            "sponsorship_available": job.sponsorship_available,
+            "sponsorship_match": job.sponsorship_match,
+            "sponsorship_confidence": job.sponsorship_confidence,
             "created_at": now,
             "updated_at": now,
         }
@@ -104,6 +179,8 @@ def insert_jobs(db: Session, jobs: list[Job]) -> None:
             "advanced_degree": stmt.excluded.advanced_degree,
             "source": stmt.excluded.source,
             "updated_at": now,
+            # Intentionally do not overwrite `applied` or description-derived
+            # sponsorship fields on list-source upserts.
         },
     )
 
