@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* Use .dark class (not prefers-color-scheme) so extension Dark Mode controls contrast. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+
+  --color-accent: #0d9488;
+  --color-accent-hover: #0f766e;
+  --color-accent-soft: #ccfbf1;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+  --color-warning: #d97706;
+  --color-warning-soft: #fef3c7;
+  --color-success: #059669;
+  --color-success-soft: #d1fae5;
+}
+
+/* Semantic tokens — flip with .dark so text/background always stay paired. */
+:root {
+  --ink: #0c1222;
+  --ink-muted: #5a6578;
+  --surface: #f4f7fb;
+  --surface-raised: #ffffff;
+  --border: #d8e0ec;
+  --input-bg: #ffffff;
+  --input-text: #0c1222;
+  --placeholder: #8b95a8;
+}
+
+.dark {
+  --ink: #e8eef8;
+  --ink-muted: #94a3b8;
+  --surface: #0b1220;
+  --surface-raised: #141c2c;
+  --border: #243044;
+  --input-bg: #0f1724;
+  --input-text: #e8eef8;
+  --placeholder: #64748b;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background: var(--surface);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  input,
+  textarea,
+  select {
+    color: var(--input-text);
+    background-color: var(--input-bg);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--placeholder);
+    opacity: 1;
+  }
+}
+
+/* Brief highlight flash after autofill */
+.aijh-filled {
+  outline: 2px solid #0d9488 !important;
+  outline-offset: 2px;
+  transition: outline-color 1.2s ease;
+}
+
+.aijh-review {
+  outline: 2px solid #d97706 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
+}

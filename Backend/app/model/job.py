@@ -1,4 +1,6 @@
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,3 +18,7 @@ class Job(BaseModel):
     citizenship_required: bool
     closed: bool
     advanced_degree: bool
+    # Populated by the Sponsorship Detection Engine after description fetch.
+    sponsorship_available: Optional[bool] = None
+    sponsorship_match: Optional[str] = None
+    sponsorship_confidence: float = Field(default=0.0, ge=0.0, le=1.0)

@@ -1,0 +1,97 @@
+import { defineManifest } from "@crxjs/vite-plugin";
+
+/**
+ * Extension manifest (CRXJS input).
+ *
+ * Intentionally NOT named `manifest.json` at the project root so Chrome cannot
+ * load this source folder as an unpacked extension. Always load `dist/` after
+ * `pnpm build` / `pnpm dev`.
+ */
+export default defineManifest({
+  manifest_version: 3,
+  name: "AI Job Hunter",
+  description:
+    "Semantic autofill for any job application — Greenhouse, Lever, Ashby, Workable, Workday, and custom portals.",
+  version: "1.1.0",
+  icons: {
+    "16": "public/icons/icon16.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png",
+  },
+  action: {
+    default_popup: "src/popup/index.html",
+    default_icon: {
+      "16": "public/icons/icon16.png",
+      "48": "public/icons/icon48.png",
+      "128": "public/icons/icon128.png",
+    },
+    default_title: "AI Job Hunter",
+  },
+  options_ui: {
+    page: "src/options/index.html",
+    open_in_tab: true,
+  },
+  background: {
+    service_worker: "src/background/service-worker.ts",
+    type: "module",
+  },
+  content_scripts: [
+    {
+      matches: [
+        "*://boards.greenhouse.io/*",
+        "*://*.greenhouse.io/*",
+        "*://jobs.lever.co/*",
+        "*://*.lever.co/*",
+        "*://jobs.ashbyhq.com/*",
+        "*://*.ashbyhq.com/*",
+        "*://apply.workable.com/*",
+        "*://*.workable.com/*",
+        "*://*.myworkdayjobs.com/*",
+        "*://*.wd1.myworkdayjobs.com/*",
+        "*://*.wd3.myworkdayjobs.com/*",
+        "*://*.wd5.myworkdayjobs.com/*",
+        "*://*.workdayjobs.com/*",
+        "*://*.smartrecruiters.com/*",
+        "*://jobs.smartrecruiters.com/*",
+        "*://*.icims.com/*",
+        "*://*.oraclecloud.com/*",
+        "*://*.taleo.net/*",
+        "*://*.successfactors.com/*",
+        "*://*.successfactors.eu/*",
+        "*://*.sapsf.com/*",
+      ],
+      js: ["src/content/content-script.ts"],
+      run_at: "document_idle",
+    },
+  ],
+  permissions: ["storage", "activeTab", "tabs", "scripting"],
+  host_permissions: [
+    "*://boards.greenhouse.io/*",
+    "*://*.greenhouse.io/*",
+    "*://jobs.lever.co/*",
+    "*://*.lever.co/*",
+    "*://jobs.ashbyhq.com/*",
+    "*://*.ashbyhq.com/*",
+    "*://apply.workable.com/*",
+    "*://*.workable.com/*",
+    "*://*.myworkdayjobs.com/*",
+    "*://*.workdayjobs.com/*",
+    "*://*.smartrecruiters.com/*",
+    "*://*.icims.com/*",
+    "*://*.oraclecloud.com/*",
+    "*://*.taleo.net/*",
+    "*://*.successfactors.com/*",
+    "*://*.successfactors.eu/*",
+    "*://*.sapsf.com/*",
+    "http://localhost:8000/*",
+    "http://127.0.0.1:8000/*",
+    "http://*/*",
+    "https://*/*",
+  ],
+  web_accessible_resources: [
+    {
+      resources: ["assets/*"],
+      matches: ["<all_urls>"],
+    },
+  ],
+});

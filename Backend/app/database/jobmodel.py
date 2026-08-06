@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime, timezone
+from typing import Optional
 
 from database.models import Base
 from model.job import Job
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, Float, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -26,6 +27,14 @@ class JobModel(Base):
     citizenship_required: Mapped[bool] = mapped_column(Boolean)
     advanced_degree: Mapped[bool] = mapped_column(Boolean)
     closed: Mapped[bool] = mapped_column(Boolean)
+    applied: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    sponsorship_available: Mapped[Optional[bool]] = mapped_column(
+        Boolean, nullable=True, default=None
+    )
+    sponsorship_match: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    sponsorship_confidence: Mapped[float] = mapped_column(
+        Float, default=0.0, server_default="0"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
@@ -52,4 +61,7 @@ class JobModel(Base):
             citizenship_required=job.citizenship_required,
             advanced_degree=job.advanced_degree,
             closed=job.closed,
+            sponsorship_available=job.sponsorship_available,
+            sponsorship_match=job.sponsorship_match,
+            sponsorship_confidence=job.sponsorship_confidence,
         )

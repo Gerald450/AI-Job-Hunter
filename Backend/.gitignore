@@ -1,0 +1,12 @@
+#env
+.env
+
+#venv
+.venv/
+
+#python
+__pycache__/
+.pytest_cache/
+
+# local compose overrides (keep docker-compose.yml tracked)
+docker-compose.override.yml
