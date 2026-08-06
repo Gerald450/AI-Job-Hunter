@@ -1,6 +1,7 @@
 import os
 
-from database import jobmodel
+from database import jobmodel  # noqa: F401 — register JobModel with Base
+from database import resumemodel  # noqa: F401 — register Resume* models
 from database.models import Base
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
@@ -46,6 +47,24 @@ def ensure_schema():
                 "ADD COLUMN IF NOT EXISTS sponsorship_confidence "
                 "DOUBLE PRECISION NOT NULL DEFAULT 0"
             )
+        )
+        conn.execute(
+            text("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS ats VARCHAR")
+        )
+        conn.execute(
+            text("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS external_id VARCHAR")
+        )
+        conn.execute(
+            text("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS role_family VARCHAR")
+        )
+        conn.execute(
+            text(
+                "ALTER TABLE jobs "
+                "ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true"
+            )
+        )
+        conn.execute(
+            text("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS description TEXT")
         )
 
 
