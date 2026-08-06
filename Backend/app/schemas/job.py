@@ -45,6 +45,10 @@ class JobResponse(BaseModel):
     advanced_degree: bool
     closed: bool
     applied: bool = False
+    ats: Optional[str] = None
+    external_id: Optional[str] = None
+    role_family: Optional[str] = None
+    is_active: bool = True
     sponsorship_available: Optional[bool] = None
     sponsorship_match: Optional[str] = None
     sponsorship_confidence: float = 0.0
@@ -54,6 +58,8 @@ class JobResponse(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def ats_source(self) -> str:
+        if self.ats:
+            return self.ats.title() if self.ats.islower() else self.ats
         return infer_ats_source(self.apply_url, self.source)
 
 
