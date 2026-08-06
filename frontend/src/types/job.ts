@@ -12,6 +12,25 @@ export interface Job {
   citizenship_required: boolean;
   advanced_degree: boolean;
   closed: boolean;
+  applied: boolean;
+  sponsorship_available: boolean | null;
+  sponsorship_match: string | null;
+  sponsorship_confidence: number;
   created_at: string;
   updated_at: string;
 }
+
+export interface JobStats {
+  total: number;
+  applied: number;
+  remaining: number;
+}
+
+export interface JobListResponse {
+  jobs: Job[];
+  total: number;
+  has_more: boolean;
+  stats: JobStats;
+}
+
+export type AppliedFilter = "all" | "not_applied" | "applied";
