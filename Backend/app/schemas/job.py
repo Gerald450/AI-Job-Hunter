@@ -44,6 +44,10 @@ class JobResponse(BaseModel):
     citizenship_required: bool
     advanced_degree: bool
     closed: bool
+    applied: bool = False
+    sponsorship_available: Optional[bool] = None
+    sponsorship_match: Optional[str] = None
+    sponsorship_confidence: float = 0.0
     created_at: datetime
     updated_at: datetime
 
@@ -51,3 +55,20 @@ class JobResponse(BaseModel):
     @property
     def ats_source(self) -> str:
         return infer_ats_source(self.apply_url, self.source)
+
+
+class JobStats(BaseModel):
+    total: int
+    applied: int
+    remaining: int
+
+
+class JobListResponse(BaseModel):
+    jobs: list[JobResponse]
+    total: int
+    has_more: bool
+    stats: JobStats
+
+
+class AppliedUpdate(BaseModel):
+    applied: bool
