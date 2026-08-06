@@ -11,8 +11,8 @@ from clients.db import SessionLocal, create_database
 from database.jobmodel import JobModel
 from fetchers.exceptions import FetchError
 from fetchers.router import FetcherRouter
-from sqlalchemy.orm import Session
 from sponsorship.service import SponsorshipService
+from sqlalchemy.orm import Session
 
 logging.basicConfig(
     level=logging.INFO,
@@ -116,9 +116,7 @@ def main() -> None:
     create_database()
     db = SessionLocal()
     try:
-        asyncio.run(
-            enrich_pending_jobs(db, limit=args.limit, force=args.force)
-        )
+        asyncio.run(enrich_pending_jobs(db, limit=args.limit, force=args.force))
     finally:
         db.close()
 

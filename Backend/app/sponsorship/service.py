@@ -62,9 +62,11 @@ class SponsorshipService:
         job: JobModel,
         description: str,
     ) -> SponsorshipResult:
-        """Analyze ``description``, persist fields, and commit."""
+        """Analyze ``description``, persist fields (and description), and commit."""
         result = self.analyze(description)
         self.apply_result(job, result)
+        if description and description.strip():
+            job.description = description
         db.commit()
         db.refresh(job)
         return result
