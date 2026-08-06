@@ -1,0 +1,4 @@
+# Global aggregation filters.
+
+# Drop jobs older than this many days (GitHub age strings + ATS published dates).
+max_age_days: 30
