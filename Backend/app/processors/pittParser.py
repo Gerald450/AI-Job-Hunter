@@ -1,46 +1,12 @@
-from bs4 import BeautifulSoup
-from rich import print
+"""PittCSC Summer Internships README parser."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from processors.readme_table import parse_readme_tables
 
 
-def parse_jobs(html):
-
-    soup = BeautifulSoup(html, "lxml")
-
-    jobs = []
-
-    tables = soup.find_all("table")
-
-    for table in tables:
-        rows = table.find_all("tr")
-
-        for row in rows[1:]:
-            columns = row.find_all("td")
-
-            if len(columns) < 5:
-                continue
-
-            company = columns[0].get_text(strip=True)
-            role = columns[1].get_text(strip=True)
-            location = columns[2].get_text(strip=True)
-            application = columns[3]
-
-            link = None
-
-            anchor = application.find("a")
-            if anchor:
-                link = anchor.get("href")
-
-            age = columns[4].get_text(strip=True)
-
-            jobs.append(
-                {
-                    "company": company,
-                    "role": role,
-                    "location": location,
-                    "apply_url": link,
-                    "age": age,
-                    "source": "pittcsc",
-                }
-            )
-
-    return jobs
+def parse_jobs(html: str, *, source: str = "pittcsc") -> list[dict[str, Any]]:
+    """Parse PittCSC-style HTML job tables into raw job dicts."""
+    return parse_readme_tables(html, source=source, skip_inactive=True)
