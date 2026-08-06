@@ -8,20 +8,41 @@ import {
   type QueryKey,
 } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { AnalysisPanel } from "@/components/jobs/analysis-panel";
+import { AnalyzeToolbar } from "@/components/jobs/analyze-toolbar";
+import { BatchResults } from "@/components/jobs/batch-results";
 import { EmptyState } from "@/components/jobs/empty-state";
 import { ErrorState } from "@/components/jobs/error-state";
 import { JobCard } from "@/components/jobs/job-card";
 import { JobListSkeleton } from "@/components/jobs/job-list-skeleton";
+import { JobSearchBar } from "@/components/jobs/job-search";
+import {
+  loadStoredResume,
+  ResumeUploadBar,
+} from "@/components/jobs/resume-upload-bar";
 import { Button } from "@/components/ui/button";
-import { DEFAULT_PAGE_SIZE, fetchJobs, setJobApplied } from "@/lib/api";
+import {
+  analyzeJobResume,
+  analyzeJobsBatch,
+  DEFAULT_PAGE_SIZE,
+  fetchJobs,
+  setJobApplied,
+} from "@/lib/api";
 import { resolveCompanyNames } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type {
+  AnalysisResult,
+  BatchJobResult,
+  BatchProgress,
+  BatchSort,
+} from "@/types/analysis";
 import type {
   AppliedFilter,
   Job,
   JobListResponse,
+  JobSearchFilters,
   JobStats,
 } from "@/types/job";
 
@@ -31,8 +52,25 @@ const FILTERS: { value: AppliedFilter; label: string }[] = [
   { value: "applied", label: "Applied" },
 ];
 
+const EMPTY_SEARCH: JobSearchFilters = {
+  company: "",
+  source: "",
+  maxAge: "",
+};
+
 function formatCount(value: number): string {
   return value.toLocaleString("en-US");
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(timer);
+  }, [value, delayMs]);
+
+  return debounced;
 }
 
 function JobStatsBar({ stats }: { stats: JobStats }) {
@@ -144,6 +182,11 @@ function shouldKeepJob(filter: AppliedFilter, applied: boolean): boolean {
   return true;
 }
 
+function appliedFilterFromQueryKey(key: QueryKey): AppliedFilter {
+  const filters = key[1] as { appliedFilter?: AppliedFilter } | undefined;
+  return filters?.appliedFilter ?? "all";
+}
+
 function patchJobsCache(
   data: InfiniteData<JobListResponse> | undefined,
   filter: AppliedFilter,
@@ -193,6 +236,50 @@ function patchJobsCache(
 export function JobList() {
   const queryClient = useQueryClient();
   const [appliedFilter, setAppliedFilter] = useState<AppliedFilter>("all");
+  const [search, setSearch] = useState<JobSearchFilters>(EMPTY_SEARCH);
+  const debouncedCompany = useDebouncedValue(search.company, 300);
+  const debouncedSource = useDebouncedValue(search.source, 300);
+
+  const [resumeId, setResumeId] = useState<string | null>(null);
+  const [resumeFilename, setResumeFilename] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [matchByJob, setMatchByJob] = useState<Record<string, number>>({});
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelJob, setPanelJob] = useState<Job | null>(null);
+  const [panelLoading, setPanelLoading] = useState(false);
+  const [panelError, setPanelError] = useState<string | null>(null);
+  const [panelAnalysis, setPanelAnalysis] = useState<AnalysisResult | null>(
+    null,
+  );
+  const [panelRefreshing, setPanelRefreshing] = useState(false);
+  const [analyzingJobId, setAnalyzingJobId] = useState<string | null>(null);
+  const [batchAnalyzing, setBatchAnalyzing] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<BatchProgress | null>(null);
+  const [batchResults, setBatchResults] = useState<BatchJobResult[]>([]);
+  const [batchSort, setBatchSort] = useState<BatchSort>("match");
+
+  useEffect(() => {
+    const stored = loadStoredResume();
+    if (stored) {
+      setResumeId(stored.resumeId);
+      setResumeFilename(stored.filename);
+    }
+  }, []);
+
+  const queryFilters = useMemo(
+    () => ({
+      appliedFilter,
+      company: debouncedCompany.trim(),
+      source: debouncedSource.trim(),
+      maxAge: search.maxAge,
+    }),
+    [appliedFilter, debouncedCompany, debouncedSource, search.maxAge],
+  );
+
+  const hasSearch =
+    Boolean(queryFilters.company) ||
+    Boolean(queryFilters.source) ||
+    Boolean(queryFilters.maxAge);
 
   const {
     data,
@@ -205,18 +292,19 @@ export function JobList() {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
-    queryKey: ["jobs", appliedFilter],
+    queryKey: ["jobs", queryFilters],
     queryFn: ({ pageParam }) =>
       fetchJobs({
         limit: DEFAULT_PAGE_SIZE,
         offset: pageParam,
-        appliedFilter,
+        appliedFilter: queryFilters.appliedFilter,
+        company: queryFilters.company,
+        source: queryFilters.source,
+        maxAge: queryFilters.maxAge,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {
       if (!lastPage.has_more) return undefined;
-      // Advance by the requested page size, not the current array length,
-      // so optimistic removals (applied filter) don't skip/duplicate rows.
       return lastPageParam + DEFAULT_PAGE_SIZE;
     },
   });
@@ -239,7 +327,7 @@ export function JobList() {
       >({ queryKey: ["jobs"] });
 
       for (const [key] of previous) {
-        const filter = (key[1] as AppliedFilter | undefined) ?? "all";
+        const filter = appliedFilterFromQueryKey(key);
         queryClient.setQueryData<InfiniteData<JobListResponse>>(key, (current) =>
           patchJobsCache(current, filter, jobId, applied, previousApplied),
         );
@@ -276,28 +364,207 @@ export function JobList() {
     });
   }
 
+  function handleSelectChange(jobId: string, selected: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (selected) next.add(jobId);
+      else next.delete(jobId);
+      return next;
+    });
+  }
+
+  async function runSingleAnalyze(job: Job, refresh = false) {
+    if (!resumeId) return;
+    setPanelJob(job);
+    setPanelOpen(true);
+    setPanelError(null);
+    if (!refresh) setPanelAnalysis(null);
+    setAnalyzingJobId(job.id);
+    if (refresh) setPanelRefreshing(true);
+    else setPanelLoading(true);
+
+    try {
+      const result = await analyzeJobResume(job.id, resumeId, refresh);
+      setPanelAnalysis(result);
+      setMatchByJob((prev) => ({ ...prev, [job.id]: result.overall_match }));
+    } catch (err) {
+      setPanelError(err instanceof Error ? err.message : "Analysis failed");
+    } finally {
+      setPanelLoading(false);
+      setPanelRefreshing(false);
+      setAnalyzingJobId(null);
+    }
+  }
+
+  async function runBatch(jobIds: string[]) {
+    if (!resumeId || jobIds.length === 0 || batchAnalyzing) return;
+
+    const targets = jobs.filter((j) => jobIds.includes(j.id));
+    const byId = new Map(targets.map((j) => [j.id, j]));
+
+    setBatchAnalyzing(true);
+    setBatchProgress({
+      completed: 0,
+      failed: 0,
+      remaining: jobIds.length,
+      total: jobIds.length,
+      message: `Analyzing 0 / ${jobIds.length} jobs...`,
+    });
+    setBatchResults(
+      jobIds.map((id) => {
+        const job = byId.get(id);
+        return {
+          jobId: id,
+          company: job?.company ?? "—",
+          role: job?.role ?? "—",
+          status: "pending" as const,
+        };
+      }),
+    );
+
+    try {
+      await analyzeJobsBatch(resumeId, jobIds, {
+        onProgress: (progress) => setBatchProgress(progress),
+        onResult: (jobId, analysis) => {
+          setMatchByJob((prev) => ({
+            ...prev,
+            [jobId]: analysis.overall_match,
+          }));
+          setBatchResults((prev) =>
+            prev.map((row) =>
+              row.jobId === jobId
+                ? {
+                    ...row,
+                    status: "completed",
+                    overall_match: analysis.overall_match,
+                    summary: analysis.summary,
+                    company: analysis.company ?? row.company,
+                    role: analysis.role ?? row.role,
+                    analysis,
+                  }
+                : row,
+            ),
+          );
+        },
+        onError: (jobId, errorMessage) => {
+          setBatchResults((prev) =>
+            prev.map((row) =>
+              row.jobId === jobId
+                ? { ...row, status: "failed", error: errorMessage }
+                : row,
+            ),
+          );
+        },
+        onDone: (progress) => setBatchProgress(progress),
+      });
+    } catch (err) {
+      setBatchProgress((prev) =>
+        prev
+          ? {
+              ...prev,
+              message:
+                err instanceof Error ? err.message : "Batch analysis failed",
+            }
+          : prev,
+      );
+    } finally {
+      setBatchAnalyzing(false);
+    }
+  }
+
   if (isLoading) {
-    return <JobListSkeleton />;
+    return (
+      <div className="flex flex-col gap-6">
+        <ResumeUploadBar
+          resumeId={resumeId}
+          filename={resumeFilename}
+          onUploaded={(id, name) => {
+            setResumeId(id);
+            setResumeFilename(name);
+          }}
+          onCleared={() => {
+            setResumeId(null);
+            setResumeFilename(null);
+          }}
+        />
+        <JobSearchBar value={search} onChange={setSearch} />
+        <JobListSkeleton />
+      </div>
+    );
   }
 
   if (isError) {
     return (
-      <ErrorState
-        message={
-          error instanceof Error
-            ? error.message
-            : "We couldn't load jobs from the server."
-        }
-        onRetry={() => {
-          void refetch();
-        }}
-      />
+      <div className="flex flex-col gap-6">
+        <ResumeUploadBar
+          resumeId={resumeId}
+          filename={resumeFilename}
+          onUploaded={(id, name) => {
+            setResumeId(id);
+            setResumeFilename(name);
+          }}
+          onCleared={() => {
+            setResumeId(null);
+            setResumeFilename(null);
+          }}
+        />
+        <JobSearchBar value={search} onChange={setSearch} />
+        <ErrorState
+          message={
+            error instanceof Error
+              ? error.message
+              : "We couldn't load jobs from the server."
+          }
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-6">
       <JobStatsBar stats={stats} />
+
+      <ResumeUploadBar
+        resumeId={resumeId}
+        filename={resumeFilename}
+        onUploaded={(id, name) => {
+          setResumeId(id);
+          setResumeFilename(name);
+        }}
+        onCleared={() => {
+          setResumeId(null);
+          setResumeFilename(null);
+        }}
+      />
+
+      <JobSearchBar value={search} onChange={setSearch} />
+
+      <AnalyzeToolbar
+        selectedCount={selectedIds.size}
+        hasResume={Boolean(resumeId)}
+        analyzing={batchAnalyzing}
+        onSelectAllVisible={() =>
+          setSelectedIds(new Set(jobs.map((job) => job.id)))
+        }
+        onClearSelection={() => setSelectedIds(new Set())}
+        onAnalyzeSelected={() => {
+          void runBatch([...selectedIds]);
+        }}
+        onAnalyzeFirstN={(n) => {
+          void runBatch(jobs.slice(0, n).map((job) => job.id));
+        }}
+      />
+
+      <BatchResults
+        progress={batchProgress}
+        results={batchResults}
+        sort={batchSort}
+        onSortChange={setBatchSort}
+        analyzing={batchAnalyzing}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <AppliedFilterBar
@@ -317,11 +584,13 @@ export function JobList() {
       {jobs.length === 0 ? (
         <EmptyState
           message={
-            appliedFilter === "applied"
-              ? "No applied jobs yet. Click Apply on a role to track it here."
-              : appliedFilter === "not_applied"
-                ? "No unapplied jobs match the current filters."
-                : undefined
+            hasSearch
+              ? "No jobs match your search. Try a different company, source, or age."
+              : appliedFilter === "applied"
+                ? "No applied jobs yet. Click Apply on a role to track it here."
+                : appliedFilter === "not_applied"
+                  ? "No unapplied jobs match the current filters."
+                  : undefined
           }
         />
       ) : (
@@ -331,6 +600,14 @@ export function JobList() {
               key={job.id}
               job={job}
               onToggleApplied={handleToggleApplied}
+              selected={selectedIds.has(job.id)}
+              onSelectChange={handleSelectChange}
+              matchScore={matchByJob[job.id] ?? null}
+              canAnalyze={Boolean(resumeId)}
+              analyzing={analyzingJobId === job.id}
+              onAnalyze={(j) => {
+                void runSingleAnalyze(j);
+              }}
             />
           ))}
 
@@ -361,6 +638,24 @@ export function JobList() {
           </div>
         </div>
       )}
+
+      <AnalysisPanel
+        open={panelOpen}
+        loading={panelLoading}
+        error={panelError}
+        analysis={panelAnalysis}
+        company={panelJob?.company}
+        role={panelJob?.role}
+        refreshing={panelRefreshing}
+        onClose={() => setPanelOpen(false)}
+        onRefresh={
+          panelJob
+            ? () => {
+                void runSingleAnalyze(panelJob, true);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
