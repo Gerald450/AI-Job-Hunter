@@ -19,7 +19,8 @@ A lot of this was built with **[Cursor](https://cursor.com) as an agent** — pa
 2. **Enrich** — Hit ATS pages (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, …) for full descriptions
 3. **Filter** — Pattern-match sponsorship language so I can focus on roles that don't immediately rule me out
 4. **Browse** — A Next.js dashboard of US new-grad / entry-level jobs that look sponsorship-friendly
-5. **Apply faster** — A Chrome extension that detects form fields on ATS pages and autofills from my profile
+5. **Match on demand** — Upload a resume once, then analyze selected jobs (or first N) with Groq; results are cached until the resume or description changes
+6. **Apply faster** — A Chrome extension that detects form fields on ATS pages and autofills from my profile
 
 ```text
 Job lists (PittCSC, Simplify, …)
@@ -59,9 +60,33 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 # configure DATABASE_URL / .env as needed
 cd app
-python main.py              # aggregate US jobs into Postgres
-python main.py --enrich     # fetch descriptions + run sponsorship detection
+python main.py              # aggregate from GitHub lists + Greenhouse/Ashby/Lever boards
+python main.py --enrich     # fetch descriptions, store them, run sponsorship detection
 uvicorn api:app --reload --app-dir .   # API on :8000
+```
+
+Board tokens and provider toggles live in `Backend/app/config/` (`companies.yaml`, `providers.yaml`, `role_families.yaml`, `early_career.yaml`).
+
+Set `GROQ_API_KEY` in `Backend/.env` (optional `GROQ_MODEL`, default `llama-3.3-70b-versatile`) for on-demand resume matching.
+
+Upload a resume for matching (parses once with Groq; returns `resumeId`):
+
+```bash
+curl -s -F "file=@/path/to/your_resume.pdf" http://localhost:8000/api/resumes
+```
+
+Analyze a single job (on demand — never auto-runs over the whole DB):
+
+```bash
+curl -s -X POST http://localhost:8000/api/jobs/<job_uuid>/analyze \
+  -H 'Content-Type: application/json' \
+  -d '{"resumeId":"resume_…"}'
+```
+
+Upload a resume for the Chrome extension only (binary store, no LLM parse):
+
+```bash
+curl -s -F "file=@/path/to/your_resume.pdf" http://localhost:8000/extension/resumes
 ```
 
 ### Frontend

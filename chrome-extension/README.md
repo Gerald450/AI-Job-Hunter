@@ -92,9 +92,37 @@ Edit `src/lib/semantics.ts` → `CANONICAL_ALIASES`, or call `registerAlias()` a
 | POST | `/extension/autofill` | Field → value map with confidence |
 | POST | `/extension/job` | Qualification scoring |
 | POST | `/extension/questions` | Screening answers |
-| POST | `/extension/upload` | Resume binary (blob) |
+| POST | `/extension/resumes` | **Upload** resume (multipart `file`) → `{ resumeId, filename, … }` |
+| POST | `/extension/upload` | **Download** resume blob by `{ resumeId }` (used by autofill) |
 
-Until these exist, the extension falls back to the cached profile + session store.
+Until profile/autofill/job/questions exist, the extension falls back to the cached profile + session store. Resume upload/serve is implemented on the backend.
+
+### Upload a resume (then paste into Options)
+
+With the API running on `:8000`:
+
+```bash
+curl -s -F "file=@/path/to/Gerald_Shimo_Resume.pdf" \
+  http://localhost:8000/extension/resumes
+```
+
+Example response:
+
+```json
+{
+  "resumeId": "resume_a1b2c3d4e5f6",
+  "filename": "Gerald_Shimo_Resume.pdf",
+  "contentType": "application/pdf",
+  "size": 184320
+}
+```
+
+In the extension **Options → Resume**, paste:
+
+- **Resume ID** → `resumeId`
+- **Resume Filename** → `filename`
+
+Enable **Auto Upload Resume**. On application pages with a file input, the extension will `POST /extension/upload` with that ID and attach the file.
 
 ## Permissions
 
