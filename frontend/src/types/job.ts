@@ -34,3 +34,9 @@ export interface JobListResponse {
 }
 
 export type AppliedFilter = "all" | "not_applied" | "applied";
+
+export interface JobSearchFilters {
+  company: string;
+  source: string;
+  maxAge: string;
+}
