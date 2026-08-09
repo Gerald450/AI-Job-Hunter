@@ -29,6 +29,8 @@ import {
   DEFAULT_PAGE_SIZE,
   fetchJobs,
   setJobApplied,
+  setJobFlagged,
+  setJobSaved,
 } from "@/lib/api";
 import { resolveCompanyNames } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,8 @@ const FILTERS: { value: AppliedFilter; label: string }[] = [
   { value: "all", label: "All Jobs" },
   { value: "not_applied", label: "Not Applied" },
   { value: "applied", label: "Applied" },
+  { value: "saved", label: "Saved" },
+  { value: "flagged", label: "Flagged" },
 ];
 
 const EMPTY_SEARCH: JobSearchFilters = {
@@ -75,7 +79,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 function JobStatsBar({ stats }: { stats: JobStats }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
           Total Jobs
@@ -90,6 +94,22 @@ function JobStatsBar({ stats }: { stats: JobStats }) {
         </p>
         <p className="mt-1 text-2xl font-semibold tabular-nums text-emerald-800">
           {formatCount(stats.applied)}
+        </p>
+      </div>
+      <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 shadow-sm">
+        <p className="text-xs font-medium uppercase tracking-wide text-amber-700">
+          Saved
+        </p>
+        <p className="mt-1 text-2xl font-semibold tabular-nums text-amber-800">
+          {formatCount(stats.saved)}
+        </p>
+      </div>
+      <div className="rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 shadow-sm">
+        <p className="text-xs font-medium uppercase tracking-wide text-rose-700">
+          Flagged
+        </p>
+        <p className="mt-1 text-2xl font-semibold tabular-nums text-rose-800">
+          {formatCount(stats.flagged ?? 0)}
         </p>
       </div>
       <div className="rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-3 shadow-sm">
@@ -115,7 +135,7 @@ function AppliedFilterBar({
     <div
       className="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1"
       role="tablist"
-      aria-label="Filter by applied status"
+      aria-label="Filter jobs"
     >
       {FILTERS.map((filter) => {
         const selected = value === filter.value;
@@ -170,13 +190,59 @@ function adjustStats(
 
   const delta = nextApplied ? 1 : -1;
   return {
+    ...stats,
     total: stats.total,
     applied: Math.max(0, stats.applied + delta),
     remaining: Math.max(0, stats.remaining - delta),
+    saved: stats.saved ?? 0,
+    flagged: stats.flagged ?? 0,
   };
 }
 
-function shouldKeepJob(filter: AppliedFilter, applied: boolean): boolean {
+function adjustSavedStats(
+  stats: JobStats,
+  previousSaved: boolean,
+  nextSaved: boolean,
+): JobStats {
+  if (previousSaved === nextSaved) return stats;
+
+  const delta = nextSaved ? 1 : -1;
+  return {
+    ...stats,
+    // Saving hides from the main list total when not on the saved tab.
+    total: Math.max(0, stats.total + (nextSaved ? -1 : 1)),
+    remaining: Math.max(0, stats.remaining + (nextSaved ? -1 : 1)),
+    saved: Math.max(0, (stats.saved ?? 0) + delta),
+  };
+}
+
+function adjustFlaggedStats(
+  stats: JobStats,
+  previousFlagged: boolean,
+  nextFlagged: boolean,
+): JobStats {
+  if (previousFlagged === nextFlagged) return stats;
+
+  const delta = nextFlagged ? 1 : -1;
+  return {
+    ...stats,
+    // Flagging hides from the main list total when not on the flagged tab.
+    total: Math.max(0, stats.total + (nextFlagged ? -1 : 1)),
+    remaining: Math.max(0, stats.remaining + (nextFlagged ? -1 : 1)),
+    flagged: Math.max(0, (stats.flagged ?? 0) + delta),
+  };
+}
+
+function shouldKeepJob(
+  filter: AppliedFilter,
+  applied: boolean,
+  saved?: boolean,
+  flagged?: boolean,
+): boolean {
+  if (filter === "flagged") return Boolean(flagged);
+  if (filter === "saved") return Boolean(saved) && !flagged;
+  // Main lists (all / applied / not_applied) hide saved and flagged jobs.
+  if (saved || flagged) return false;
   if (filter === "applied") return applied;
   if (filter === "not_applied") return !applied;
   return true;
@@ -186,6 +252,14 @@ function appliedFilterFromQueryKey(key: QueryKey): AppliedFilter {
   const filters = key[1] as { appliedFilter?: AppliedFilter } | undefined;
   return filters?.appliedFilter ?? "all";
 }
+
+const EMPTY_STATS: JobStats = {
+  total: 0,
+  applied: 0,
+  remaining: 0,
+  saved: 0,
+  flagged: 0,
+};
 
 function patchJobsCache(
   data: InfiniteData<JobListResponse> | undefined,
@@ -203,9 +277,14 @@ function patchJobsCache(
     return data;
   }
 
-  const keep = shouldKeepJob(filter, nextApplied);
+  const keep = shouldKeepJob(
+    filter,
+    nextApplied,
+    existing?.saved,
+    existing?.flagged,
+  );
   const nextStats = adjustStats(
-    data.pages[0]?.stats ?? { total: 0, applied: 0, remaining: 0 },
+    data.pages[0]?.stats ?? EMPTY_STATS,
     fromApplied,
     nextApplied,
   );
@@ -213,7 +292,127 @@ function patchJobsCache(
   const pages = data.pages.map((page) => {
     const hadJob = page.jobs.some((job) => job.id === jobId);
     let jobs = page.jobs.map((job) =>
-      job.id === jobId ? { ...job, applied: nextApplied } : job,
+      job.id === jobId
+        ? {
+            ...job,
+            applied: nextApplied,
+            applied_at: nextApplied ? new Date().toISOString() : null,
+          }
+        : job,
+    );
+
+    if (hadJob && !keep) {
+      jobs = jobs.filter((job) => job.id !== jobId);
+    }
+
+    const removed = hadJob && !keep ? 1 : 0;
+
+    return {
+      ...page,
+      jobs,
+      total: Math.max(0, page.total - removed),
+      stats: nextStats,
+    };
+  });
+
+  return { ...data, pages };
+}
+
+function patchSavedCache(
+  data: InfiniteData<JobListResponse> | undefined,
+  filter: AppliedFilter,
+  jobId: string,
+  nextSaved: boolean,
+  previousSaved?: boolean,
+): InfiniteData<JobListResponse> | undefined {
+  if (!data) return data;
+
+  const existing = findJob(data, jobId);
+  const fromSaved = existing?.saved ?? previousSaved;
+
+  if (fromSaved === undefined || fromSaved === nextSaved) {
+    return data;
+  }
+
+  const keep = shouldKeepJob(
+    filter,
+    existing?.applied ?? false,
+    nextSaved,
+    existing?.flagged,
+  );
+  const nextStats = adjustSavedStats(
+    data.pages[0]?.stats ?? EMPTY_STATS,
+    fromSaved,
+    nextSaved,
+  );
+
+  const pages = data.pages.map((page) => {
+    const hadJob = page.jobs.some((job) => job.id === jobId);
+    let jobs = page.jobs.map((job) =>
+      job.id === jobId
+        ? {
+            ...job,
+            saved: nextSaved,
+            saved_at: nextSaved ? new Date().toISOString() : null,
+          }
+        : job,
+    );
+
+    if (hadJob && !keep) {
+      jobs = jobs.filter((job) => job.id !== jobId);
+    }
+
+    const removed = hadJob && !keep ? 1 : 0;
+
+    return {
+      ...page,
+      jobs,
+      total: Math.max(0, page.total - removed),
+      stats: nextStats,
+    };
+  });
+
+  return { ...data, pages };
+}
+
+function patchFlaggedCache(
+  data: InfiniteData<JobListResponse> | undefined,
+  filter: AppliedFilter,
+  jobId: string,
+  nextFlagged: boolean,
+  previousFlagged?: boolean,
+): InfiniteData<JobListResponse> | undefined {
+  if (!data) return data;
+
+  const existing = findJob(data, jobId);
+  const fromFlagged = existing?.flagged ?? previousFlagged;
+
+  if (fromFlagged === undefined || fromFlagged === nextFlagged) {
+    return data;
+  }
+
+  const keep = shouldKeepJob(
+    filter,
+    existing?.applied ?? false,
+    existing?.saved,
+    nextFlagged,
+  );
+  const nextStats = adjustFlaggedStats(
+    data.pages[0]?.stats ?? EMPTY_STATS,
+    fromFlagged,
+    nextFlagged,
+  );
+
+  const pages = data.pages.map((page) => {
+    const hadJob = page.jobs.some((job) => job.id === jobId);
+    let jobs = page.jobs.map((job) =>
+      job.id === jobId
+        ? {
+            ...job,
+            flagged: nextFlagged,
+            flagged_at: nextFlagged ? new Date().toISOString() : null,
+          }
+        : job,
     );
 
     if (hadJob && !keep) {
@@ -272,8 +471,9 @@ export function JobList() {
       company: debouncedCompany.trim(),
       source: debouncedSource.trim(),
       maxAge: search.maxAge,
+      resumeId: resumeId ?? "",
     }),
-    [appliedFilter, debouncedCompany, debouncedSource, search.maxAge],
+    [appliedFilter, debouncedCompany, debouncedSource, search.maxAge, resumeId],
   );
 
   const hasSearch =
@@ -301,6 +501,7 @@ export function JobList() {
         company: queryFilters.company,
         source: queryFilters.source,
         maxAge: queryFilters.maxAge,
+        resumeId: queryFilters.resumeId,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {
@@ -343,16 +544,119 @@ export function JobList() {
     },
   });
 
+  const toggleSavedMutation = useMutation({
+    mutationFn: ({
+      jobId,
+      saved,
+      previousSaved,
+    }: {
+      jobId: string;
+      saved: boolean;
+      previousSaved: boolean;
+    }) => setJobSaved(jobId, saved),
+    onMutate: async ({ jobId, saved, previousSaved }) => {
+      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+
+      const previous = queryClient.getQueriesData<
+        InfiniteData<JobListResponse>
+      >({ queryKey: ["jobs"] });
+
+      for (const [key] of previous) {
+        const filter = appliedFilterFromQueryKey(key);
+        queryClient.setQueryData<InfiniteData<JobListResponse>>(key, (current) =>
+          patchSavedCache(current, filter, jobId, saved, previousSaved),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (!context?.previous) return;
+      for (const [key, value] of context.previous) {
+        queryClient.setQueryData(key as QueryKey, value);
+      }
+    },
+  });
+
+  const toggleFlaggedMutation = useMutation({
+    mutationFn: ({
+      jobId,
+      flagged,
+      previousFlagged,
+    }: {
+      jobId: string;
+      flagged: boolean;
+      previousFlagged: boolean;
+    }) => setJobFlagged(jobId, flagged),
+    onMutate: async ({ jobId, flagged, previousFlagged }) => {
+      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+
+      const previous = queryClient.getQueriesData<
+        InfiniteData<JobListResponse>
+      >({ queryKey: ["jobs"] });
+
+      for (const [key] of previous) {
+        const filter = appliedFilterFromQueryKey(key);
+        queryClient.setQueryData<InfiniteData<JobListResponse>>(key, (current) =>
+          patchFlaggedCache(current, filter, jobId, flagged, previousFlagged),
+        );
+      }
+
+      if (flagged) {
+        setSelectedIds((prev) => {
+          if (!prev.has(jobId)) return prev;
+          const next = new Set(prev);
+          next.delete(jobId);
+          return next;
+        });
+      }
+
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (!context?.previous) return;
+      for (const [key, value] of context.previous) {
+        queryClient.setQueryData(key as QueryKey, value);
+      }
+    },
+  });
+
   const jobs = useMemo(() => {
     const flat = data?.pages.flatMap((page) => page.jobs) ?? [];
     return resolveCompanyNames(dedupeJobs(flat));
   }, [data]);
 
-  const stats = data?.pages[0]?.stats ?? {
-    total: 0,
-    applied: 0,
-    remaining: 0,
-  };
+  // Keep the list topped up when jobs drop off (e.g. apply/flag) or a page is thin.
+  useEffect(() => {
+    if (jobs.length >= 5) return;
+    if (!hasNextPage || isFetchingNextPage || isLoading) return;
+    void fetchNextPage();
+  }, [
+    jobs.length,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    fetchNextPage,
+  ]);
+
+  // Seed badges from persisted match_score; keep fresher in-session overrides.
+  useEffect(() => {
+    if (!jobs.length) return;
+    setMatchByJob((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const job of jobs) {
+        if (job.match_score == null) continue;
+        if (next[job.id] === undefined) {
+          next[job.id] = job.match_score;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [jobs]);
+
+  const stats = data?.pages[0]?.stats ?? EMPTY_STATS;
   const filteredTotal = data?.pages[0]?.total ?? 0;
 
   async function handleToggleApplied(jobId: string, applied: boolean) {
@@ -361,6 +665,24 @@ export function JobList() {
       jobId,
       applied,
       previousApplied: current?.applied ?? !applied,
+    });
+  }
+
+  async function handleToggleSaved(jobId: string, saved: boolean) {
+    const current = findJob(data, jobId);
+    await toggleSavedMutation.mutateAsync({
+      jobId,
+      saved,
+      previousSaved: current?.saved ?? !saved,
+    });
+  }
+
+  async function handleToggleFlagged(jobId: string, flagged: boolean) {
+    const current = findJob(data, jobId);
+    await toggleFlaggedMutation.mutateAsync({
+      jobId,
+      flagged,
+      previousFlagged: current?.flagged ?? !flagged,
     });
   }
 
@@ -588,9 +910,13 @@ export function JobList() {
               ? "No jobs match your search. Try a different company, source, or age."
               : appliedFilter === "applied"
                 ? "No applied jobs yet. Click Apply on a role to track it here."
-                : appliedFilter === "not_applied"
-                  ? "No unapplied jobs match the current filters."
-                  : undefined
+                : appliedFilter === "saved"
+                  ? "No saved jobs yet. Click Save on a role to bookmark it here."
+                  : appliedFilter === "flagged"
+                    ? "No flagged jobs. Flag a role to hide it from the main list."
+                    : appliedFilter === "not_applied"
+                      ? "No unapplied jobs match the current filters."
+                      : undefined
           }
         />
       ) : (
@@ -600,9 +926,11 @@ export function JobList() {
               key={job.id}
               job={job}
               onToggleApplied={handleToggleApplied}
+              onToggleSaved={handleToggleSaved}
+              onToggleFlagged={handleToggleFlagged}
               selected={selectedIds.has(job.id)}
               onSelectChange={handleSelectChange}
-              matchScore={matchByJob[job.id] ?? null}
+              matchScore={matchByJob[job.id] ?? job.match_score ?? null}
               canAnalyze={Boolean(resumeId)}
               analyzing={analyzingJobId === job.id}
               onAnalyze={(j) => {
