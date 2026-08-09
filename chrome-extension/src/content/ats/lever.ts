@@ -3,7 +3,14 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { enrichLabelsFromContainers, textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  enrichLabelsFromContainers,
+  extractDescription,
+  extractSections,
+  textOf,
+  textOfFirst,
+} from "@/content/ats/helpers";
 import type { JobExtraction } from "@/types";
 
 export const leverAdapter: AtsAdapter = {
@@ -22,31 +29,42 @@ export const leverAdapter: AtsAdapter = {
   },
 
   extractJob(): Partial<JobExtraction> {
-    const title = textOf(
-      ".posting-headline h2, h2.posting-name, .posting-title, h2",
+    const title = textOfFirst(
+      ".posting-headline h2",
+      "h2.posting-name",
+      ".posting-title",
+      "h2",
     );
     const companyFromPath = window.location.pathname.split("/").filter(Boolean)[0];
     const company =
       textOf(".main-header-logo img[alt]")?.replace(/\s+logo$/i, "").trim() ||
       companyFromPath;
-    const location = textOf(
-      ".posting-categories .location, .posting-category.location, .sort-by-location",
+    const location = textOfFirst(
+      ".posting-categories .location",
+      ".posting-category.location",
+      ".sort-by-location",
     );
-    const commitment = textOf(
-      ".posting-categories .commitment, .posting-category.commitment",
+    const commitment = textOfFirst(
+      ".posting-categories .commitment",
+      ".posting-category.commitment",
     );
-    const description = textOf(
-      ".posting-page .content, .section-wrapper, [data-qa='job-description']",
+    const description = extractDescription(
+      ".posting-page .content",
+      ".section-wrapper",
+      "[data-qa='job-description']",
+      ".posting-description",
     );
-    const bodyText = document.body.innerText.toLowerCase();
+    const sections = extractSections();
+    const { remote } = detectRemoteAndEmployment(location);
 
     return {
       title,
       company,
       location,
       description,
+      ...sections,
       employmentType: commitment,
-      remote: /\bremote\b/.test(bodyText) || /\bremote\b/i.test(location || ""),
+      remote,
     };
   },
 };
