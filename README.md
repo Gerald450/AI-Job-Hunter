@@ -19,8 +19,8 @@ A lot of this was built with **[Cursor](https://cursor.com) as an agent** — pa
 2. **Enrich** — Hit ATS pages (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, …) for full descriptions
 3. **Filter** — Pattern-match sponsorship language so I can focus on roles that don't immediately rule me out
 4. **Browse** — A Next.js dashboard of US new-grad / entry-level jobs that look sponsorship-friendly
-5. **Match on demand** — Upload a resume once, then analyze selected jobs (or first N) with Groq; results are cached until the resume or description changes
-6. **Apply faster** — A Chrome extension that detects form fields on ATS pages and autofills from my profile
+5. **Match on demand** — Upload a resume once, then analyze selected jobs (or first N) with Groq; results are cached until the resume or description changes. The Chrome extension can scrape a full JD from the live ATS page when APIs are incomplete.
+6. **Apply faster** — A Chrome extension that detects form fields on ATS pages and autofills from my profile. Rule-based fill runs first; an optional Groq AI fallback completes fields that heuristics miss (API key stays on the server). When the content script still cannot finish (custom dropdowns, stubborn uploads, etc.), a local Playwright service can drive the **same Chrome tab** over CDP — never as the primary path.
 
 ```text
 Job lists (PittCSC, Simplify, …)
@@ -32,7 +32,9 @@ Job lists (PittCSC, Simplify, …)
         │                    │
         └── ATS fetchers + sponsorship detector
                              │
-                    Chrome extension (autofill)
+                    Chrome extension (primary autofill)
+                             │
+                    (only on gaps) Playwright CDP service (:8090)
 ```
 
 ## Repo layout
@@ -42,12 +44,14 @@ Job lists (PittCSC, Simplify, …)
 | [`Backend/`](Backend/) | Python aggregation, ATS fetchers, sponsorship detection, FastAPI + Postgres |
 | [`frontend/`](frontend/) | Next.js UI for browsing filtered jobs |
 | [`chrome-extension/`](chrome-extension/) | Manifest V3 extension — semantic field detection + autofill across ATS sites |
+| [`automation-backend/`](automation-backend/) | Local Node/Playwright CDP fallback (extension-primary; automation only when needed) |
 
 ## Stack
 
 - **Backend:** Python, FastAPI, SQLAlchemy, PostgreSQL, httpx, BeautifulSoup
 - **Frontend:** Next.js, React, TanStack Query, Tailwind
 - **Extension:** TypeScript, Vite, React, Chrome MV3
+- **Automation fallback:** Node, Express, Playwright (connects to existing Chrome via CDP)
 - **Built with:** Cursor (agent-assisted development)
 
 ## Quick start
@@ -67,7 +71,7 @@ uvicorn api:app --reload --app-dir .   # API on :8000
 
 Board tokens and provider toggles live in `Backend/app/config/` (`companies.yaml`, `providers.yaml`, `role_families.yaml`, `early_career.yaml`).
 
-Set `GROQ_API_KEY` in `Backend/.env` (optional `GROQ_MODEL`, default `llama-3.3-70b-versatile`) for on-demand resume matching.
+Set `GROQ_API_KEY` in `Backend/.env` (optional `GROQ_MODEL`, default `llama-3.3-70b-versatile`) for on-demand resume matching and AI autofill fallback.
 
 Upload a resume for matching (parses once with Groq; returns `resumeId`):
 
@@ -83,10 +87,34 @@ curl -s -X POST http://localhost:8000/api/jobs/<job_uuid>/analyze \
   -d '{"resumeId":"resume_…"}'
 ```
 
-Upload a resume for the Chrome extension only (binary store, no LLM parse):
+Upload a resume for the Chrome extension (parse + store — same path as matching):
 
 ```bash
 curl -s -F "file=@/path/to/your_resume.pdf" http://localhost:8000/extension/resumes
+```
+
+Analyze from a scraped ATS page (extension calls this):
+
+```bash
+curl -s -X POST http://localhost:8000/extension/job \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://boards.greenhouse.io/…","ats":"greenhouse","title":"SWE","company":"Acme","description":"…","resumeId":"resume_…"}'
+```
+
+Extension profile (education/degree from parsed resume):
+
+```bash
+curl -s -X POST http://localhost:8000/extension/profile \
+  -H 'Content-Type: application/json' \
+  -d '{"resumeId":"resume_…"}'
+```
+
+AI autofill for unresolved fields only (called when the user opts in from the extension summary panel):
+
+```bash
+curl -s -X POST http://localhost:8000/extension/autofill/ai \
+  -H 'Content-Type: application/json' \
+  -d '{"resumeId":"resume_…","fields":[{"uid":"…","label":"Preferred Given Name","type":"text"}],"profile":{"firstName":"Gerald"}}'
 ```
 
 ### Frontend
@@ -106,6 +134,24 @@ pnpm install && pnpm build
 ```
 
 See [`chrome-extension/README.md`](chrome-extension/README.md) for loading details and ATS adapter notes.
+
+### Playwright automation fallback (optional)
+
+Used only when the extension cannot complete an action. Connects to your **existing** Chrome via CDP — does not launch a separate browser or force re-login.
+
+```bash
+# 1) Start Chrome with remote debugging (dedicated profile example)
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir="/tmp/chrome-aijh-debug"
+
+# 2) Start the automation API
+cd automation-backend
+cp .env.example .env
+npm install && npm run dev    # http://localhost:8090
+```
+
+Details: [`automation-backend/README.md`](automation-backend/README.md).
 
 ## Why I built it this way
 
