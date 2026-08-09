@@ -226,6 +226,7 @@ def test_service_apply_result_sets_fields_and_syncs_no_sponsorship() -> None:
     job = MagicMock()
     job.id = "abc123"
     job.no_sponsorship = False
+    job.citizenship_required = False
 
     denied = SponsorshipResult(
         sponsorship=False,
@@ -257,6 +258,53 @@ def test_service_apply_result_sets_fields_and_syncs_no_sponsorship() -> None:
     # Unknown must not clear list-source no_sponsorship flags.
     assert job.no_sponsorship is True
     assert job.sponsorship_available is None
+
+
+def test_service_apply_result_flags_us_citizenship_required() -> None:
+    service = SponsorshipService()
+    job = MagicMock()
+    job.id = "gdit-1"
+    job.no_sponsorship = False
+    job.citizenship_required = False
+    job.sponsorship_match = None
+
+    unknown = SponsorshipResult(
+        sponsorship=None,
+        matched_phrase=None,
+        confidence=0.0,
+    )
+    service.apply_result(
+        job,
+        unknown,
+        description="US Citizenship Required: Yes\nClearance Level: Secret",
+    )
+    assert job.citizenship_required is True
+    assert job.no_sponsorship is True
+    assert job.sponsorship_available is False
+    assert "citizenship required" in (job.sponsorship_match or "").lower()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "US Citizenship Required: Yes",
+        "U.S. Citizenship Required",
+        "Must be a US citizen to apply.",
+        "Applicants must be a U.S. citizen.",
+        "US citizens only.",
+    ],
+)
+def test_detect_citizenship_required_phrases(text: str) -> None:
+    from sponsorship.detector import detect_citizenship_required
+
+    assert detect_citizenship_required(text) is not None
+
+
+def test_detect_citizenship_required_ignores_unrelated_text() -> None:
+    from sponsorship.detector import detect_citizenship_required
+
+    assert detect_citizenship_required("Competitive salary and benefits.") is None
+    assert detect_citizenship_required("Visa sponsorship available.") is None
 
 
 @pytest.mark.asyncio

@@ -279,6 +279,38 @@ def test_infer_no_sponsorship_does_not_guess() -> None:
     assert infer_no_sponsorship("🛂") is True
 
 
+def test_infer_citizenship_required_from_text() -> None:
+    from processors.normalize import infer_citizenship_required, normalize_job
+
+    assert infer_citizenship_required("US Citizenship Required: Yes") is True
+    assert infer_citizenship_required("U.S. citizenship required") is True
+    assert infer_citizenship_required("Must be a US citizen") is True
+    assert infer_citizenship_required("🇺🇸") is True
+    assert infer_citizenship_required("Great benefits, hybrid work") is False
+
+    job = normalize_job(
+        {
+            "company": "GDIT",
+            "role": "Junior Software Engineer",
+            "location": "USA MD Annapolis Junction",
+            "apply_url": (
+                "https://gdit.wd5.myworkdayjobs.com/external_career_site/job/"
+                "USA-MD-Annapolis-Junction/Junior-Software-Engineer_"
+                "RQ225644"
+            ),
+            "age": "1d",
+            "source": "simplify",
+            "description": (
+                "Type of Requisition: Regular\n"
+                "US Citizenship Required: Yes\n"
+                "Clearance Level Must Currently Possess: Secret\n"
+            ),
+        }
+    )
+    assert job.citizenship_required is True
+    assert job.no_sponsorship is True
+
+
 def test_duplicate_fingerprint_across_sources() -> None:
     """Same posting from two sources shares a fingerprint for DB upsert dedup."""
     shared = {

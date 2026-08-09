@@ -3,7 +3,14 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { enrichLabelsFromContainers, textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  enrichLabelsFromContainers,
+  extractDescription,
+  extractSections,
+  textOf,
+  textOfFirst,
+} from "@/content/ats/helpers";
 import type { JobExtraction } from "@/types";
 
 export const workableAdapter: AtsAdapter = {
@@ -23,31 +30,34 @@ export const workableAdapter: AtsAdapter = {
 
   extractJob(): Partial<JobExtraction> {
     const title =
-      textOf('h1, [data-ui="job-title"], .job-title') ||
+      textOfFirst("h1", '[data-ui="job-title"]', ".job-title") ||
       document.title.split(/[-|@]/)[0]?.trim();
     const company =
-      textOf('[data-ui="company-name"], .company-name, .company') ||
+      textOfFirst('[data-ui="company-name"]', ".company-name", ".company") ||
       window.location.hostname.split(".")[0];
-    const location = textOf(
-      '[data-ui="job-location"], .job-location, .location',
+    const location = textOfFirst(
+      '[data-ui="job-location"]',
+      ".job-location",
+      ".location",
     );
-    const description = textOf(
-      '[data-ui="job-description"], .job-description, #job-description, article',
+    const description = extractDescription(
+      '[data-ui="job-description"]',
+      ".job-description",
+      "#job-description",
+      "article",
     );
-    const bodyText = document.body.innerText.toLowerCase();
+    const sections = extractSections();
+    const { remote, employmentType } = detectRemoteAndEmployment(location);
 
     return {
       title,
       company,
       location,
       description,
-      remote: /\bremote\b/.test(bodyText) || /\bremote\b/i.test(location || ""),
+      ...sections,
+      remote,
       salary: textOf('[data-ui="salary"], .salary') || undefined,
-      employmentType: /\bfull[- ]?time\b/i.test(bodyText)
-        ? "Full-time"
-        : /\bpart[- ]?time\b/i.test(bodyText)
-          ? "Part-time"
-          : undefined,
+      employmentType,
     };
   },
 };

@@ -44,16 +44,30 @@ class JobResponse(BaseModel):
     citizenship_required: bool
     advanced_degree: bool
     closed: bool
+    min_years_required: Optional[float] = None
     applied: bool = False
+    applied_at: Optional[datetime] = None
+    saved: bool = False
+    saved_at: Optional[datetime] = None
+    flagged: bool = False
+    flagged_at: Optional[datetime] = None
+    ats: Optional[str] = None
+    external_id: Optional[str] = None
+    role_family: Optional[str] = None
+    is_active: bool = True
     sponsorship_available: Optional[bool] = None
     sponsorship_match: Optional[str] = None
     sponsorship_confidence: float = 0.0
     created_at: datetime
     updated_at: datetime
+    # Populated when listing with ?resumeId=… from saved resume_analyses.
+    match_score: Optional[int] = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def ats_source(self) -> str:
+        if self.ats:
+            return self.ats.title() if self.ats.islower() else self.ats
         return infer_ats_source(self.apply_url, self.source)
 
 
@@ -61,6 +75,8 @@ class JobStats(BaseModel):
     total: int
     applied: int
     remaining: int
+    saved: int = 0
+    flagged: int = 0
 
 
 class JobListResponse(BaseModel):
@@ -72,3 +88,11 @@ class JobListResponse(BaseModel):
 
 class AppliedUpdate(BaseModel):
     applied: bool
+
+
+class SavedUpdate(BaseModel):
+    saved: bool
+
+
+class FlaggedUpdate(BaseModel):
+    flagged: bool

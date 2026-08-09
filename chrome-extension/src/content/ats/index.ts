@@ -11,21 +11,35 @@
  *        ↓
  *   normalizeFields → common schema
  *
+ * Job extraction maps to the JobExtractor concept:
+ *   matches(hostname,…) ≈ canHandle(url)
+ *   extractJob()        ≈ extract() → JobPage / JobExtraction
+ *
  * Adding a new ATS = implement AtsAdapter + register below.
  * Never modify the detector or autofill engine.
  */
 
 import { ashbyAdapter } from "@/content/ats/ashby";
+import { bamboohrAdapter } from "@/content/ats/bamboohr";
 import { greenhouseAdapter } from "@/content/ats/greenhouse";
 import { icimsAdapter } from "@/content/ats/icims";
+import { jobviteAdapter } from "@/content/ats/jobvite";
 import { leverAdapter } from "@/content/ats/lever";
+import { lifeattiktokAdapter } from "@/content/ats/lifeattiktok";
 import { oracleAdapter } from "@/content/ats/oracle";
+import { recruiteeAdapter } from "@/content/ats/recruitee";
 import { smartrecruitersAdapter } from "@/content/ats/smartrecruiters";
 import { successfactorsAdapter } from "@/content/ats/successfactors";
 import { taleoAdapter } from "@/content/ats/taleo";
+import { teamtailorAdapter } from "@/content/ats/teamtailor";
 import { workdayAdapter } from "@/content/ats/workday";
 import { workableAdapter } from "@/content/ats/workable";
 import type { AtsAdapter } from "@/content/ats/types";
+import {
+  descriptionFingerprint,
+  extractDescription,
+  extractSections,
+} from "@/content/ats/helpers";
 import { detectFields } from "@/content/detector";
 import { normalizeFields } from "@/content/normalize";
 import { logger } from "@/lib/logger";
@@ -37,6 +51,7 @@ const SCOPE = "ats";
 
 /** Ordered list — more specific hosts should come before generic ones. */
 const ADAPTERS: AtsAdapter[] = [
+  lifeattiktokAdapter,
   greenhouseAdapter,
   leverAdapter,
   ashbyAdapter,
@@ -47,7 +62,18 @@ const ADAPTERS: AtsAdapter[] = [
   oracleAdapter,
   taleoAdapter,
   successfactorsAdapter,
+  jobviteAdapter,
+  teamtailorAdapter,
+  bamboohrAdapter,
+  recruiteeAdapter,
 ];
+
+/** Session scrape cache — avoid re-querying the DOM until the page changes. */
+let jobCache: { key: string; job: JobExtraction } | null = null;
+
+export function invalidateJobCache(): void {
+  jobCache = null;
+}
 
 export function detectAts(
   hostname = window.location.hostname,
@@ -96,8 +122,14 @@ export function detectFieldsForPage(): {
   return { ats, fields };
 }
 
-export function extractJobForPage(): JobExtraction {
+export function extractJobForPage(options?: { force?: boolean }): JobExtraction {
   const ats = detectAts();
+  const url = window.location.href;
+
+  if (!options?.force && jobCache && jobCache.job.url === url) {
+    return jobCache.job;
+  }
+
   const adapter = getAdapter(ats);
   let partial: Partial<JobExtraction> = {};
   try {
@@ -110,14 +142,37 @@ export function extractJobForPage(): JobExtraction {
   if (!partial.title) {
     partial.title =
       document.querySelector("h1")?.textContent?.trim() ||
+      document.querySelector("h2")?.textContent?.trim() ||
       document.title.split(/[-|@]/)[0]?.trim();
   }
 
-  return {
+  if (!partial.requirements || !partial.responsibilities) {
+    const sections = extractSections();
+    partial.requirements = partial.requirements || sections.requirements;
+    partial.responsibilities =
+      partial.responsibilities || sections.responsibilities;
+  }
+
+  if (!partial.description) {
+    partial.description =
+      extractDescription("article", "main", "[role='main']") ||
+      [partial.responsibilities, partial.requirements]
+        .filter(Boolean)
+        .join("\n\n") ||
+      undefined;
+  }
+
+  const job: JobExtraction = {
     ...partial,
-    url: window.location.href,
+    url,
     ats,
   };
+
+  jobCache = {
+    key: `${url}|${descriptionFingerprint(job.description)}`,
+    job,
+  };
+  return job;
 }
 
 export function didStepChange(previousUrl: string): boolean {

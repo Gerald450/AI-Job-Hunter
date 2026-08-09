@@ -1,0 +1,53 @@
+# Role-family classifiers. First matching family wins (order matters).
+# Patterns are case-insensitive substrings matched against the job title.
+
+families:
+  ai_ml:
+    - ai engineer
+    - machine learning
+    - ml engineer
+    - applied scientist
+    - generative ai
+    - llm engineer
+    - nlp engineer
+    - deep learning
+    - computer vision
+    - research engineer
+    - ai researcher
+    - research scientist
+    - data scientist
+
+  product_management:
+    - product manager
+    - associate product manager
+    - technical product manager
+    - ai product manager
+    - " apm "
+    - apm,
+
+  software_engineering:
+    - software engineer
+    - software developer
+    - backend engineer
+    - frontend engineer
+    - front-end engineer
+    - full stack
+    - fullstack
+    - platform engineer
+    - infrastructure engineer
+    - systems engineer
+    - mobile engineer
+    - android engineer
+    - ios engineer
+    - cloud engineer
+    - devops
+    - site reliability
+    - sre
+    - embedded software
+    - application engineer
+    - new grad
+    - university grad
+    - entry level
+    - early career
+    - junior engineer
+    - junior developer

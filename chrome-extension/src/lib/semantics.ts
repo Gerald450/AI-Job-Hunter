@@ -25,9 +25,11 @@ export type CanonicalKey =
   | "address"
   | "work_authorization"
   | "sponsorship"
+  | "at_least_18"
   | "years_experience"
   | "education"
   | "degree"
+  | "field_of_study"
   | "graduation_date"
   | "gpa"
   | "preferred_location"
@@ -35,6 +37,7 @@ export type CanonicalKey =
   | "veteran"
   | "race"
   | "disability"
+  | "hear_about_us"
   | "resume"
   | "cover_letter"
   | "salary"
@@ -121,13 +124,26 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   // Work auth
   "authorized to work": "work_authorization",
   "legally authorized": "work_authorization",
-  "work authorization": "work_authorization",
+  "legally eligible": "work_authorization",
+  "legally eligible to work": "work_authorization",
   "eligible to work": "work_authorization",
+  "work authorization": "work_authorization",
+  "work eligibility": "work_authorization",
   sponsorship: "sponsorship",
   "require sponsorship": "sponsorship",
   "requires sponsorship": "sponsorship",
   "visa sponsorship": "sponsorship",
   "need sponsorship": "sponsorship",
+  "employment visa": "sponsorship",
+  "employment visa status": "sponsorship",
+  "require sponsorship for employment visa status": "sponsorship",
+  "will you now or in the future require sponsorship": "sponsorship",
+  "at least 18": "at_least_18",
+  "at least 18 years of age": "at_least_18",
+  "18 years of age": "at_least_18",
+  "are you at least 18": "at_least_18",
+  "over 18": "at_least_18",
+  "18 or older": "at_least_18",
 
   // Experience / education
   "years of experience": "years_experience",
@@ -141,6 +157,12 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   "university name": "education",
   degree: "degree",
   "highest degree": "degree",
+  "degree type": "degree",
+  "field of study": "field_of_study",
+  "field of study / major": "field_of_study",
+  major: "field_of_study",
+  "area of study": "field_of_study",
+  concentration: "field_of_study",
   "graduation date": "graduation_date",
   "grad date": "graduation_date",
   "date of graduation": "graduation_date",
@@ -158,6 +180,19 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   disability: "disability",
   "disability status": "disability",
 
+  // Referral / source
+  "how did you hear about us": "hear_about_us",
+  "how did you hear about this job": "hear_about_us",
+  "how did you hear about this role": "hear_about_us",
+  "how did you hear about this opportunity": "hear_about_us",
+  "how did you find us": "hear_about_us",
+  "how did you find this job": "hear_about_us",
+  "where did you hear about us": "hear_about_us",
+  "where did you hear about this job": "hear_about_us",
+  "referral source": "hear_about_us",
+  "source of hire": "hear_about_us",
+  "application source": "hear_about_us",
+
   // Files
   resume: "resume",
   cv: "resume",
@@ -173,6 +208,14 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   salary: "salary",
   "desired salary": "salary",
   "expected salary": "salary",
+  "desired hourly rate or annual salary": "salary",
+  "hourly rate or annual salary": "salary",
+  "hourly rate": "salary",
+  "annual salary": "salary",
+  "salary expectation": "salary",
+  "salary expectations": "salary",
+  compensation: "salary",
+  "desired compensation": "salary",
   "start date": "start_date",
   "available start date": "start_date",
 };
@@ -191,18 +234,23 @@ export const CANONICAL_TO_PROFILE: Partial<
   portfolio: "website",
   location: "location",
   city: "location",
+  address: "location",
   preferred_location: "preferredLocation",
   work_authorization: "authorizedToWork",
   sponsorship: "requiresSponsorship",
+  at_least_18: "atLeast18",
   years_experience: "yearsExperience",
   education: "education",
   degree: "degree",
+  field_of_study: "fieldOfStudy",
   graduation_date: "graduationDate",
   gpa: "gpa",
   gender: "gender",
   veteran: "veteran",
   race: "race",
   disability: "disability",
+  hear_about_us: "hearAboutUs",
+  salary: "desiredSalary",
 };
 
 /** Collapse whitespace / punctuation for fuzzy comparisons. */
@@ -273,17 +321,21 @@ export function registerAlias(alias: string, key: CanonicalKey): void {
 
 /** Screening-question patterns → category tags. */
 const SCREENING_PATTERNS: Array<{ pattern: RegExp; category: string }> = [
-  { pattern: /authorized to work|legally authorized|work authorization|eligible to work/i, category: "work_auth" },
-  { pattern: /sponsorship|visa|h-?1b/i, category: "sponsorship" },
+  { pattern: /authorized to work|legally authorized|legally eligible|work authorization|eligible to work|work eligibility/i, category: "work_auth" },
+  { pattern: /sponsorship|visa|h-?1b|employment visa/i, category: "sponsorship" },
+  { pattern: /at least 18|18 years of age|over 18|18 or older/i, category: "at_least_18" },
+  { pattern: /salary|hourly rate|compensation|desired pay/i, category: "salary" },
   { pattern: /\bgender\b|\bsex\b/i, category: "gender" },
   { pattern: /veteran/i, category: "veteran" },
   { pattern: /\brace\b|ethnicity|hispanic|latino/i, category: "race" },
   { pattern: /disability|disabled/i, category: "disability" },
+  { pattern: /how did you hear|where did you hear|referral source|application source/i, category: "hear_about_us" },
   { pattern: /years? of experience|how many years/i, category: "experience" },
   { pattern: /graduation|graduat/i, category: "graduation" },
   { pattern: /preferred location|where.*prefer/i, category: "preferred_location" },
   { pattern: /education|school|university|college/i, category: "education" },
   { pattern: /\bdegree\b|bachelor|master|phd/i, category: "degree" },
+  { pattern: /field of study|\bmajor\b|area of study|concentration/i, category: "field_of_study" },
   { pattern: /\bgpa\b|grade point/i, category: "gpa" },
   { pattern: /resume|curriculum vitae|\bcv\b/i, category: "resume" },
 ];

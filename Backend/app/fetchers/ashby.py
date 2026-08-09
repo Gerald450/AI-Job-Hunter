@@ -61,7 +61,9 @@ class AshbyFetcher(BaseFetcher):
                 if self._looks_like_job(job):
                     return job, payload  # type: ignore[return-value]
 
-        if response.status_code not in (404, 405, 501) and response.status_code >= 400:
+        # Boards often disable/auth-gate the single-job route (401/403) while the
+        # public board list still includes full descriptions — fall back like 404.
+        if response.status_code not in (401, 403, 404, 405, 501) and response.status_code >= 400:
             self._ensure_ok(response, not_found_message="Ashby job not found")
 
         board_endpoint = f"{_API_BASE}/{board_name}"

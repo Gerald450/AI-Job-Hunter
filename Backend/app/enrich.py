@@ -11,14 +11,112 @@ from clients.db import SessionLocal, create_database
 from database.jobmodel import JobModel
 from fetchers.exceptions import FetchError
 from fetchers.router import FetcherRouter
-from sqlalchemy.orm import Session
 from sponsorship.service import SponsorshipService
+from sqlalchemy.orm import Session
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def rescan_citizenship_from_stored_descriptions(db: Session) -> int:
+    """Flag citizenship on jobs whose stored JD already requires it.
+
+    Avoids re-fetching ATS pages for rows enriched before citizenship detection.
+    Returns the number of jobs newly flagged.
+    """
+    from sponsorship.detector import detect_citizenship_required
+
+    service = SponsorshipService()
+    jobs = (
+        db.query(JobModel)
+        .filter(
+            JobModel.description.isnot(None),
+            JobModel.citizenship_required.is_(False),
+        )
+        .all()
+    )
+    flagged = 0
+    for job in jobs:
+        description = (job.description or "").strip()
+        if not description:
+            continue
+        if detect_citizenship_required(description) is None:
+            continue
+        result = service.analyze(description)
+        service.apply_result(job, result, description=description)
+        flagged += 1
+
+    if flagged:
+        db.commit()
+    return flagged
+
+
+def rescan_experience_from_stored_descriptions(db: Session) -> int:
+    """Parse min years from stored JDs that have not been scanned yet.
+
+    Returns the number of jobs newly stamped with ``min_years_required``.
+    """
+    from processors.experience import extract_min_years_required
+
+    service = SponsorshipService()
+    jobs = (
+        db.query(JobModel)
+        .filter(
+            JobModel.description.isnot(None),
+            JobModel.min_years_required.is_(None),
+        )
+        .all()
+    )
+    stamped = 0
+    for job in jobs:
+        description = (job.description or "").strip()
+        if not description:
+            continue
+        years = extract_min_years_required(description)
+        if years is None:
+            continue
+        result = service.analyze(description)
+        service.apply_result(job, result, description=description)
+        stamped += 1
+
+    if stamped:
+        db.commit()
+    return stamped
+
+
+def rewrite_broken_apply_urls(db: Session) -> int:
+    """Fix stored Stripe search deep-links in place (fingerprint unchanged)."""
+    from processors.apply_url import rewrite_apply_url
+    from sqlalchemy import or_
+
+    rows = (
+        db.query(JobModel)
+        .filter(
+            or_(
+                JobModel.apply_url.ilike("%stripe.com/jobs/search?gh_jid=%"),
+                JobModel.apply_url.ilike("%stripe.com/careers/search?gh_jid=%"),
+                JobModel.apply_url.ilike("%stripe.com/jobs/search?%gh_jid=%"),
+                JobModel.apply_url.ilike("%stripe.com/careers/search?%gh_jid=%"),
+            )
+        )
+        .all()
+    )
+    updated = 0
+    for job in rows:
+        rewritten = rewrite_apply_url(
+            job.apply_url,
+            role=job.role,
+            external_id=job.external_id,
+        )
+        if rewritten != job.apply_url:
+            job.apply_url = rewritten
+            updated += 1
+    if updated:
+        db.commit()
+    return updated
 
 
 async def enrich_job(
@@ -64,6 +162,19 @@ async def enrich_pending_jobs(
     (``sponsorship_confidence == 0`` and ``sponsorship_available is None``)
     are processed. Pass ``force=True`` to re-analyze all matching rows.
     """
+    backfilled = rescan_citizenship_from_stored_descriptions(db)
+    if backfilled:
+        logger.info(
+            "Citizenship backfill from stored descriptions: flagged=%s",
+            backfilled,
+        )
+    experience_stamped = rescan_experience_from_stored_descriptions(db)
+    if experience_stamped:
+        logger.info(
+            "Experience backfill from stored descriptions: stamped=%s",
+            experience_stamped,
+        )
+
     query = db.query(JobModel)
     if job_ids:
         query = query.filter(JobModel.id.in_(job_ids))
@@ -116,9 +227,7 @@ def main() -> None:
     create_database()
     db = SessionLocal()
     try:
-        asyncio.run(
-            enrich_pending_jobs(db, limit=args.limit, force=args.force)
-        )
+        asyncio.run(enrich_pending_jobs(db, limit=args.limit, force=args.force))
     finally:
         db.close()
 

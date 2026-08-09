@@ -1,0 +1,61 @@
+# Early-career title filter. Matched case-insensitively against the role title.
+
+# Always reject when these tokens appear (unless an accept override also matches
+# for senior-ish titles that are explicitly new-grad — see accept_overrides).
+reject:
+  - internship
+  - intern
+  - co-op
+  - coop
+  - senior
+  - sr
+  - staff
+  - principal
+  - distinguished
+  - fellow
+  - director
+  - " lead "
+  - " vp"
+  - vice president
+  - architect
+
+# Titles containing these are treated as early-career even without other signals.
+accept:
+  - new grad
+  - new-grad
+  - university graduate
+  - university grad
+  - recent graduate
+  - recent grad
+  - graduate
+  - entry level
+  - entry-level
+  - early career
+  - early-career
+  - associate
+  - junior
+
+# Do not treat these as reject hits (e.g. Product Manager contains "manager").
+reject_exceptions:
+  - product manager
+  - associate product manager
+  - technical product manager
+  - engineering manager trainee
+
+# If a reject token matches but an accept override also matches, keep the job
+# (e.g. "Senior New Grad Program" is rare but "Junior Software Engineer" is kept
+# via accept; "Software Engineer New Grad" has no reject hit).
+accept_overrides:
+  - new grad
+  - new-grad
+  - entry level
+  - entry-level
+  - early career
+  - early-career
+  - university grad
+  - recent grad
+
+# When true, board-sourced jobs without an explicit accept signal are still kept
+# if they also avoid reject tokens (typical for Greenhouse boards that mix levels).
+# GitHub list sources often already pre-filter; set false to require accept signal.
+allow_unmarked: true

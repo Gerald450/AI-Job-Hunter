@@ -58,12 +58,15 @@ def test_parse_ashby_url_malformed(url: str) -> None:
         fetcher._parse_ashby_url(url)
 
 
+@pytest.mark.parametrize("single_status", [401, 403, 404])
 @pytest.mark.asyncio
-async def test_ashby_fetch_via_board_list(ashby_board_payload: dict) -> None:
+async def test_ashby_fetch_via_board_list(
+    ashby_board_payload: dict, single_status: int
+) -> None:
     client = AsyncMock(spec=httpx.AsyncClient)
-    # Single-job endpoint 404s → fall back to board list.
+    # Single-job endpoint miss/auth → fall back to board list.
     client.get.side_effect = [
-        _mock_response(404, {"error": "missing"}),
+        _mock_response(single_status, {"error": "missing"}),
         _mock_response(200, ashby_board_payload),
     ]
 

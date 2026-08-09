@@ -4,7 +4,7 @@ from typing import Optional
 
 from database.models import Base
 from model.job import Job
-from sqlalchemy import Boolean, DateTime, Float, String
+from sqlalchemy import Boolean, DateTime, Float, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,7 +27,26 @@ class JobModel(Base):
     citizenship_required: Mapped[bool] = mapped_column(Boolean)
     advanced_degree: Mapped[bool] = mapped_column(Boolean)
     closed: Mapped[bool] = mapped_column(Boolean)
+    min_years_required: Mapped[Optional[float]] = mapped_column(
+        Float, nullable=True, default=None
+    )
     applied: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    applied_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    saved: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    saved_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    flagged: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    flagged_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    ats: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    external_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    role_family: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default=None)
     sponsorship_available: Mapped[Optional[bool]] = mapped_column(
         Boolean, nullable=True, default=None
     )
@@ -61,6 +80,12 @@ class JobModel(Base):
             citizenship_required=job.citizenship_required,
             advanced_degree=job.advanced_degree,
             closed=job.closed,
+            min_years_required=job.min_years_required,
+            ats=job.ats,
+            external_id=job.external_id,
+            role_family=job.role_family,
+            is_active=job.is_active,
+            description=job.description,
             sponsorship_available=job.sponsorship_available,
             sponsorship_match=job.sponsorship_match,
             sponsorship_confidence=job.sponsorship_confidence,

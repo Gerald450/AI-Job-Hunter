@@ -23,8 +23,8 @@ An AI-powered job hunting pipeline for new graduate software engineers — conti
 **In progress / planned**
 - 🚧 Multi-source scraping (additional boards & repos)
 - 🚧 Cross-source normalization & duplicate removal
-- 🚧 Intelligent filtering & sponsor detection
-- 🚧 Resume matching & AI ranking
+- ✅ Intelligent filtering & sponsor detection
+- ✅ On-demand resume matching (Groq) with cache + batch SSE
 - 🚧 Auto-apply with customized resumes / cover letters
 - 🚧 Dashboard, notifications & analytics
 

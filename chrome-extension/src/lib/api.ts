@@ -14,6 +14,7 @@ import {
   QuestionsResponseSchema,
   UserProfileSchema,
   type AutofillResponse,
+  type DescriptionSource,
   type DetectedField,
   type ExtensionSettings,
   type JobAnalysisResponse,
@@ -144,6 +145,29 @@ export interface AutofillRequest {
   profile?: UserProfile | null;
 }
 
+export interface AiAutofillRequest {
+  resumeId?: string;
+  fields: Array<{
+    uid?: string;
+    selector?: string;
+    label: string;
+    placeholder?: string;
+    name?: string;
+    id?: string;
+    type?: string;
+    required?: boolean;
+    options?: string[];
+    surrounding_text?: string;
+    nearbyText?: string;
+    section?: string;
+    parentSection?: string;
+    canonicalKey?: string;
+  }>;
+  profile?: UserProfile | null;
+  job?: Partial<JobExtraction>;
+  ats?: string;
+}
+
 export async function requestAutofill(
   body: AutofillRequest,
   settings?: ExtensionSettings,
@@ -158,15 +182,86 @@ export async function requestAutofill(
   }
 }
 
+/** Opt-in Groq AI fallback for unresolved fields only. */
+export async function requestAiAutofill(
+  body: AiAutofillRequest,
+  settings?: ExtensionSettings,
+): Promise<AutofillResponse> {
+  const s = settings ?? (await getSettings());
+  if (!s.resumeId) {
+    throw new ApiError(
+      "No resume configured. Upload one and paste the resumeId in Options.",
+      undefined,
+      "NO_RESUME",
+    );
+  }
+  try {
+    const client = createClient(s);
+    const res = await withRetry(() =>
+      client.post(
+        "/extension/autofill/ai",
+        {
+          ...body,
+          resumeId: body.resumeId || s.resumeId,
+        },
+        { timeout: 60_000 },
+      ),
+    );
+    return parse(AutofillResponseSchema, res.data, "ai autofill");
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
 export async function analyzeJob(
   job: JobExtraction,
-  settings?: ExtensionSettings,
+  options?: {
+    refresh?: boolean;
+    settings?: ExtensionSettings;
+    descriptionSource?: DescriptionSource;
+    persistDescription?: boolean;
+  },
 ): Promise<JobAnalysisResponse> {
+  const s = options?.settings ?? (await getSettings());
+  if (!s.resumeId) {
+    throw new ApiError(
+      "No resume configured. Upload one and paste the resumeId in Options.",
+      undefined,
+      "NO_RESUME",
+    );
+  }
+  try {
+    const client = createClient(s);
+    const res = await withRetry(() =>
+      client.post(
+        "/extension/job",
+        {
+          ...job,
+          resumeId: s.resumeId,
+          refresh: options?.refresh ?? false,
+          descriptionSource: options?.descriptionSource,
+          persistDescription: options?.persistDescription,
+        },
+        { timeout: 60_000 },
+      ),
+    );
+    return parse(JobAnalysisResponseSchema, res.data, "job analysis");
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function saveJobDescription(
+  jobId: string,
+  description: string,
+  settings?: ExtensionSettings,
+): Promise<void> {
   const s = settings ?? (await getSettings());
   try {
     const client = createClient(s);
-    const res = await withRetry(() => client.post("/extension/job", job));
-    return parse(JobAnalysisResponseSchema, res.data, "job analysis");
+    await withRetry(() =>
+      client.post(`/extension/job/${jobId}/description`, { description }),
+    );
   } catch (err) {
     throw toApiError(err);
   }

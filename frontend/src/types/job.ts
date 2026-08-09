@@ -13,17 +13,28 @@ export interface Job {
   advanced_degree: boolean;
   closed: boolean;
   applied: boolean;
+  applied_at?: string | null;
+  saved: boolean;
+  saved_at?: string | null;
+  flagged: boolean;
+  flagged_at?: string | null;
+  /** Minimum years required from JD when detected. */
+  min_years_required?: number | null;
   sponsorship_available: boolean | null;
   sponsorship_match: string | null;
   sponsorship_confidence: number;
   created_at: string;
   updated_at: string;
+  /** Saved resume match score when listed with resumeId. */
+  match_score?: number | null;
 }
 
 export interface JobStats {
   total: number;
   applied: number;
   remaining: number;
+  saved: number;
+  flagged: number;
 }
 
 export interface JobListResponse {
@@ -33,4 +44,15 @@ export interface JobListResponse {
   stats: JobStats;
 }
 
-export type AppliedFilter = "all" | "not_applied" | "applied";
+export type AppliedFilter =
+  | "all"
+  | "not_applied"
+  | "applied"
+  | "saved"
+  | "flagged";
+
+export interface JobSearchFilters {
+  company: string;
+  source: string;
+  maxAge: string;
+}

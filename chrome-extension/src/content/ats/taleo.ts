@@ -3,7 +3,12 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  extractDescription,
+  extractSections,
+  textOfFirst,
+} from "@/content/ats/helpers";
 import type { JobExtraction } from "@/types";
 
 export const taleoAdapter: AtsAdapter = {
@@ -14,10 +19,21 @@ export const taleoAdapter: AtsAdapter = {
   },
 
   extractJob(): Partial<JobExtraction> {
+    const title =
+      textOfFirst("h1", ".title", ".jobtitle") ||
+      document.title.split(/[-|]/)[0]?.trim();
+    const location = textOfFirst(".location", ".joblocation");
+    const description = extractDescription(".content", ".description", "article");
+    const sections = extractSections();
+    const { remote, employmentType } = detectRemoteAndEmployment(location);
+
     return {
-      title: textOf("h1, .title, .jobtitle") || document.title.split(/[-|]/)[0]?.trim(),
-      location: textOf(".location, .joblocation"),
-      description: textOf(".content, .description, article"),
+      title,
+      location,
+      description,
+      ...sections,
+      remote,
+      employmentType,
     };
   },
 };

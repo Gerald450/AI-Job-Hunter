@@ -23,6 +23,11 @@ export const AtsProviderSchema = z.enum([
   "oracle",
   "taleo",
   "successfactors",
+  "jobvite",
+  "teamtailor",
+  "bamboohr",
+  "recruitee",
+  "lifeattiktok",
   "unknown",
 ]);
 export type AtsProvider = z.infer<typeof AtsProviderSchema>;
@@ -118,6 +123,21 @@ export const JobExtractionSchema = z.object({
 });
 export type JobExtraction = z.infer<typeof JobExtractionSchema>;
 
+export const DescriptionSourceSchema = z.enum([
+  "dom",
+  "manual_selection",
+  "clipboard",
+  "fetched",
+]);
+export type DescriptionSource = z.infer<typeof DescriptionSourceSchema>;
+
+export interface AnalyzeJobPayload {
+  job: JobExtraction;
+  refresh?: boolean;
+  descriptionSource?: DescriptionSource;
+  persistDescription?: boolean;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Autofill                                                                   */
 /* -------------------------------------------------------------------------- */
@@ -131,6 +151,9 @@ export const AutofillValueSchema = z.object({
   confidence: z.number().min(0).max(1).default(1),
   /** When true, highlight for manual review instead of filling. */
   needsReview: z.boolean().optional(),
+  uid: z.string().optional(),
+  selector: z.string().optional(),
+  explanation: z.string().optional(),
 });
 export type AutofillValue = z.infer<typeof AutofillValueSchema>;
 
@@ -140,6 +163,24 @@ export const AutofillResponseSchema = z.object({
   resumeFilename: z.string().optional(),
 });
 export type AutofillResponse = z.infer<typeof AutofillResponseSchema>;
+
+export const AiAutofillFieldPayloadSchema = z.object({
+  uid: z.string().optional(),
+  selector: z.string().optional(),
+  label: z.string(),
+  placeholder: z.string().optional(),
+  name: z.string().optional(),
+  id: z.string().optional(),
+  type: z.string().optional(),
+  required: z.boolean().optional(),
+  options: z.array(z.string()).optional(),
+  surrounding_text: z.string().optional(),
+  nearbyText: z.string().optional(),
+  section: z.string().optional(),
+  parentSection: z.string().optional(),
+  canonicalKey: z.string().optional(),
+});
+export type AiAutofillFieldPayload = z.infer<typeof AiAutofillFieldPayloadSchema>;
 
 export const QuestionAnswerSchema = z.object({
   question: z.string(),
@@ -156,10 +197,50 @@ export const QuestionsResponseSchema = z.object({
 export type QuestionsResponse = z.infer<typeof QuestionsResponseSchema>;
 
 export const JobAnalysisResponseSchema = z.object({
-  score: z.number().min(0).max(100),
+  id: z.string().optional(),
+  jobId: z.string().optional(),
+  resumeId: z.string().optional(),
+  company: z.string().nullable().optional(),
+  role: z.string().nullable().optional(),
+  /** Backend AnalysisResponse field. */
+  overall_match: z.number().min(0).max(100).optional(),
+  /** Legacy extension field — mapped from overall_match when absent. */
+  score: z.number().min(0).max(100).optional(),
   summary: z.string().optional(),
   strengths: z.array(z.string()).optional(),
+  missing_skills: z.array(z.string()).optional(),
+  recommended_improvements: z.array(z.string()).optional(),
+  matched_keywords: z.array(z.string()).optional(),
+  missing_keywords: z.array(z.string()).optional(),
+  confidence: z.string().optional(),
+  llm_provider: z.string().optional(),
+  cached: z.boolean().optional(),
+  created_at: z.string().nullable().optional(),
+  /** Legacy alias for missing_skills. */
   gaps: z.array(z.string()).optional(),
+  canSaveDescription: z.boolean().optional(),
+  descriptionPersisted: z.boolean().optional(),
+}).transform((raw) => {
+  const overall =
+    raw.overall_match ??
+    raw.score ??
+    0;
+  const missing =
+    raw.missing_skills ??
+    raw.gaps ??
+    [];
+  return {
+    ...raw,
+    overall_match: overall,
+    score: overall,
+    missing_skills: missing,
+    gaps: missing,
+    strengths: raw.strengths ?? [],
+    recommended_improvements: raw.recommended_improvements ?? [],
+    summary: raw.summary ?? "",
+    canSaveDescription: Boolean(raw.canSaveDescription),
+    descriptionPersisted: Boolean(raw.descriptionPersisted),
+  };
 });
 export type JobAnalysisResponse = z.infer<typeof JobAnalysisResponseSchema>;
 
@@ -187,11 +268,33 @@ export const UserProfileSchema = z.object({
   veteran: z.string().optional(),
   race: z.string().optional(),
   disability: z.string().optional(),
+  hearAboutUs: z.string().optional(),
+  fieldOfStudy: z.string().optional(),
+  atLeast18: z.boolean().optional(),
+  desiredSalary: z.string().optional(),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 
+/** Personal defaults applied when a stored profile omits these keys. */
+export const DEFAULT_PROFILE_VALUES: Partial<UserProfile> = {
+  gender: "Male",
+  race: "Black or African American",
+  disability: "No",
+  veteran: "I'm not a protected veteran, or I'm not a veteran",
+  location: "1200 N University Dr, Pine Bluff Ar 71601",
+  hearAboutUs: "LinkedIn",
+  degree: "Bachelors",
+  fieldOfStudy: "Computer Science",
+  authorizedToWork: true,
+  requiresSponsorship: true,
+  atLeast18: true,
+  desiredSalary: "100000",
+};
+
 export const ExtensionSettingsSchema = z.object({
   backendUrl: z.string().default("http://localhost:8000"),
+  /** Local Playwright automation API (fallback only — never primary). */
+  automationUrl: z.string().default("http://localhost:8090"),
   apiKey: z.string().default(""),
   jwt: z.string().default(""),
   resumeId: z.string().default(""),
@@ -199,6 +302,11 @@ export const ExtensionSettingsSchema = z.object({
   autoFillEnabled: z.boolean().default(true),
   autoUploadResume: z.boolean().default(true),
   autoAnswerQuestions: z.boolean().default(true),
+  /**
+   * When true, unresolved fields / failed uploads may call the Playwright
+   * backend after the content-script autofill pass. Never used first.
+   */
+  playwrightFallbackEnabled: z.boolean().default(true),
   darkMode: z.boolean().default(false),
   debugLogging: z.boolean().default(false),
   dashboardUrl: z.string().default("http://localhost:3000"),
@@ -227,8 +335,12 @@ export const MessageTypeSchema = z.enum([
   "GET_SETTINGS",
   "UPDATE_SETTINGS",
   "GET_PROFILE",
+  "UPDATE_PROFILE",
   "AUTOFILL_PAGE",
   "ANALYZE_JOB",
+  "ANALYZE_SELECTION",
+  "ANALYZE_CLIPBOARD",
+  "GET_PAGE_SELECTION",
   "DETECT_FIELDS",
   "FIELDS_DETECTED",
   "UPLOAD_RESUME",
@@ -237,6 +349,7 @@ export const MessageTypeSchema = z.enum([
   "OPEN_TAB",
   "LOG",
   "BACKEND_REQUEST",
+  "AUTOMATION_REQUEST",
 ]);
 export type MessageType = z.infer<typeof MessageTypeSchema>;
 
