@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { useNotification, useSettings } from "@/hooks/useExtension";
-import type { ExtensionSettings } from "@/types";
+import type { ExtensionSettings, UserProfile } from "@/types";
+import { DEFAULT_PROFILE_VALUES, UserProfileSchema } from "@/types";
 
 function Field({
   label,
@@ -68,11 +69,15 @@ function Toggle({
 const inputClass =
   "w-full rounded-lg border border-[var(--border)] bg-[var(--input-bg)] text-[var(--input-text)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/25 placeholder:text-[var(--placeholder)]";
 
+const EMPTY_PROFILE: UserProfile = { ...DEFAULT_PROFILE_VALUES };
+
 export function App() {
   const { data, isLoading, save, saving } = useSettings();
   const { toast, notify } = useNotification();
   /** Local overrides on top of persisted settings — avoids syncing via effect. */
   const [draft, setDraft] = useState<Partial<ExtensionSettings>>({});
+  const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE);
+  const [profileSaving, setProfileSaving] = useState(false);
 
   const form: ExtensionSettings | null = data ? { ...data, ...draft } : null;
 
@@ -80,6 +85,17 @@ export function App() {
     document.documentElement.classList.toggle("dark", Boolean(form?.darkMode));
     document.body.classList.toggle("dark", Boolean(form?.darkMode));
   }, [form?.darkMode]);
+
+  useEffect(() => {
+    void chrome.runtime
+      .sendMessage({ type: "GET_PROFILE" })
+      .then((res: { ok?: boolean; data?: UserProfile }) => {
+        if (res?.ok && res.data) setProfile(res.data);
+      })
+      .catch(() => {
+        /* ignore */
+      });
+  }, []);
 
   if (isLoading || !form) {
     return (
@@ -93,6 +109,13 @@ export function App() {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
 
+  const setProfileField = <K extends keyof UserProfile>(
+    key: K,
+    value: UserProfile[K],
+  ) => {
+    setProfile((prev) => ({ ...prev, [key]: value }));
+  };
+
   const onSave = async () => {
     try {
       await save(form);
@@ -100,6 +123,28 @@ export function App() {
       notify("success", "Settings Saved");
     } catch (err) {
       notify("error", "Save Failed", err instanceof Error ? err.message : "Unknown error");
+    }
+  };
+
+  const onSaveProfile = async () => {
+    setProfileSaving(true);
+    try {
+      const parsed = UserProfileSchema.parse(profile);
+      const res = (await chrome.runtime.sendMessage({
+        type: "UPDATE_PROFILE",
+        payload: parsed,
+      })) as { ok?: boolean; data?: UserProfile; error?: string };
+      if (!res?.ok) throw new Error(res?.error || "Failed to save profile");
+      if (res.data) setProfile(res.data);
+      notify("success", "Profile Saved", "Contact fields will be used for autofill");
+    } catch (err) {
+      notify(
+        "error",
+        "Profile Save Failed",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -123,7 +168,8 @@ export function App() {
             AI Job Hunter
           </p>
           <p className="mt-1 text-[14px] text-[var(--ink-muted)]">
-            Configure backend connection, resume, and autofill behavior.
+            Configure backend connection, resume, contact profile, and autofill
+            behavior.
           </p>
         </header>
 
@@ -154,6 +200,17 @@ export function App() {
                 value={form.backendUrl}
                 onChange={(e) => set("backendUrl", e.target.value)}
                 placeholder="http://localhost:8000"
+              />
+            </Field>
+            <Field
+              label="Automation URL"
+              hint="Playwright fallback API (used only when content-script autofill cannot finish)"
+            >
+              <input
+                className={inputClass}
+                value={form.automationUrl}
+                onChange={(e) => set("automationUrl", e.target.value)}
+                placeholder="http://localhost:8090"
               />
             </Field>
             <Field label="API Key" hint="Sent as X-API-Key header">
@@ -208,6 +265,164 @@ export function App() {
             </Field>
           </section>
 
+          <section className="flex flex-col gap-4 border-t border-[var(--border)] pt-5">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-muted)]">
+              Autofill contact profile
+            </h2>
+            <p className="text-[12px] text-[var(--ink-muted)] -mt-2">
+              Required for name, email, and phone fields. Saved locally and kept
+              when the resume profile syncs.
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="First Name">
+                <input
+                  className={inputClass}
+                  value={profile.firstName ?? ""}
+                  onChange={(e) => setProfileField("firstName", e.target.value)}
+                  autoComplete="given-name"
+                />
+              </Field>
+              <Field label="Last Name">
+                <input
+                  className={inputClass}
+                  value={profile.lastName ?? ""}
+                  onChange={(e) => setProfileField("lastName", e.target.value)}
+                  autoComplete="family-name"
+                />
+              </Field>
+            </div>
+            <Field label="Email">
+              <input
+                className={inputClass}
+                type="email"
+                value={profile.email ?? ""}
+                onChange={(e) => setProfileField("email", e.target.value)}
+                autoComplete="email"
+              />
+            </Field>
+            <Field label="Phone">
+              <input
+                className={inputClass}
+                type="tel"
+                value={profile.phone ?? ""}
+                onChange={(e) => setProfileField("phone", e.target.value)}
+                autoComplete="tel"
+              />
+            </Field>
+            <Field label="LinkedIn">
+              <input
+                className={inputClass}
+                value={profile.linkedin ?? ""}
+                onChange={(e) => setProfileField("linkedin", e.target.value)}
+                placeholder="https://linkedin.com/in/…"
+              />
+            </Field>
+            <Field label="Location / Address">
+              <input
+                className={inputClass}
+                value={profile.location ?? ""}
+                onChange={(e) => setProfileField("location", e.target.value)}
+                placeholder="1200 N University Dr, Pine Bluff Ar 71601"
+                autoComplete="street-address"
+              />
+            </Field>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Gender / Sex">
+                <input
+                  className={inputClass}
+                  value={profile.gender ?? ""}
+                  onChange={(e) => setProfileField("gender", e.target.value)}
+                  placeholder="Male"
+                />
+              </Field>
+              <Field label="Race / Ethnicity">
+                <input
+                  className={inputClass}
+                  value={profile.race ?? ""}
+                  onChange={(e) => setProfileField("race", e.target.value)}
+                  placeholder="Black or African American"
+                />
+              </Field>
+              <Field label="Disability">
+                <input
+                  className={inputClass}
+                  value={profile.disability ?? ""}
+                  onChange={(e) => setProfileField("disability", e.target.value)}
+                  placeholder="No"
+                />
+              </Field>
+              <Field label="Veteran Status">
+                <input
+                  className={inputClass}
+                  value={profile.veteran ?? ""}
+                  onChange={(e) => setProfileField("veteran", e.target.value)}
+                  placeholder="I'm not a protected veteran, or I'm not a veteran"
+                />
+              </Field>
+            </div>
+            <Field label="How Did You Hear About Us?">
+              <input
+                className={inputClass}
+                value={profile.hearAboutUs ?? ""}
+                onChange={(e) => setProfileField("hearAboutUs", e.target.value)}
+                placeholder="LinkedIn"
+              />
+            </Field>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Degree">
+                <input
+                  className={inputClass}
+                  value={profile.degree ?? ""}
+                  onChange={(e) => setProfileField("degree", e.target.value)}
+                  placeholder="Bachelors"
+                />
+              </Field>
+              <Field label="Field of Study">
+                <input
+                  className={inputClass}
+                  value={profile.fieldOfStudy ?? ""}
+                  onChange={(e) => setProfileField("fieldOfStudy", e.target.value)}
+                  placeholder="Computer Science"
+                />
+              </Field>
+            </div>
+            <Field label="Desired hourly rate or annual salary">
+              <input
+                className={inputClass}
+                value={profile.desiredSalary ?? ""}
+                onChange={(e) => setProfileField("desiredSalary", e.target.value)}
+                placeholder="100000"
+              />
+            </Field>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Toggle
+                label="Legally eligible to work"
+                description="Are you legally eligible to work in the country you are applying to?"
+                checked={Boolean(profile.authorizedToWork)}
+                onChange={(v) => setProfileField("authorizedToWork", v)}
+              />
+              <Toggle
+                label="Requires visa sponsorship"
+                description="Will you now or in the future require sponsorship for employment visa status?"
+                checked={Boolean(profile.requiresSponsorship)}
+                onChange={(v) => setProfileField("requiresSponsorship", v)}
+              />
+              <Toggle
+                label="At least 18 years of age"
+                checked={Boolean(profile.atLeast18)}
+                onChange={(v) => setProfileField("atLeast18", v)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => void onSaveProfile()}
+              disabled={profileSaving}
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] font-semibold text-[13px] py-2.5 transition disabled:opacity-60"
+            >
+              {profileSaving ? "Saving profile…" : "Save Contact Profile"}
+            </button>
+          </section>
+
           <section className="flex flex-col gap-1 border-t border-[var(--border)] pt-5">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-muted)] mb-2">
               Behavior
@@ -229,6 +444,12 @@ export function App() {
               description="Fill screening questions from your profile / backend"
               checked={form.autoAnswerQuestions}
               onChange={(v) => set("autoAnswerQuestions", v)}
+            />
+            <Toggle
+              label="Playwright Fallback"
+              description="After normal autofill, retry hard fields via local browser automation (CDP). Never runs first."
+              checked={form.playwrightFallbackEnabled}
+              onChange={(v) => set("playwrightFallbackEnabled", v)}
             />
             <Toggle
               label="Dark Mode"
