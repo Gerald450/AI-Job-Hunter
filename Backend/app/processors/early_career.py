@@ -45,6 +45,7 @@ def is_early_career(
         "co-op",
         "coop",
         "senior",
+        "sr",
         "staff",
         "principal",
         "director",
