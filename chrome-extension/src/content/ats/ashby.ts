@@ -3,7 +3,13 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { enrichLabelsFromContainers, textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  enrichLabelsFromContainers,
+  extractDescription,
+  extractSections,
+  textOfFirst,
+} from "@/content/ats/helpers";
 import type { JobExtraction } from "@/types";
 
 export const ashbyAdapter: AtsAdapter = {
@@ -23,31 +29,34 @@ export const ashbyAdapter: AtsAdapter = {
 
   extractJob(): Partial<JobExtraction> {
     const title =
-      textOf('h1, [class*="JobTitle"], [data-testid="job-title"]') ||
+      textOfFirst("h1", '[class*="JobTitle"]', '[data-testid="job-title"]') ||
       document.title.split(/[-|]/)[0]?.trim();
     const companyFromPath = window.location.pathname.split("/").filter(Boolean)[0];
     const company =
-      textOf('[class*="CompanyName"], [data-testid="company-name"]') ||
+      textOfFirst('[class*="CompanyName"]', '[data-testid="company-name"]') ||
       companyFromPath;
-    const location = textOf(
-      '[class*="Location"], [data-testid="location"], [class*="job-location"]',
+    const location = textOfFirst(
+      '[class*="Location"]',
+      '[data-testid="location"]',
+      '[class*="job-location"]',
     );
-    const description = textOf(
-      '[class*="JobDescription"], [class*="Description"], article, [data-testid="job-description"]',
+    const description = extractDescription(
+      '[class*="JobDescription"]',
+      '[class*="Description"]',
+      "article",
+      '[data-testid="job-description"]',
     );
-    const bodyText = document.body.innerText.toLowerCase();
+    const sections = extractSections();
+    const { remote, employmentType } = detectRemoteAndEmployment(location);
 
     return {
       title,
       company,
       location,
       description,
-      remote: /\bremote\b/.test(bodyText) || /\bremote\b/i.test(location || ""),
-      employmentType: /\bfull[- ]?time\b/i.test(bodyText)
-        ? "Full-time"
-        : /\bintern/i.test(bodyText)
-          ? "Internship"
-          : undefined,
+      ...sections,
+      remote,
+      employmentType,
     };
   },
 };
