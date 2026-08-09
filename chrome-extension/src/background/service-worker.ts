@@ -12,26 +12,38 @@ import {
   checkHealth,
   downloadResume,
   fetchProfile,
+  requestAiAutofill,
   requestAutofill,
+  saveJobDescription,
 } from "@/lib/api";
+import {
+  checkAutomationHealth,
+  requestAutomationAction,
+  requestAutomationFallback,
+  type AutomationFallbackRequest,
+} from "@/lib/automation";
 import { logger } from "@/lib/logger";
 import {
   getCachedProfile,
   getSettings,
+  mergeProfiles,
   saveCachedProfile,
   saveSettings,
 } from "@/lib/storage";
 import type {
+  AnalyzeJobPayload,
   DetectedField,
   ExtensionMessage,
   ExtensionResponse,
   ExtensionSettings,
   ExtensionStatus,
-  JobExtraction,
   ToastPayload,
+  UserProfile,
 } from "@/types";
+import { UserProfileSchema } from "@/types";
 
 const SCOPE = "background";
+const CONTEXT_MENU_ANALYZE_SELECTION = "aijh-analyze-selection";
 
 /* -------------------------------------------------------------------------- */
 /* Boot                                                                       */
@@ -43,15 +55,53 @@ async function boot(): Promise<void> {
   logger.info(SCOPE, "Service worker started", {
     backendUrl: settings.backendUrl,
   });
+  await ensureContextMenus();
 }
 
 void boot();
 
 chrome.runtime.onInstalled.addListener((details) => {
   logger.info(SCOPE, `Installed (${details.reason})`);
+  void ensureContextMenus();
   if (details.reason === "install") {
     void chrome.runtime.openOptionsPage();
   }
+});
+
+async function ensureContextMenus(): Promise<void> {
+  try {
+    await chrome.contextMenus.removeAll();
+    chrome.contextMenus.create({
+      id: CONTEXT_MENU_ANALYZE_SELECTION,
+      title: "Analyze Highlighted Job Description",
+      contexts: ["selection"],
+    });
+  } catch (err) {
+    logger.warn(SCOPE, "Failed to create context menus", err);
+  }
+}
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId !== CONTEXT_MENU_ANALYZE_SELECTION) return;
+  const tabId = tab?.id;
+  if (tabId === undefined) {
+    logger.warn(SCOPE, "Context menu click without tab");
+    return;
+  }
+  void (async () => {
+    try {
+      await ensureContentScript(tabId);
+      const result = (await chrome.tabs.sendMessage(tabId, {
+        type: "ANALYZE_SELECTION",
+        payload: { text: info.selectionText ?? "" },
+      } satisfies ExtensionMessage)) as ExtensionResponse;
+      if (!result.ok) {
+        logger.warn(SCOPE, "ANALYZE_SELECTION failed", result.error);
+      }
+    } catch (err) {
+      logger.error(SCOPE, "Context menu analyze failed", err);
+    }
+  })();
 });
 
 /* -------------------------------------------------------------------------- */
@@ -99,12 +149,26 @@ async function handleMessage(
     case "GET_PROFILE": {
       try {
         const settings = await getSettings();
-        const profile = await fetchProfile(settings);
+        const cached = await getCachedProfile();
+        const remote = await fetchProfile(settings);
+        const profile = mergeProfiles(remote, cached);
         await saveCachedProfile(profile);
         return { ok: true, data: profile };
       } catch (err) {
         const cached = await getCachedProfile();
         if (cached) return { ok: true, data: cached };
+        return fail(err);
+      }
+    }
+
+    case "UPDATE_PROFILE": {
+      try {
+        const partial = message.payload as Partial<UserProfile>;
+        const current = (await getCachedProfile()) ?? {};
+        const profile = UserProfileSchema.parse({ ...current, ...partial });
+        await saveCachedProfile(profile);
+        return { ok: true, data: profile };
+      } catch (err) {
         return fail(err);
       }
     }
@@ -141,11 +205,7 @@ async function handleMessage(
         return { ok: false, error: "No active tab" };
       }
       try {
-        await ensureContentScript(tabId);
-        const result = await chrome.tabs.sendMessage(tabId, {
-          type: "AUTOFILL_PAGE",
-        } satisfies ExtensionMessage);
-        return result as ExtensionResponse;
+        return await runAutofillOnBestFrame(tabId);
       } catch (err) {
         return {
           ok: false,
@@ -164,28 +224,76 @@ async function handleMessage(
       }
       try {
         await ensureContentScript(tabId);
-        // Ask content script to extract job metadata, then score via backend
-        const extraction = (await chrome.tabs.sendMessage(tabId, {
+        // Content script extracts JD, calls backend, and renders the in-page panel.
+        const result = (await chrome.tabs.sendMessage(tabId, {
           type: "ANALYZE_JOB",
-        } satisfies ExtensionMessage)) as ExtensionResponse<JobExtraction>;
-
-        if (!extraction.ok || !extraction.data) {
-          return extraction;
-        }
-
-        const analysis = await analyzeJob(extraction.data);
-        await chrome.tabs.sendMessage(tabId, {
-          type: "SHOW_TOAST",
-          payload: {
-            kind: "success",
-            title: "Qualification Score Ready",
-            message: `Score: ${analysis.score}/100`,
-          } satisfies ToastPayload,
-        } satisfies ExtensionMessage);
-
-        return { ok: true, data: analysis };
+          payload: message.payload ?? { refresh: false },
+        } satisfies ExtensionMessage)) as ExtensionResponse;
+        return result;
       } catch (err) {
         return fail(err);
+      }
+    }
+
+    case "ANALYZE_SELECTION": {
+      const tabId = sender.tab?.id ?? (await getActiveTabId());
+      if (tabId === undefined) {
+        return { ok: false, error: "No active tab" };
+      }
+      try {
+        await ensureContentScript(tabId);
+        const result = (await chrome.tabs.sendMessage(tabId, {
+          type: "ANALYZE_SELECTION",
+          payload: message.payload,
+        } satisfies ExtensionMessage)) as ExtensionResponse;
+        return result;
+      } catch (err) {
+        return {
+          ok: false,
+          error:
+            err instanceof Error
+              ? err.message
+              : "Cannot inject on this page. Try a normal http(s) job posting.",
+        };
+      }
+    }
+
+    case "ANALYZE_CLIPBOARD": {
+      const tabId = sender.tab?.id ?? (await getActiveTabId());
+      if (tabId === undefined) {
+        return { ok: false, error: "No active tab" };
+      }
+      try {
+        await ensureContentScript(tabId);
+        const result = (await chrome.tabs.sendMessage(tabId, {
+          type: "ANALYZE_CLIPBOARD",
+          payload: message.payload,
+        } satisfies ExtensionMessage)) as ExtensionResponse;
+        return result;
+      } catch (err) {
+        return fail(err);
+      }
+    }
+
+    case "GET_PAGE_SELECTION": {
+      const tabId = sender.tab?.id ?? (await getActiveTabId());
+      if (tabId === undefined) {
+        return { ok: false, error: "No active tab" };
+      }
+      try {
+        await ensureContentScript(tabId);
+        const result = (await chrome.tabs.sendMessage(tabId, {
+          type: "GET_PAGE_SELECTION",
+        } satisfies ExtensionMessage)) as ExtensionResponse;
+        return result;
+      } catch (err) {
+        return {
+          ok: false,
+          error:
+            err instanceof Error
+              ? err.message
+              : "Content script unavailable on this page",
+        };
       }
     }
 
@@ -216,7 +324,13 @@ async function handleMessage(
 
     case "BACKEND_REQUEST": {
       const { action, payload } = message.payload as {
-        action: "autofill" | "questions" | "profile" | "job";
+        action:
+          | "autofill"
+          | "autofill_ai"
+          | "questions"
+          | "profile"
+          | "job"
+          | "save_description";
         payload: unknown;
       };
       try {
@@ -228,6 +342,13 @@ async function handleMessage(
                 payload as Parameters<typeof requestAutofill>[0],
               ),
             };
+          case "autofill_ai":
+            return {
+              ok: true,
+              data: await requestAiAutofill(
+                payload as Parameters<typeof requestAiAutofill>[0],
+              ),
+            };
           case "questions":
             return {
               ok: true,
@@ -235,13 +356,62 @@ async function handleMessage(
             };
           case "profile":
             return { ok: true, data: await fetchProfile() };
-          case "job":
+          case "job": {
+            const body = payload as AnalyzeJobPayload;
             return {
               ok: true,
-              data: await analyzeJob(payload as JobExtraction),
+              data: await analyzeJob(body.job, {
+                refresh: body.refresh,
+                descriptionSource: body.descriptionSource,
+                persistDescription: body.persistDescription,
+              }),
             };
+          }
+          case "save_description": {
+            const body = payload as { jobId: string; description: string };
+            await saveJobDescription(body.jobId, body.description);
+            return { ok: true };
+          }
           default:
             return { ok: false, error: `Unknown backend action: ${action}` };
+        }
+      } catch (err) {
+        return fail(err);
+      }
+    }
+
+    case "AUTOMATION_REQUEST": {
+      const { action, payload } = message.payload as {
+        action: "fallback" | "health" | "continue" | "stop" | "fill" | "upload";
+        payload?: AutomationFallbackRequest;
+      };
+      try {
+        const settings = await getSettings();
+        switch (action) {
+          case "health":
+            return { ok: true, data: await checkAutomationHealth(settings) };
+          case "fallback":
+            return {
+              ok: true,
+              data: await requestAutomationFallback(
+                payload as AutomationFallbackRequest,
+                settings,
+              ),
+            };
+          case "continue":
+          case "stop":
+          case "fill":
+          case "upload":
+            return {
+              ok: true,
+              data: await requestAutomationAction(
+                action,
+                (payload ?? {}) as AutomationFallbackRequest,
+                settings,
+              ),
+            };
+          default:
+            return { ok: false, error: `Unknown automation action: ${action}` };
         }
       } catch (err) {
         return fail(err);
@@ -316,6 +486,16 @@ function detectAtsFromUrl(url: string): ExtensionStatus["ats"] {
     if (host.includes("successfactors.") || host.includes("sapsf.com")) {
       return "successfactors";
     }
+    if (host.includes("jobvite.com")) return "jobvite";
+    if (host.includes("teamtailor.com")) return "teamtailor";
+    if (host.includes("bamboohr.")) return "bamboohr";
+    if (host.includes("recruitee.com")) return "recruitee";
+    if (
+      host.includes("lifeattiktok.com") ||
+      host.includes("jobs.bytedance.com")
+    ) {
+      return "lifeattiktok";
+    }
   } catch {
     /* invalid url */
   }
@@ -348,12 +528,85 @@ async function ensureContentScript(tabId: number): Promise<void> {
   }
 
   await chrome.scripting.executeScript({
-    target: { tabId },
+    target: { tabId, allFrames: true },
     files: contentJs,
   });
 
   // Brief wait for the listener to register
   await new Promise((r) => setTimeout(r, 150));
+}
+
+/**
+ * Probe every frame for real form inputs, then run autofill in the best one.
+ * Avoids top-frame AI sidebars winning chrome.tabs.sendMessage's first-response race.
+ */
+async function runAutofillOnBestFrame(tabId: number): Promise<ExtensionResponse> {
+  await ensureContentScript(tabId);
+
+  let ranked: number[] = [];
+  try {
+    const probes = await chrome.scripting.executeScript({
+      target: { tabId, allFrames: true },
+      func: () => {
+        const noise =
+          /deepseek|chatgpt|claude|gemini|copilot|grammarly|monica|sider|merlin|ai[-_]?sidebar/i;
+        const nodes = Array.from(
+          document.querySelectorAll(
+            "input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]), textarea, select",
+          ),
+        );
+        let score = 0;
+        for (const node of nodes) {
+          const el = node as HTMLElement;
+          const blob = [
+            el.id,
+            typeof el.className === "string" ? el.className : "",
+            el.getAttribute("aria-label") || "",
+            el.getAttribute("name") || "",
+          ].join(" ");
+          if (noise.test(blob)) continue;
+          if (el.closest("form, main, [role='main']")) score += 3;
+          else score += 1;
+        }
+        return score;
+      },
+    });
+    ranked = probes
+      .map((p) => ({ frameId: p.frameId, score: Number(p.result) || 0 }))
+      .filter((p) => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((p) => p.frameId);
+  } catch (err) {
+    logger.warn(SCOPE, "Frame probe failed; falling back to main frame", err);
+  }
+
+  const candidates = ranked.length > 0 ? ranked : [0];
+  let last: ExtensionResponse = { ok: false, error: "No fields detected" };
+
+  for (const frameId of candidates) {
+    try {
+      const result = (await chrome.tabs.sendMessage(
+        tabId,
+        { type: "AUTOFILL_PAGE" } satisfies ExtensionMessage,
+        { frameId },
+      )) as ExtensionResponse;
+      last = result;
+      if (result.ok) return result;
+      if (result.error && /disabled/i.test(result.error)) return result;
+      if (result.error && /already in progress/i.test(result.error)) return result;
+      // Try next frame when this one has no usable fields
+      if (result.error && /no fields/i.test(result.error)) continue;
+      // Non-empty failure with data still preferable to silence
+      if (result.ok === false && !/no fields/i.test(result.error || "")) {
+        // Keep trying higher-score frames only for "no fields"
+        continue;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return last;
 }
 
 /* -------------------------------------------------------------------------- */
