@@ -1,0 +1,9 @@
+node_modules/
+dist/
+artifacts/screenshots/*
+artifacts/html/*
+!artifacts/screenshots/.gitkeep
+!artifacts/html/.gitkeep
+.env
+*.log
+.DS_Store
