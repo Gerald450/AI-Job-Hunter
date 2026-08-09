@@ -3,7 +3,12 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  extractDescription,
+  extractSections,
+  textOfFirst,
+} from "@/content/ats/helpers";
 import type { JobExtraction } from "@/types";
 
 export const successfactorsAdapter: AtsAdapter = {
@@ -18,10 +23,20 @@ export const successfactorsAdapter: AtsAdapter = {
   },
 
   extractJob(): Partial<JobExtraction> {
+    const title =
+      textOfFirst("h1", ".jobTitle") || document.title.split(/[-|]/)[0]?.trim();
+    const location = textOfFirst(".jobLocation", "[class*='location']");
+    const description = extractDescription(".jobDescription", "article", "main");
+    const sections = extractSections();
+    const { remote, employmentType } = detectRemoteAndEmployment(location);
+
     return {
-      title: textOf("h1, .jobTitle") || document.title.split(/[-|]/)[0]?.trim(),
-      location: textOf(".jobLocation, [class*='location']"),
-      description: textOf(".jobDescription, article"),
+      title,
+      location,
+      description,
+      ...sections,
+      remote,
+      employmentType,
     };
   },
 };
