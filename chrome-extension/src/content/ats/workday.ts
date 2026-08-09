@@ -13,7 +13,13 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { enrichLabelsFromContainers, textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  enrichLabelsFromContainers,
+  extractDescription,
+  extractSections,
+  textOf,
+} from "@/content/ats/helpers";
 import type { DetectedField, JobExtraction } from "@/types";
 
 function isWorkdayHost(hostname: string): boolean {
@@ -83,22 +89,32 @@ export const workdayAdapter: AtsAdapter = {
     const location = textOf(
       "[data-automation-id='locations'], [data-automation-id='location']",
     );
-    const description = textOf(
-      "[data-automation-id='jobPostingDescription'], [data-automation-id='job-posting-description']",
-    );
+    const description =
+      textOf(
+        "[data-automation-id='jobPostingDescription'], [data-automation-id='job-posting-description']",
+      ) ||
+      extractDescription(
+        "[data-automation-id='jobPostingDescription']",
+        "[data-automation-id='job-posting-description']",
+        "article",
+        "main",
+      );
     // Company often lives in the subdomain: acme.wd1.myworkdayjobs.com
     const hostParts = window.location.hostname.split(".");
     const company =
       textOf("[data-automation-id='company']") ||
       (hostParts[0] && !hostParts[0].startsWith("wd") ? hostParts[0] : undefined);
-    const bodyText = document.body.innerText.toLowerCase();
+    const sections = extractSections();
+    const { remote, employmentType } = detectRemoteAndEmployment(location);
 
     return {
       title,
       company,
       location,
       description,
-      remote: /\bremote\b/.test(bodyText) || /\bremote\b/i.test(location || ""),
+      ...sections,
+      remote,
+      employmentType,
     };
   },
 
