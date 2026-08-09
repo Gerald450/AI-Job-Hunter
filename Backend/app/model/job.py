@@ -18,6 +18,8 @@ class Job(BaseModel):
     citizenship_required: bool
     closed: bool
     advanced_degree: bool
+    # Minimum years of experience parsed from title/description (if any).
+    min_years_required: Optional[float] = None
     # Discovery metadata (board sources + classifiers).
     ats: Optional[str] = None
     external_id: Optional[str] = None
