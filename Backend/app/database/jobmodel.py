@@ -27,7 +27,21 @@ class JobModel(Base):
     citizenship_required: Mapped[bool] = mapped_column(Boolean)
     advanced_degree: Mapped[bool] = mapped_column(Boolean)
     closed: Mapped[bool] = mapped_column(Boolean)
+    min_years_required: Mapped[Optional[float]] = mapped_column(
+        Float, nullable=True, default=None
+    )
     applied: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    applied_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    saved: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    saved_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    flagged: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    flagged_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
     ats: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
     external_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
     role_family: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
@@ -66,6 +80,7 @@ class JobModel(Base):
             citizenship_required=job.citizenship_required,
             advanced_degree=job.advanced_degree,
             closed=job.closed,
+            min_years_required=job.min_years_required,
             ats=job.ats,
             external_id=job.external_id,
             role_family=job.role_family,
