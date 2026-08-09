@@ -54,7 +54,7 @@ class ResumeMatchResult(BaseModel):
 class AnalyzeRequest(BaseModel):
     resumeId: str = Field(..., min_length=1)
     refresh: bool = False
-    """Optional client-scraped description; preferred when richer than DB."""
+    # Optional client-scraped description; preferred when richer than DB.
     description: Optional[str] = None
 
 
@@ -62,6 +62,9 @@ class BatchAnalyzeRequest(BaseModel):
     resumeId: str = Field(..., min_length=1)
     jobIds: list[uuid.UUID] = Field(..., min_length=1)
     refresh: bool = False
+
+
+DescriptionSource = Literal["dom", "manual_selection", "clipboard", "fetched"]
 
 
 class ExtensionJobAnalyzeRequest(BaseModel):
@@ -79,6 +82,15 @@ class ExtensionJobAnalyzeRequest(BaseModel):
     remote: Optional[bool] = None
     resumeId: Optional[str] = Field(default=None, min_length=1)
     refresh: bool = False
+    descriptionSource: Optional[DescriptionSource] = None
+    # When None: persist for dom/fetched; skip auto-persist for manual/clipboard.
+    persistDescription: Optional[bool] = None
+
+
+class SaveJobDescriptionRequest(BaseModel):
+    """Persist a job description onto an existing job row."""
+
+    description: str = Field(..., min_length=1)
 
 
 class ResumeDetailResponse(BaseModel):
@@ -107,3 +119,5 @@ class AnalysisResponse(BaseModel):
     llm_provider: str
     cached: bool = False
     created_at: Optional[datetime] = None
+    canSaveDescription: bool = False
+    descriptionPersisted: bool = False
