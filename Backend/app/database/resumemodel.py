@@ -32,8 +32,7 @@ class ResumeAnalysisModel(Base):
         UniqueConstraint(
             "resume_id",
             "job_id",
-            "description_hash",
-            name="uq_resume_job_description_hash",
+            name="uq_resume_job",
         ),
     )
 
