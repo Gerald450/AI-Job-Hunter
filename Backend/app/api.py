@@ -9,9 +9,17 @@ import uuid
 from typing import Optional
 from urllib.parse import quote
 
+from autofill.service import AutofillService, profile_from_parsed
 from clients.db import SessionLocal, create_database
-from database.crud import get_job_stats, get_jobs, set_job_applied
-from database.resume_crud import get_resume_row
+from database.crud import (
+    delete_job,
+    get_job_stats,
+    get_jobs,
+    set_job_applied,
+    set_job_flagged,
+    set_job_saved,
+)
+from database.resume_crud import get_match_scores_for_jobs, get_resume_row
 from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
@@ -20,20 +28,36 @@ from matching.service import (
     MatchingError,
     MatchingService,
     ingest_resume,
+    update_job_description as persist_job_description,
 )
 from resumes.storage import (
     ResumeNotFoundError,
     ResumeValidationError,
     get_resume,
-    save_resume,
 )
 from schemas.analysis import (
     AnalysisResponse,
     AnalyzeRequest,
     BatchAnalyzeRequest,
+    ExtensionJobAnalyzeRequest,
+    ParsedResume,
     ResumeDetailResponse,
+    SaveJobDescriptionRequest,
 )
-from schemas.job import AppliedUpdate, JobListResponse, JobResponse, JobStats
+from schemas.autofill import (
+    AiAutofillRequest,
+    AiAutofillResponse,
+    ExtensionProfileRequest,
+    ExtensionUserProfile,
+)
+from schemas.job import (
+    AppliedUpdate,
+    FlaggedUpdate,
+    JobListResponse,
+    JobResponse,
+    JobStats,
+    SavedUpdate,
+)
 from schemas.resume import ResumeDownloadRequest, ResumeUploadResponse
 from sqlalchemy.orm import Session
 
@@ -66,6 +90,34 @@ def get_db():
 @app.on_event("startup")
 def on_startup():
     create_database()
+    db = SessionLocal()
+    try:
+        from enrich import (
+            rescan_citizenship_from_stored_descriptions,
+            rescan_experience_from_stored_descriptions,
+            rewrite_broken_apply_urls,
+        )
+
+        flagged = rescan_citizenship_from_stored_descriptions(db)
+        if flagged:
+            logger.info(
+                "Startup citizenship backfill: flagged=%s jobs from stored JDs",
+                flagged,
+            )
+        stamped = rescan_experience_from_stored_descriptions(db)
+        if stamped:
+            logger.info(
+                "Startup experience backfill: stamped=%s jobs from stored JDs",
+                stamped,
+            )
+        url_fixed = rewrite_broken_apply_urls(db)
+        if url_fixed:
+            logger.info(
+                "Startup apply URL rewrite: fixed=%s Stripe search links",
+                url_fixed,
+            )
+    finally:
+        db.close()
 
 
 @app.get("/health")
@@ -85,9 +137,24 @@ def list_jobs(
     exclude_internships: bool = Query(
         True, description="Exclude roles whose title looks like an internship"
     ),
+    exclude_citizenship_required: bool = Query(
+        True, description="Exclude roles that require US citizenship"
+    ),
+    exclude_experienced: bool = Query(
+        True,
+        description="Exclude roles that require more than max_years_experience (default 2)",
+    ),
     applied: Optional[bool] = Query(
         None,
         description="Filter by applied status. Omit for all jobs.",
+    ),
+    saved: Optional[bool] = Query(
+        None,
+        description="Filter by saved/bookmarked status. Omit for all jobs.",
+    ),
+    flagged: Optional[bool] = Query(
+        None,
+        description="Filter by manually flagged status. Omit for all jobs.",
     ),
     company: Optional[str] = Query(
         None,
@@ -101,6 +168,10 @@ def list_jobs(
         None,
         description="Only jobs at most this old (e.g. 24h, 7d, 1mo).",
     ),
+    resumeId: Optional[str] = Query(
+        None,
+        description="When set, attach saved match_score from resume_analyses.",
+    ),
     limit: int = Query(25, ge=1, le=100, description="Page size"),
     offset: int = Query(0, ge=0, description="Number of jobs to skip"),
     db: Session = Depends(get_db),
@@ -111,7 +182,11 @@ def list_jobs(
         exclude_closed=exclude_closed,
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
+        exclude_citizenship_required=exclude_citizenship_required,
+        exclude_experienced=exclude_experienced,
         applied=applied,
+        saved=saved,
+        flagged=flagged,
         company=company,
         source=source,
         max_age=max_age,
@@ -124,9 +199,28 @@ def list_jobs(
         exclude_closed=exclude_closed,
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
+        exclude_citizenship_required=exclude_citizenship_required,
+        exclude_experienced=exclude_experienced,
     )
+
+    scores: dict = {}
+    rid = (resumeId or "").strip()
+    if rid and jobs:
+        scores = get_match_scores_for_jobs(
+            db,
+            resume_id=rid,
+            job_ids=[job.id for job in jobs],
+        )
+
+    job_responses = [
+        JobResponse.model_validate(job).model_copy(
+            update={"match_score": scores.get(job.id)}
+        )
+        for job in jobs
+    ]
+
     return JobListResponse(
-        jobs=jobs,
+        jobs=job_responses,
         total=total,
         has_more=offset + len(jobs) < total,
         stats=JobStats(**stats),
@@ -143,6 +237,85 @@ def update_job_applied(
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+
+@app.patch("/api/jobs/{job_id}/saved", response_model=JobResponse)
+def update_job_saved(
+    job_id: uuid.UUID,
+    body: SavedUpdate,
+    db: Session = Depends(get_db),
+):
+    job = set_job_saved(db, job_id, body.saved)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
+@app.patch("/api/jobs/{job_id}/flagged", response_model=JobResponse)
+def update_job_flagged(
+    job_id: uuid.UUID,
+    body: FlaggedUpdate,
+    db: Session = Depends(get_db),
+):
+    """Hide (or unhide) a job from the main list without deleting it."""
+    job = set_job_flagged(db, job_id, body.flagged)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
+@app.get("/api/jobs/flagged", response_model=JobListResponse)
+def list_flagged_jobs(
+    company: Optional[str] = Query(None),
+    source: Optional[str] = Query(None),
+    max_age: Optional[str] = Query(None),
+    resumeId: Optional[str] = Query(None),
+    limit: int = Query(25, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+):
+    """Jobs the user manually flagged (hidden from the main list)."""
+    jobs, total = get_jobs(
+        db,
+        flagged=True,
+        company=company,
+        source=source,
+        max_age=max_age,
+        limit=limit,
+        offset=offset,
+    )
+    stats = get_job_stats(db)
+
+    scores: dict = {}
+    rid = (resumeId or "").strip()
+    if rid and jobs:
+        scores = get_match_scores_for_jobs(
+            db,
+            resume_id=rid,
+            job_ids=[job.id for job in jobs],
+        )
+
+    job_responses = [
+        JobResponse.model_validate(job).model_copy(
+            update={"match_score": scores.get(job.id)}
+        )
+        for job in jobs
+    ]
+
+    return JobListResponse(
+        jobs=job_responses,
+        total=total,
+        has_more=offset + len(jobs) < total,
+        stats=JobStats(**stats),
+    )
+
+
+@app.delete("/api/jobs/{job_id}", status_code=204)
+def remove_job(job_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Permanently delete a job. Prefer flagging via PATCH …/flagged."""
+    if not delete_job(db, job_id):
+        raise HTTPException(status_code=404, detail="Job not found")
+    return Response(status_code=204)
 
 
 def _http_from_matching(exc: MatchingError) -> HTTPException:
@@ -218,6 +391,7 @@ async def analyze_job_resume(
             job_id=job_id,
             resume_id=body.resumeId,
             refresh=body.refresh,
+            description=body.description,
         )
     except DescriptionMissingError as exc:
         raise _http_from_matching(exc) from exc
@@ -357,28 +531,67 @@ def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
-@app.post("/extension/resumes", response_model=ResumeUploadResponse)
-async def upload_extension_resume(file: UploadFile = File(...)):
-    """Upload a resume; paste the returned ``resumeId`` into extension Options.
+@app.post("/extension/job", response_model=AnalysisResponse)
+async def analyze_extension_job(
+    body: ExtensionJobAnalyzeRequest,
+    db: Session = Depends(get_db),
+):
+    """Analyze resume against a job page scraped by the Chrome extension.
 
-    Binary-only path for the Chrome extension (no LLM parse). Use
-    ``POST /api/resumes`` when you need structured parsing for matching.
+    Prefers the client-supplied description when it is richer than the DB,
+    upserts a job row by apply URL, and reuses the matching cache.
+    """
+    service = MatchingService()
+    try:
+        return await service.analyze_from_extension(db, body)
+    except DescriptionMissingError as exc:
+        raise _http_from_matching(exc) from exc
+    except MatchingError as exc:
+        raise _http_from_matching(exc) from exc
+
+
+@app.post("/extension/job/{job_id}/description", response_model=JobResponse)
+def save_extension_job_description(
+    job_id: uuid.UUID,
+    body: SaveJobDescriptionRequest,
+    db: Session = Depends(get_db),
+):
+    """Persist a manually selected / clipboard job description onto a job row."""
+    try:
+        return persist_job_description(db, job_id, body.description)
+    except MatchingError as exc:
+        raise _http_from_matching(exc) from exc
+
+
+@app.post("/extension/resumes", response_model=ResumeUploadResponse)
+async def upload_extension_resume(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """Upload a resume for the Chrome extension (parse + store, same as /api/resumes).
+
+    Paste the returned ``resumeId`` into extension Options for autofill and
+    resume analysis.
     """
     content = await file.read()
     try:
-        meta = save_resume(
+        row = await ingest_resume(
+            db,
             filename=file.filename or "resume.pdf",
             content=content,
             content_type=file.content_type,
         )
     except ResumeValidationError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except MatchingError as exc:
+        raise _http_from_matching(exc) from exc
 
     return ResumeUploadResponse(
-        resumeId=meta.resume_id,
-        filename=meta.filename,
-        contentType=meta.content_type,
-        size=meta.size,
+        resumeId=row.id,
+        filename=row.filename,
+        contentType=row.content_type,
+        size=row.size,
+        parsed=row.parsed,
     )
 
 
@@ -404,3 +617,48 @@ def download_extension_resume(body: ResumeDownloadRequest):
         media_type=meta.content_type,
         headers={"Content-Disposition": disposition},
     )
+
+
+@app.post("/extension/profile", response_model=ExtensionUserProfile)
+async def extension_profile(
+    body: ExtensionProfileRequest,
+    db: Session = Depends(get_db),
+):
+    """Return a UserProfile-shaped payload derived from the parsed resume.
+
+    Contact fields (name, email, phone, LinkedIn, work auth) are left empty;
+    the extension cache remains the source of truth for those. Education /
+    degree / graduation / yearsExperience are filled from ParsedResume when
+    available.
+    """
+    service = MatchingService()
+    try:
+        row = await service.ensure_resume_parsed(db, body.resumeId)
+    except MatchingError as exc:
+        raise _http_from_matching(exc) from exc
+
+    try:
+        parsed = ParsedResume.model_validate(row.parsed or {})
+    except Exception:
+        parsed = ParsedResume()
+    return profile_from_parsed(parsed)
+
+
+@app.post("/extension/autofill/ai", response_model=AiAutofillResponse)
+async def extension_ai_autofill(
+    body: AiAutofillRequest,
+    db: Session = Depends(get_db),
+):
+    """AI fallback: map unresolved form fields using Groq + merged profile."""
+    service = AutofillService()
+    try:
+        return await service.suggest_field_values(
+            db,
+            resume_id=body.resumeId,
+            fields=body.fields,
+            profile=body.profile,
+            job=body.job,
+            ats=body.ats,
+        )
+    except MatchingError as exc:
+        raise _http_from_matching(exc) from exc
