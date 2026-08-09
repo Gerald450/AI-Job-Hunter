@@ -5,7 +5,11 @@ from __future__ import annotations
 import re
 
 from sponsorship.models import SponsorshipResult
-from sponsorship.patterns import NO_SPONSORSHIP_PATTERNS, YES_SPONSORSHIP_PATTERNS
+from sponsorship.patterns import (
+    CITIZENSHIP_REQUIRED_PATTERNS,
+    NO_SPONSORSHIP_PATTERNS,
+    YES_SPONSORSHIP_PATTERNS,
+)
 
 _WHITESPACE_RE = re.compile(r"\s+")
 
@@ -26,6 +30,13 @@ def _first_match(
         if match:
             return match.group(0)
     return None
+
+
+def detect_citizenship_required(description: str | None) -> str | None:
+    """Return the matched citizenship phrase, or None if not required."""
+    if description is None or not str(description).strip():
+        return None
+    return _first_match(normalize_description(description), CITIZENSHIP_REQUIRED_PATTERNS)
 
 
 class SponsorshipDetector:
