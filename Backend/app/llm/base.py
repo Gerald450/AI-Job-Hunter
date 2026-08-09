@@ -42,5 +42,20 @@ class LLMProvider(ABC):
         company: str,
         location: str,
         description: str,
+        sponsorship: dict[str, Any] | None = None,
     ) -> ResumeMatchResult:
         """Score resume alignment against a job description."""
+
+    @abstractmethod
+    async def map_form_fields(
+        self,
+        *,
+        profile: dict[str, Any],
+        fields: list[dict[str, Any]],
+        job_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Map unresolved application form fields to profile values.
+
+        Returns a dict shaped like ``{"fields": [...]}`` with value,
+        profile_field, confidence, and optional explanation per field.
+        """
