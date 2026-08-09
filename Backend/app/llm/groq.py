@@ -11,8 +11,10 @@ from typing import Any
 import httpx
 from llm.base import LLMError, LLMProvider, LLMRateLimitError, LLMTimeoutError
 from llm.prompts import (
+    MAP_FORM_FIELDS_SYSTEM,
     MATCH_RESUME_SYSTEM,
     PARSE_RESUME_SYSTEM,
+    build_map_form_fields_user_prompt,
     build_match_user_prompt,
     build_parse_user_prompt,
 )
@@ -151,6 +153,7 @@ class GroqProvider(LLMProvider):
         company: str,
         location: str,
         description: str,
+        sponsorship: dict[str, Any] | None = None,
     ) -> ResumeMatchResult:
         if isinstance(parsed_resume, ParsedResume):
             resume_dict = parsed_resume.model_dump()
@@ -165,12 +168,37 @@ class GroqProvider(LLMProvider):
                 company=company,
                 location=location,
                 description=_truncate(description),
+                sponsorship=sponsorship,
             ),
         )
         # Normalize common alias from the prompt wording.
         if "recommended_improvements" not in data and "recommendations" in data:
             data["recommended_improvements"] = data.pop("recommendations")
         return ResumeMatchResult.model_validate(data)
+
+    async def map_form_fields(
+        self,
+        *,
+        profile: dict[str, Any],
+        fields: list[dict[str, Any]],
+        job_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        data = await self._chat_json(
+            system=MAP_FORM_FIELDS_SYSTEM,
+            user=build_map_form_fields_user_prompt(
+                profile=profile,
+                fields=fields,
+                job_context=job_context,
+            ),
+            temperature=0.1,
+        )
+        if "fields" not in data or not isinstance(data.get("fields"), list):
+            # Accept a bare list under a common alternate key.
+            if isinstance(data.get("mappings"), list):
+                data = {"fields": data["mappings"]}
+            else:
+                data = {"fields": []}
+        return data
 
 
 def get_llm_provider() -> LLMProvider:
