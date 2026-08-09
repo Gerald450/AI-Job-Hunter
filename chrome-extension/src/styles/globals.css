@@ -80,3 +80,17 @@
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
 }
+
+/* AI filled with medium confidence — please verify */
+.aijh-ai-verify {
+  outline: 2px solid #ca8a04 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(202, 138, 4, 0.18);
+}
+
+/* AI suggestion below fill threshold — confirm first */
+.aijh-ai-confirm {
+  outline: 2px dashed #dc2626 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
