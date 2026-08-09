@@ -45,6 +45,32 @@ async def test_greenhouse_board_maps_jobs():
 
 
 @pytest.mark.asyncio
+async def test_greenhouse_board_rewrites_stripe_search_url():
+    companies = [
+        {"name": "Stripe", "ats": "greenhouse", "board_token": "stripe", "enabled": True}
+    ]
+    payload = {
+        "jobs": [
+            {
+                "id": 8107379,
+                "title": "Software Engineer",
+                "absolute_url": "https://stripe.com/jobs/search?gh_jid=8107379",
+                "location": {"name": "South San Francisco, CA"},
+                "first_published": "2026-08-01T12:00:00-04:00",
+            },
+        ]
+    }
+    source = GreenhouseBoardSource(companies)
+    with patch("sources.greenhouse.http_get_json", new=AsyncMock(return_value=payload)):
+        jobs = await source.fetch_jobs()
+
+    assert len(jobs) == 1
+    assert jobs[0].apply_url == (
+        "https://stripe.com/jobs/listing/software-engineer/8107379"
+    )
+
+
+@pytest.mark.asyncio
 async def test_ashby_board_maps_jobs():
     companies = [{"name": "Cursor", "ats": "ashby", "board_token": "cursor", "enabled": True}]
     payload = {
