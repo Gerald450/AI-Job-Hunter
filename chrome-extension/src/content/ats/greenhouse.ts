@@ -4,7 +4,13 @@
  */
 
 import type { AtsAdapter } from "@/content/ats/types";
-import { enrichLabelsFromContainers, textOf } from "@/content/ats/helpers";
+import {
+  detectRemoteAndEmployment,
+  enrichLabelsFromContainers,
+  extractDescription,
+  extractSections,
+  textOfFirst,
+} from "@/content/ats/helpers";
 import type { JobExtraction } from "@/types";
 
 export const greenhouseAdapter: AtsAdapter = {
@@ -24,32 +30,37 @@ export const greenhouseAdapter: AtsAdapter = {
 
   extractJob(): Partial<JobExtraction> {
     const title =
-      textOf(".app-title, h1.app-title, .job__title, h1") ||
+      textOfFirst(".app-title", "h1.app-title", ".job__title", "h1") ||
       document.title.split(/[-|@]/)[0]?.trim();
-    const company = textOf(
-      ".company-name, .app-title + .company-name, .header-company, [data-qa='company-name']",
+    const company = textOfFirst(
+      ".company-name",
+      ".header-company",
+      "[data-qa='company-name']",
     );
-    const location = textOf(
-      ".location, .app-location, .job__location, [data-qa='location']",
+    const location = textOfFirst(
+      ".location",
+      ".app-location",
+      ".job__location",
+      "[data-qa='location']",
     );
-    const description = textOf(
-      "#content, .job__description, .content, #job_description",
+    const description = extractDescription(
+      "#content",
+      ".job__description",
+      ".content",
+      "#job_description",
+      ".job-post",
     );
-    const bodyText = document.body.innerText.toLowerCase();
+    const sections = extractSections();
+    const { remote, employmentType } = detectRemoteAndEmployment(location);
 
     return {
       title,
       company,
       location,
       description,
-      remote: /\bremote\b/.test(bodyText),
-      employmentType: /\bfull[- ]?time\b/i.test(bodyText)
-        ? "Full-time"
-        : /\bpart[- ]?time\b/i.test(bodyText)
-          ? "Part-time"
-          : /\bintern/i.test(bodyText)
-            ? "Internship"
-            : undefined,
+      ...sections,
+      remote,
+      employmentType,
     };
   },
 };
