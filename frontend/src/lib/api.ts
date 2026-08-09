@@ -18,11 +18,22 @@ export interface FetchJobsParams {
   company?: string;
   source?: string;
   maxAge?: string;
+  resumeId?: string;
 }
 
 function appliedQueryValue(filter: AppliedFilter | undefined): string | null {
   if (filter === "applied") return "true";
   if (filter === "not_applied") return "false";
+  return null;
+}
+
+function savedQueryValue(filter: AppliedFilter | undefined): string | null {
+  if (filter === "saved") return "true";
+  return null;
+}
+
+function flaggedQueryValue(filter: AppliedFilter | undefined): string | null {
+  if (filter === "flagged") return "true";
   return null;
 }
 
@@ -36,6 +47,7 @@ export async function fetchJobs(
     company = "",
     source = "",
     maxAge = "",
+    resumeId = "",
   } = params;
 
   const search = new URLSearchParams({
@@ -46,6 +58,16 @@ export async function fetchJobs(
   const applied = appliedQueryValue(appliedFilter);
   if (applied !== null) {
     search.set("applied", applied);
+  }
+
+  const saved = savedQueryValue(appliedFilter);
+  if (saved !== null) {
+    search.set("saved", saved);
+  }
+
+  const flagged = flaggedQueryValue(appliedFilter);
+  if (flagged !== null) {
+    search.set("flagged", flagged);
   }
 
   const companyQuery = company.trim();
@@ -63,7 +85,17 @@ export async function fetchJobs(
     search.set("max_age", maxAgeQuery);
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/jobs?${search.toString()}`, {
+  const resumeQuery = resumeId.trim();
+  if (resumeQuery) {
+    search.set("resumeId", resumeQuery);
+  }
+
+  const path =
+    appliedFilter === "flagged"
+      ? `${API_BASE_URL}/api/jobs/flagged?${search.toString()}`
+      : `${API_BASE_URL}/api/jobs?${search.toString()}`;
+
+  const response = await fetch(path, {
     headers: { Accept: "application/json" },
   });
 
@@ -89,6 +121,46 @@ export async function setJobApplied(
 
   if (!response.ok) {
     throw new Error(`Failed to update applied status (${response.status})`);
+  }
+
+  return response.json();
+}
+
+export async function setJobSaved(
+  jobId: string,
+  saved: boolean,
+): Promise<Job> {
+  const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/saved`, {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ saved }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update saved status (${response.status})`);
+  }
+
+  return response.json();
+}
+
+export async function setJobFlagged(
+  jobId: string,
+  flagged: boolean,
+): Promise<Job> {
+  const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/flagged`, {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ flagged }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update flagged status (${response.status})`);
   }
 
   return response.json();
