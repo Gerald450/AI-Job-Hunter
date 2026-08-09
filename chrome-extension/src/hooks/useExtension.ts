@@ -88,6 +88,59 @@ export function useAnalyzeJob() {
   });
 }
 
+export function useAnalyzeSelection() {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await sendMessage<JobAnalysisResponse>({
+        type: "ANALYZE_SELECTION",
+      });
+      if (!res.ok) throw new Error(res.error || "Analysis failed");
+      return res.data;
+    },
+  });
+}
+
+export function useAnalyzeClipboard() {
+  return useMutation({
+    mutationFn: async (text?: string) => {
+      // Prefer reading clipboard in the popup (user gesture), then pass text.
+      let clipboardText = text;
+      if (!clipboardText) {
+        try {
+          clipboardText = await navigator.clipboard.readText();
+        } catch {
+          clipboardText = undefined;
+        }
+      }
+      const res = await sendMessage<JobAnalysisResponse>({
+        type: "ANALYZE_CLIPBOARD",
+        payload: clipboardText ? { text: clipboardText } : undefined,
+      });
+      if (!res.ok) throw new Error(res.error || "Analysis failed");
+      return res.data;
+    },
+  });
+}
+
+export function usePageSelection() {
+  return useQuery({
+    queryKey: ["page-selection"],
+    queryFn: async () => {
+      const res = await sendMessage<{
+        text: string;
+        length: number;
+        usable: boolean;
+      }>({ type: "GET_PAGE_SELECTION" });
+      if (!res.ok || !res.data) {
+        return { text: "", length: 0, usable: false };
+      }
+      return res.data;
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 2_000,
+  });
+}
+
 export function useNotification() {
   const [toast, setToast] = useState<{
     kind: "success" | "error" | "info" | "warning";
