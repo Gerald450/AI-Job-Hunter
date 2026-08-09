@@ -2,3 +2,15 @@
 
 # Drop jobs older than this many days (GitHub age strings + ATS published dates).
 max_age_days: 30
+
+# Drop jobs whose description requires more than this many years of experience
+# (e.g. "5+ years of Product Management experience"). 0–2 kept; 3+ flagged out.
+max_years_experience: 2
+
+# Companies that do not sponsor — excluded from the default job list and
+# marked no_sponsorship on ingest. Matching is case-insensitive (name equals
+# or starts with the entry, or the entry appears as a whole word).
+excluded_companies:
+  - RTX
+  - Raytheon
+  - Raytheon Technologies
