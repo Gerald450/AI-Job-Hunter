@@ -31,12 +31,14 @@ def test_early_career_accepts_new_grad():
 def test_early_career_rejects_intern_and_senior():
     assert is_early_career("Software Engineering Intern") is False
     assert is_early_career("Senior Software Engineer") is False
+    assert is_early_career("Sr. Software Engineer") is False
     assert is_early_career("Staff Engineer") is False
 
 
 def test_early_career_does_not_reject_product_manager():
     assert is_early_career("Product Manager") is True
     assert is_early_career("Associate Product Manager") is True
+    assert is_early_career("Sr. Product Manager, Community") is False
 
 
 def test_early_career_intern_not_international():
