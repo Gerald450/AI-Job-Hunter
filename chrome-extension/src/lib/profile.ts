@@ -28,18 +28,26 @@ export function profileToAutofillMap(profile: UserProfile): Record<string, strin
   put("LinkedIn", profile.linkedin);
   put("Website", profile.website);
   put("Location", profile.location);
+  put("Address", profile.location);
   put("Authorized to Work", profile.authorizedToWork);
   put("Require Sponsorship", profile.requiresSponsorship);
+  put("At Least 18", profile.atLeast18);
+  put("Desired Salary", profile.desiredSalary);
+  put("Expected Salary", profile.desiredSalary);
   put("Years of Experience", profile.yearsExperience);
   put("Education", profile.education);
   put("Degree", profile.degree);
+  put("Field of Study", profile.fieldOfStudy);
+  put("Major", profile.fieldOfStudy);
   put("Graduation Date", profile.graduationDate);
   put("GPA", profile.gpa);
   put("Preferred Location", profile.preferredLocation);
   put("Gender", profile.gender);
+  put("Sex", profile.gender);
   put("Veteran Status", profile.veteran);
   put("Race", profile.race);
   put("Disability", profile.disability);
+  put("How Did You Hear About Us?", profile.hearAboutUs);
 
   return out;
 }
