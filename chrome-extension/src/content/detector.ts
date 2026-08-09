@@ -37,6 +37,96 @@ const ARIA_WIDGET_SELECTOR = [
   '[contenteditable=""]',
 ].join(", ");
 
+/** Prefer application form roots over the full document when present. */
+const APPLICATION_ROOT_SELECTOR = [
+  "form",
+  "main",
+  '[role="main"]',
+  '[data-automation-id*="application"]',
+  '[data-test*="application"]',
+  ".application-form",
+  "#application-form",
+  "#application",
+].join(", ");
+
+const NOISE_LABEL_RE =
+  /\b(deepseek|chatgpt|claude|gemini|copilot|ai\s*sidebar|ai\s*assistant|ask\s*(chatgpt|ai|assistant)|grammarly|otter\.ai|monica|sider|merlin)\b/i;
+
+const NOISE_ATTR_RE =
+  /deepseek|chatgpt|claude|gemini|copilot|grammarly|monica|sider|merlin|ai[-_]?sidebar|ai[-_]?assistant|chat[-_]?widget/i;
+
+/**
+ * Skip third-party chat/AI sidebars and other non-application chrome that
+ * often inject contenteditable / role=textbox into the light DOM.
+ */
+export function isIgnoredField(el: HTMLElement): boolean {
+  if (el.closest("[data-ai-job-hunter], #ai-job-hunter-root")) return true;
+
+  const attrs = [
+    el.id,
+    el.className && typeof el.className === "string" ? el.className : "",
+    el.getAttribute("aria-label") || "",
+    el.getAttribute("name") || "",
+    el.getAttribute("data-testid") || "",
+    el.getAttribute("data-automation-id") || "",
+  ].join(" ");
+  if (NOISE_ATTR_RE.test(attrs)) return true;
+
+  const ancestor = el.closest(
+    [
+      "[id*='deepseek']",
+      "[class*='deepseek']",
+      "[id*='chatgpt']",
+      "[class*='chatgpt']",
+      "[class*='ai-sidebar']",
+      "[class*='ai_sidebar']",
+      "[class*='chat-widget']",
+      "[data-extension]",
+    ].join(", "),
+  );
+  if (ancestor) return true;
+
+  // Walk a few parents for noisy class/id tokens (case-insensitive).
+  let node: HTMLElement | null = el.parentElement;
+  for (let i = 0; i < 6 && node; i += 1) {
+    const blob = `${node.id} ${typeof node.className === "string" ? node.className : ""}`;
+    if (NOISE_ATTR_RE.test(blob)) return true;
+    node = node.parentElement;
+  }
+
+  // Fixed / sticky high z-index panels that are not part of the form
+  try {
+    const style = window.getComputedStyle(el);
+    const position = style.position;
+    if (position === "fixed" || position === "sticky") {
+      const z = Number.parseInt(style.zIndex || "0", 10);
+      if (Number.isFinite(z) && z >= 1000) {
+        // Allow fixed form footers that contain real inputs inside a form
+        if (!el.closest("form")) return true;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return false;
+}
+
+function labelLooksLikeNoise(label: string): boolean {
+  return NOISE_LABEL_RE.test(label);
+}
+
+function detectionRoots(root: ParentNode): ParentNode[] {
+  if (root !== document && !(root instanceof Document)) {
+    return [root];
+  }
+  const scoped = Array.from(
+    document.querySelectorAll<HTMLElement>(APPLICATION_ROOT_SELECTOR),
+  ).filter((el) => isVisible(el));
+  if (scoped.length > 0) return scoped;
+  return [document];
+}
+
 function cleanText(raw: string | null | undefined): string {
   if (!raw) return "";
   return raw.replace(/\s+/g, " ").replace(/\*+$/, "").trim();
@@ -267,9 +357,37 @@ function readRadioOptions(el: HTMLInputElement): FieldOption[] | undefined {
     `input[type=radio][name="${CSS.escape(name)}"]`,
   );
   return Array.from(group).map((radio) => ({
-    label: resolveLabel(radio),
+    label: radioOptionLabel(radio),
     value: radio.value,
   }));
+}
+
+/** Prefer the option's own Yes/No-style label over the shared question text. */
+function radioOptionLabel(radio: HTMLInputElement): string {
+  const id = radio.getAttribute("id");
+  if (id) {
+    const byFor = document.querySelector(`label[for="${CSS.escape(id)}"]`);
+    const t = cleanText(byFor?.textContent);
+    if (t && t.length < 80) return t;
+  }
+  const wrapping = radio.closest("label");
+  if (wrapping) {
+    const clone = wrapping.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll("input, textarea, select, button").forEach((n) => n.remove());
+    const t = cleanText(clone.textContent);
+    if (t && t.length < 80) return t;
+  }
+  const aria = cleanText(radio.getAttribute("aria-label"));
+  if (aria && aria.length < 80) return aria;
+  // Sibling text (common ATS pattern: <input/><span>Yes</span>)
+  const parent = radio.parentElement;
+  if (parent) {
+    const clone = parent.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll("input, textarea, select, button").forEach((n) => n.remove());
+    const t = cleanText(clone.textContent);
+    if (t && t.length < 80) return t;
+  }
+  return cleanText(radio.value) || "option";
 }
 
 function readComboboxOptions(el: HTMLElement): FieldOption[] | undefined {
@@ -314,13 +432,17 @@ function currentValue(el: HTMLElement, type: FieldType): string | undefined {
 }
 
 function isVisible(el: HTMLElement): boolean {
+  // File inputs are often visually hidden behind custom dropzones — still detect them.
+  if (el instanceof HTMLInputElement && el.type === "file") {
+    return !isDisabled(el);
+  }
   if (el.hidden || el.getAttribute("aria-hidden") === "true") return false;
   const style = window.getComputedStyle(el);
   if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
     return false;
   }
   const rect = el.getBoundingClientRect();
-  if (rect.width === 0 && rect.height === 0 && el.getAttribute("type") !== "file") {
+  if (rect.width === 0 && rect.height === 0) {
     return false;
   }
   return true;
@@ -403,47 +525,61 @@ export function detectFields(root: ParentNode = document): DetectedField[] {
   const seenRadios = new Set<string>();
   let index = 0;
 
-  const nativeNodes = Array.from(
-    root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-      NATIVE_SELECTOR,
-    ),
-  );
+  const roots = detectionRoots(root);
 
-  for (const el of nativeNodes) {
-    if (seen.has(el) || !isVisible(el) || isDisabled(el)) continue;
-    seen.add(el);
+  for (const scope of roots) {
+    const nativeNodes = Array.from(
+      scope.querySelectorAll<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >(NATIVE_SELECTOR),
+    );
 
-    const type = mapNativeType(el);
-    if (type === "radio") {
-      const name = el.getAttribute("name") || fieldUid(el, index);
-      if (seenRadios.has(name)) continue;
-      seenRadios.add(name);
+    for (const el of nativeNodes) {
+      if (seen.has(el) || !isVisible(el) || isDisabled(el) || isIgnoredField(el)) {
+        continue;
+      }
+      seen.add(el);
+
+      const type = mapNativeType(el);
+      if (type === "radio") {
+        const name = el.getAttribute("name") || fieldUid(el, index);
+        if (seenRadios.has(name)) continue;
+        seenRadios.add(name);
+      }
+
+      const field = buildField(el, type, index++);
+      if (labelLooksLikeNoise(field.label)) continue;
+      fields.push(field);
     }
 
-    fields.push(buildField(el, type, index++));
-  }
+    // ARIA widgets / contenteditable / custom comboboxes not already covered
+    const widgets = Array.from(
+      scope.querySelectorAll<HTMLElement>(ARIA_WIDGET_SELECTOR),
+    );
 
-  // ARIA widgets / contenteditable / custom comboboxes not already covered
-  const widgets = Array.from(root.querySelectorAll<HTMLElement>(ARIA_WIDGET_SELECTOR));
+    // Also pick up elements that look like searchable dropdowns (generic heuristic)
+    const dropdownTriggers = Array.from(
+      scope.querySelectorAll<HTMLElement>(
+        '[aria-haspopup="listbox"], [aria-haspopup="true"][aria-expanded], [data-automation-id*="select"], [data-automation-id*="dropdown"]',
+      ),
+    );
 
-  // Also pick up elements that look like searchable dropdowns (generic heuristic)
-  const dropdownTriggers = Array.from(
-    root.querySelectorAll<HTMLElement>(
-      '[aria-haspopup="listbox"], [aria-haspopup="true"][aria-expanded], [data-automation-id*="select"], [data-automation-id*="dropdown"]',
-    ),
-  );
-
-  for (const el of [...widgets, ...dropdownTriggers]) {
-    if (seen.has(el) || !isVisible(el) || isDisabled(el)) continue;
-    // Skip if this widget wraps / is a native control we already captured
-    if (el.matches(NATIVE_SELECTOR)) continue;
-    if (el.querySelector(NATIVE_SELECTOR) && el.getAttribute("role") !== "combobox") {
-      continue;
+    for (const el of [...widgets, ...dropdownTriggers]) {
+      if (seen.has(el) || !isVisible(el) || isDisabled(el) || isIgnoredField(el)) {
+        continue;
+      }
+      // Skip if this widget wraps / is a native control we already captured
+      if (el.matches(NATIVE_SELECTOR)) continue;
+      if (el.querySelector(NATIVE_SELECTOR) && el.getAttribute("role") !== "combobox") {
+        continue;
+      }
+      seen.add(el);
+      const type = mapWidgetType(el);
+      if (type === "unknown") continue;
+      const field = buildField(el, type, index++);
+      if (labelLooksLikeNoise(field.label)) continue;
+      fields.push(field);
     }
-    seen.add(el);
-    const type = mapWidgetType(el);
-    if (type === "unknown") continue;
-    fields.push(buildField(el, type, index++));
   }
 
   logger.debug(SCOPE, `Detected ${fields.length} fields (generic engine)`);
