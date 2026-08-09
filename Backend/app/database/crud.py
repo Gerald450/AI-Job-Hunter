@@ -6,7 +6,9 @@ from database.jobmodel import JobModel
 from model.job import Job
 from processors.age import age_to_hours as parse_age_hours
 from processors.age import is_within_max_age, load_max_age_days
-from sqlalchemy import not_, or_
+from processors.company_filter import is_excluded_company
+from processors.experience import load_max_years_experience
+from sqlalchemy import not_, or_, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -58,6 +60,10 @@ def _base_jobs_query(
     exclude_closed: bool = True,
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
+    exclude_citizenship_required: bool = True,
+    exclude_experienced: bool = True,
+    exclude_flagged: bool = True,
+    exclude_saved: bool = True,
     active_only: bool = True,
 ):
     query = db.query(JobModel)
@@ -67,6 +73,24 @@ def _base_jobs_query(
 
     if sponsoring_only:
         query = query.filter(JobModel.no_sponsorship.is_(False))
+
+    if exclude_citizenship_required:
+        query = query.filter(JobModel.citizenship_required.is_(False))
+
+    if exclude_experienced:
+        max_years = load_max_years_experience()
+        query = query.filter(
+            or_(
+                JobModel.min_years_required.is_(None),
+                JobModel.min_years_required <= max_years,
+            )
+        )
+
+    if exclude_flagged:
+        query = query.filter(JobModel.flagged.is_(False))
+
+    if exclude_saved:
+        query = query.filter(JobModel.saved.is_(False))
 
     if exclude_closed:
         query = query.filter(JobModel.closed.is_(False))
@@ -88,6 +112,10 @@ def _base_jobs_query(
     return query
 
 
+def _without_excluded_companies(jobs: List[JobModel]) -> List[JobModel]:
+    return [job for job in jobs if not is_excluded_company(job.company)]
+
+
 def get_job_stats(
     db: Session,
     *,
@@ -95,6 +123,10 @@ def get_job_stats(
     exclude_closed: bool = True,
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
+    exclude_citizenship_required: bool = True,
+    exclude_experienced: bool = True,
+    exclude_flagged: bool = True,
+    exclude_saved: bool = True,
 ) -> dict:
     query = _base_jobs_query(
         db,
@@ -102,14 +134,34 @@ def get_job_stats(
         exclude_closed=exclude_closed,
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
+        exclude_citizenship_required=exclude_citizenship_required,
+        exclude_experienced=exclude_experienced,
+        exclude_flagged=exclude_flagged,
+        exclude_saved=exclude_saved,
     )
-    jobs = query.all()
+    jobs = _without_excluded_companies(query.all())
     total = len(jobs)
     applied = sum(1 for job in jobs if job.applied)
+    saved_rows = _without_excluded_companies(
+        db.query(JobModel)
+        .filter(
+            JobModel.is_active.is_(True),
+            JobModel.saved.is_(True),
+            JobModel.flagged.is_(False),
+        )
+        .all()
+    )
+    flagged_rows = _without_excluded_companies(
+        db.query(JobModel)
+        .filter(JobModel.is_active.is_(True), JobModel.flagged.is_(True))
+        .all()
+    )
     return {
         "total": total,
         "applied": applied,
         "remaining": total - applied,
+        "saved": len(saved_rows),
+        "flagged": len(flagged_rows),
     }
 
 
@@ -135,29 +187,56 @@ def get_jobs(
     exclude_closed: bool = True,
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
+    exclude_citizenship_required: bool = True,
+    exclude_experienced: bool = True,
+    exclude_flagged: bool = True,
+    exclude_saved: bool = True,
     applied: Optional[bool] = None,
+    saved: Optional[bool] = None,
+    flagged: Optional[bool] = None,
     company: Optional[str] = None,
     source: Optional[str] = None,
     max_age: Optional[str] = None,
     limit: int = 25,
     offset: int = 0,
 ) -> Tuple[List[JobModel], int]:
+    # Saved / flagged tabs: include those rows; flagged also skips sponsorship
+    # gates so manually hidden roles remain reviewable.
+    if saved is True:
+        exclude_saved = False
+    if flagged is True:
+        exclude_flagged = False
+        exclude_saved = False
+        sponsoring_only = False
+        exclude_citizenship_required = False
+        exclude_experienced = False
+
     query = _base_jobs_query(
         db,
         sponsoring_only=sponsoring_only,
         exclude_closed=exclude_closed,
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
+        exclude_citizenship_required=exclude_citizenship_required,
+        exclude_experienced=exclude_experienced,
+        exclude_flagged=exclude_flagged,
+        exclude_saved=exclude_saved,
     )
 
     if applied is not None:
         query = query.filter(JobModel.applied.is_(applied))
 
+    if saved is not None:
+        query = query.filter(JobModel.saved.is_(saved))
+
+    if flagged is not None:
+        query = query.filter(JobModel.flagged.is_(flagged))
+
     company_query = (company or "").strip()
     if company_query:
         query = query.filter(JobModel.company.ilike(f"%{company_query}%"))
 
-    jobs = query.all()
+    jobs = _without_excluded_companies(query.all())
 
     source_query = (source or "").strip()
     if source_query:
@@ -168,7 +247,25 @@ def get_jobs(
         max_hours = age_to_hours(max_age_query)
         jobs = [job for job in jobs if age_to_hours(job.age) <= max_hours]
 
-    jobs.sort(key=lambda job: (age_to_hours(job.age), job.company, job.role))
+    epoch = datetime.min.replace(tzinfo=timezone.utc)
+    if applied is True:
+        # Recently applied first (applied_at); fall back to updated_at for legacy rows.
+        jobs.sort(
+            key=lambda job: job.applied_at or job.updated_at or epoch,
+            reverse=True,
+        )
+    elif saved is True:
+        jobs.sort(
+            key=lambda job: job.saved_at or job.updated_at or epoch,
+            reverse=True,
+        )
+    elif flagged is True:
+        jobs.sort(
+            key=lambda job: job.flagged_at or job.updated_at or epoch,
+            reverse=True,
+        )
+    else:
+        jobs.sort(key=lambda job: (age_to_hours(job.age), job.company, job.role))
     total = len(jobs)
     return jobs[offset : offset + limit], total
 
@@ -233,6 +330,8 @@ def create_extension_job(
         advanced_degree=False,
         closed=False,
         applied=False,
+        saved=False,
+        flagged=False,
         ats=ats if ats and ats != "unknown" else None,
         is_active=True,
         description=description,
@@ -253,11 +352,55 @@ def set_job_applied(
     if job is None:
         return None
 
+    now = datetime.now(timezone.utc)
     job.applied = applied
-    job.updated_at = datetime.now(timezone.utc)
+    job.applied_at = now if applied else None
+    job.updated_at = now
     db.commit()
     db.refresh(job)
     return job
+
+
+def set_job_saved(
+    db: Session, job_id: uuid.UUID, saved: bool
+) -> Optional[JobModel]:
+    job = get_job_by_id(db, job_id)
+    if job is None:
+        return None
+
+    now = datetime.now(timezone.utc)
+    job.saved = saved
+    job.saved_at = now if saved else None
+    job.updated_at = now
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+def set_job_flagged(
+    db: Session, job_id: uuid.UUID, flagged: bool
+) -> Optional[JobModel]:
+    job = get_job_by_id(db, job_id)
+    if job is None:
+        return None
+
+    now = datetime.now(timezone.utc)
+    job.flagged = flagged
+    job.flagged_at = now if flagged else None
+    job.updated_at = now
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+def delete_job(db: Session, job_id: uuid.UUID) -> bool:
+    """Hard-delete a job by id. Related analyses cascade via FK."""
+    job = get_job_by_id(db, job_id)
+    if job is None:
+        return False
+    db.delete(job)
+    db.commit()
+    return True
 
 
 def insert_jobs(db: Session, jobs: List[Job]) -> dict:
@@ -283,7 +426,10 @@ def insert_jobs(db: Session, jobs: List[Job]) -> dict:
             "citizenship_required": job.citizenship_required,
             "advanced_degree": job.advanced_degree,
             "closed": job.closed,
+            "min_years_required": job.min_years_required,
             "applied": False,
+            "saved": False,
+            "flagged": False,
             "ats": job.ats,
             "external_id": job.external_id,
             "role_family": job.role_family,
@@ -306,8 +452,29 @@ def insert_jobs(db: Session, jobs: List[Job]) -> dict:
             "age": stmt.excluded.age,
             "closed": stmt.excluded.closed,
             "faang": stmt.excluded.faang,
-            "no_sponsorship": stmt.excluded.no_sponsorship,
-            "citizenship_required": stmt.excluded.citizenship_required,
+            "apply_url": stmt.excluded.apply_url,
+            # Keep True once set (list emoji or description enrich) so re-ingest
+            # does not wipe citizenship / no-sponsor flags discovered later.
+            "no_sponsorship": text(
+                "jobs.no_sponsorship OR EXCLUDED.no_sponsorship"
+            ),
+            "citizenship_required": text(
+                "jobs.citizenship_required OR EXCLUDED.citizenship_required"
+            ),
+            "min_years_required": text(
+                """
+                CASE
+                  WHEN EXCLUDED.min_years_required IS NULL
+                    THEN jobs.min_years_required
+                  WHEN jobs.min_years_required IS NULL
+                    THEN EXCLUDED.min_years_required
+                  ELSE GREATEST(
+                    jobs.min_years_required,
+                    EXCLUDED.min_years_required
+                  )
+                END
+                """
+            ),
             "advanced_degree": stmt.excluded.advanced_degree,
             "source": stmt.excluded.source,
             "ats": stmt.excluded.ats,
@@ -315,8 +482,9 @@ def insert_jobs(db: Session, jobs: List[Job]) -> dict:
             "role_family": stmt.excluded.role_family,
             "is_active": stmt.excluded.is_active,
             "updated_at": now,
-            # Intentionally do not overwrite `applied`, `description`, or
-            # description-derived sponsorship fields on list-source upserts.
+            # Intentionally do not overwrite `applied`, `saved`, `flagged`,
+            # `description`, or description-derived sponsorship fields on
+            # list-source upserts.
         },
     )
 
