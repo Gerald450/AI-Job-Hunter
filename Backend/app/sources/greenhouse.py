@@ -11,6 +11,7 @@ from fetchers.base import DEFAULT_TIMEOUT
 from fetchers.exceptions import FetchError
 from model.job import Job
 from processors.age import datetime_to_age_string, parse_posted_at
+from processors.apply_url import rewrite_apply_url
 from processors.normalize import normalize_job
 from sources.http import http_get_json
 
@@ -107,6 +108,9 @@ class GreenhouseBoardSource:
             str(absolute)
             if isinstance(absolute, str) and absolute
             else f"https://boards.greenhouse.io/{token}/jobs/{job_id}"
+        )
+        apply_url = rewrite_apply_url(
+            apply_url, role=title, external_id=str(job_id)
         )
 
         location = "Unknown"
