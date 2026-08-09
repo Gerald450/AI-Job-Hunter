@@ -56,6 +56,29 @@ _YES_SPONSORSHIP_RAW: tuple[str, ...] = (
     r"sponsors?\s+(?:h-?1b|visas?|work\s+visas?)",
 )
 
+# Explicit US citizenship requirements (exclude international applicants).
+_CITIZENSHIP_REQUIRED_RAW: tuple[str, ...] = (
+    r"u\.?s\.?\s+citizenship\s+required",
+    r"us\s+citizenship\s+required",
+    r"united\s+states\s+citizenship\s+required",
+    r"u\.?s\.?\s+citizenship\s*:\s*yes",
+    r"us\s+citizenship\s*:\s*yes",
+    r"must\s+be\s+(?:a\s+)?u\.?s\.?\s+citizen",
+    r"must\s+be\s+(?:a\s+)?us\s+citizen",
+    r"must\s+be\s+(?:a\s+)?united\s+states\s+citizen",
+    r"must\s+possess\s+u\.?s\.?\s+citizenship",
+    r"must\s+possess\s+us\s+citizenship",
+    r"requires?\s+u\.?s\.?\s+citizenship",
+    r"requires?\s+us\s+citizenship",
+    r"u\.?s\.?\s+citizens?\s+only",
+    r"us\s+citizens?\s+only",
+    r"only\s+u\.?s\.?\s+citizens?",
+    r"only\s+us\s+citizens?",
+    r"candidates?\s+must\s+be\s+(?:a\s+)?u\.?s\.?\s+citizen",
+    r"applicants?\s+must\s+be\s+(?:a\s+)?u\.?s\.?\s+citizen",
+    r"applicant\s+must\s+be\s+(?:a\s+)?us\s+citizen",
+)
+
 
 def _compile_all(raw_patterns: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
     return tuple(re.compile(pattern) for pattern in raw_patterns)
@@ -63,3 +86,6 @@ def _compile_all(raw_patterns: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
 
 NO_SPONSORSHIP_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(_NO_SPONSORSHIP_RAW)
 YES_SPONSORSHIP_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(_YES_SPONSORSHIP_RAW)
+CITIZENSHIP_REQUIRED_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(
+    _CITIZENSHIP_REQUIRED_RAW
+)
