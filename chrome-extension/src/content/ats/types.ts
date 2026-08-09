@@ -6,9 +6,9 @@
  *   - implement their own autofill logic
  *
  * They MAY:
- *   - detect that the current page belongs to their ATS
+ *   - detect that the current page belongs to their ATS (≈ JobExtractor.canHandle)
  *   - enrich already-detected fields with extra metadata
- *   - extract job posting details
+ *   - extract job posting details (≈ JobExtractor.extract → JobExtraction)
  *   - observe multi-step navigation (e.g. Workday)
  */
 
@@ -17,7 +17,7 @@ import type { AtsProvider, DetectedField, JobExtraction } from "@/types";
 export interface AtsAdapter {
   readonly id: AtsProvider;
 
-  /** Return true when this adapter owns the current page. */
+  /** Return true when this adapter owns the current page (≈ canHandle). */
   matches(hostname: string, pathname: string, href?: string): boolean;
 
   /**
@@ -26,7 +26,7 @@ export interface AtsAdapter {
    */
   enrichFields?(fields: DetectedField[]): DetectedField[];
 
-  /** Optional job description extraction. */
+  /** Optional job description extraction (≈ extract → JobPage). */
   extractJob?(): Partial<JobExtraction>;
 
   /**
