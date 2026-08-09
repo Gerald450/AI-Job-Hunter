@@ -36,3 +36,11 @@ htmlcov/
 
 # Logs
 *.log
+
+# Node
+node_modules/
+automation-backend/dist/
+automation-backend/artifacts/screenshots/*
+automation-backend/artifacts/html/*
+!automation-backend/artifacts/screenshots/.gitkeep
+!automation-backend/artifacts/html/.gitkeep
