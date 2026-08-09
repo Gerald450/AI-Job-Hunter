@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 import clsx from "clsx";
 import {
+  useAnalyzeClipboard,
   useAnalyzeJob,
+  useAnalyzeSelection,
   useAutofill,
   useExtensionStatus,
   useNotification,
+  usePageSelection,
   useSettings,
   sendMessage,
 } from "@/hooks/useExtension";
@@ -55,8 +58,11 @@ function ToastBanner({
 export function App() {
   const { data: status, isLoading, refetch } = useExtensionStatus();
   const { data: settings } = useSettings();
+  const { data: selection } = usePageSelection();
   const autofill = useAutofill();
   const analyze = useAnalyzeJob();
+  const analyzeSelection = useAnalyzeSelection();
+  const analyzeClipboard = useAnalyzeClipboard();
   const { toast, notify } = useNotification();
 
   useEffect(() => {
@@ -64,6 +70,26 @@ export function App() {
     document.documentElement.classList.toggle("dark", on);
     document.body.classList.toggle("dark", on);
   }, [settings?.darkMode]);
+
+  const analyzing =
+    analyze.isPending ||
+    analyzeSelection.isPending ||
+    analyzeClipboard.isPending;
+
+  const selectionUsable = Boolean(selection?.usable);
+
+  const notifyAnalyzeResult = (
+    result: { overall_match?: number; score?: number } | undefined,
+  ) => {
+    const score = result?.overall_match ?? result?.score;
+    notify(
+      "success",
+      "Resume Match Ready",
+      score !== undefined
+        ? `Score: ${score}/100 — see the page panel`
+        : "See the page panel",
+    );
+  };
 
   const onAutofill = async () => {
     try {
@@ -78,11 +104,25 @@ export function App() {
   const onAnalyze = async () => {
     try {
       const result = await analyze.mutateAsync();
-      notify(
-        "success",
-        "Qualification Score Ready",
-        result ? `Score: ${result.score}/100` : undefined,
-      );
+      notifyAnalyzeResult(result);
+    } catch (err) {
+      notify("error", "Analysis Failed", err instanceof Error ? err.message : "Unknown error");
+    }
+  };
+
+  const onAnalyzeSelection = async () => {
+    try {
+      const result = await analyzeSelection.mutateAsync();
+      notifyAnalyzeResult(result);
+    } catch (err) {
+      notify("error", "Analysis Failed", err instanceof Error ? err.message : "Unknown error");
+    }
+  };
+
+  const onAnalyzeClipboard = async () => {
+    try {
+      const result = await analyzeClipboard.mutateAsync(undefined);
+      notifyAnalyzeResult(result);
     } catch (err) {
       notify("error", "Analysis Failed", err instanceof Error ? err.message : "Unknown error");
     }
@@ -175,14 +215,45 @@ export function App() {
             {autofill.isPending ? "Filling…" : "Autofill Current Page"}
           </button>
 
+          {selectionUsable ? (
+            <button
+              type="button"
+              onClick={() => void onAnalyzeSelection()}
+              disabled={analyzing}
+              className="w-full rounded-xl px-4 py-2.5 text-[13px] font-semibold transition border border-[var(--color-accent)]/40 bg-[var(--color-accent-soft)] text-[var(--color-accent-hover)] hover:border-[var(--color-accent)] disabled:opacity-60"
+            >
+              {analyzeSelection.isPending ? "Analyzing…" : "Analyze Selected Text"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void onAnalyze()}
+              disabled={analyzing}
+              className="w-full rounded-xl px-4 py-2.5 text-[13px] font-medium transition border border-[var(--border)] bg-[var(--surface-raised)] text-[var(--ink)] hover:border-[var(--color-accent)]/40 disabled:opacity-60"
+            >
+              {analyze.isPending ? "Analyzing…" : "Analyze Resume"}
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={() => void onAnalyze()}
-            disabled={analyze.isPending}
+            onClick={() => void onAnalyzeClipboard()}
+            disabled={analyzing}
             className="w-full rounded-xl px-4 py-2.5 text-[13px] font-medium transition border border-[var(--border)] bg-[var(--surface-raised)] text-[var(--ink)] hover:border-[var(--color-accent)]/40 disabled:opacity-60"
           >
-            {analyze.isPending ? "Analyzing…" : "Analyze Job"}
+            {analyzeClipboard.isPending ? "Analyzing…" : "Analyze from Clipboard"}
           </button>
+
+          {selectionUsable ? (
+            <button
+              type="button"
+              onClick={() => void onAnalyze()}
+              disabled={analyzing}
+              className="w-full rounded-xl px-4 py-2 text-[12px] font-medium transition text-[var(--ink-muted)] hover:text-[var(--ink)] disabled:opacity-60"
+            >
+              {analyze.isPending ? "Analyzing…" : "Analyze page (DOM / API)"}
+            </button>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-2">
             <button
