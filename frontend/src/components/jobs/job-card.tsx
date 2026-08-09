@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ExternalLink, Loader2 } from "lucide-react";
+import { Bookmark, Check, ExternalLink, Flag, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import type { Job } from "@/types/job";
 interface JobCardProps {
   job: Job;
   onToggleApplied: (jobId: string, applied: boolean) => Promise<void>;
+  onToggleSaved: (jobId: string, saved: boolean) => Promise<void>;
+  onToggleFlagged: (jobId: string, flagged: boolean) => Promise<void>;
   selected?: boolean;
   onSelectChange?: (jobId: string, selected: boolean) => void;
   matchScore?: number | null;
@@ -35,6 +37,8 @@ function matchBadgeClass(score: number): string {
 export function JobCard({
   job,
   onToggleApplied,
+  onToggleSaved,
+  onToggleFlagged,
   selected = false,
   onSelectChange,
   matchScore,
@@ -45,9 +49,11 @@ export function JobCard({
   const applyUrl = job.apply_url;
   const canApply = Boolean(applyUrl);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFlagging, setIsFlagging] = useState(false);
 
   async function handleApply() {
-    if (!applyUrl || isUpdating) return;
+    if (!applyUrl || isUpdating || isSaving || isFlagging) return;
 
     window.open(applyUrl, "_blank", "noopener,noreferrer");
 
@@ -62,7 +68,7 @@ export function JobCard({
   }
 
   async function handleMarkUnapplied() {
-    if (isUpdating) return;
+    if (isUpdating || isSaving || isFlagging) return;
 
     setIsUpdating(true);
     try {
@@ -71,6 +77,30 @@ export function JobCard({
       setIsUpdating(false);
     }
   }
+
+  async function handleToggleSaved() {
+    if (isUpdating || isSaving || isFlagging) return;
+
+    setIsSaving(true);
+    try {
+      await onToggleSaved(job.id, !job.saved);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleToggleFlagged() {
+    if (isUpdating || isSaving || isFlagging) return;
+
+    setIsFlagging(true);
+    try {
+      await onToggleFlagged(job.id, !job.flagged);
+    } finally {
+      setIsFlagging(false);
+    }
+  }
+
+  const busy = isUpdating || isSaving || isFlagging;
 
   return (
     <Card className="rounded-xl border border-border/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
@@ -95,6 +125,18 @@ export function JobCard({
                   className={`inline-flex rounded-md px-2 py-0.5 text-xs font-semibold ring-1 ${matchBadgeClass(matchScore)}`}
                 >
                   Match {matchScore}
+                </span>
+              ) : null}
+              {job.saved ? (
+                <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">
+                  <Bookmark className="size-3 fill-current" aria-hidden />
+                  Saved
+                </span>
+              ) : null}
+              {job.flagged ? (
+                <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-800 ring-1 ring-rose-200">
+                  <Flag className="size-3 fill-current" aria-hidden />
+                  Flagged
                 </span>
               ) : null}
             </div>
@@ -128,7 +170,7 @@ export function JobCard({
             type="button"
             variant="outline"
             size="sm"
-            disabled={!canAnalyze || analyzing}
+            disabled={!canAnalyze || analyzing || busy}
             onClick={() => onAnalyze(job)}
             className="sm:mr-auto"
           >
@@ -139,17 +181,92 @@ export function JobCard({
           </Button>
         ) : null}
 
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={() => {
+            void handleToggleSaved();
+          }}
+          className={
+            job.saved
+              ? "text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+              : "text-slate-500 hover:text-slate-700"
+          }
+          aria-label={
+            job.saved
+              ? `Unsave ${job.company} ${job.role}`
+              : `Save ${job.company} ${job.role}`
+          }
+        >
+          {isSaving ? (
+            <Loader2 className="size-3.5 animate-spin" aria-hidden />
+          ) : (
+            <Bookmark
+              className={cn("size-3.5", job.saved && "fill-current")}
+              aria-hidden
+            />
+          )}
+          {job.saved ? "Saved" : "Save"}
+        </Button>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={() => {
+            void handleToggleFlagged();
+          }}
+          className={
+            job.flagged
+              ? "text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+              : "text-slate-500 hover:text-slate-700"
+          }
+          aria-label={
+            job.flagged
+              ? `Unflag ${job.company} ${job.role}`
+              : `Flag ${job.company} ${job.role}`
+          }
+        >
+          {isFlagging ? (
+            <Loader2 className="size-3.5 animate-spin" aria-hidden />
+          ) : (
+            <Flag
+              className={cn("size-3.5", job.flagged && "fill-current")}
+              aria-hidden
+            />
+          )}
+          {job.flagged ? "Unflag" : "Flag"}
+        </Button>
+
         {job.applied ? (
           <>
             <span className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200">
               <Check className="size-4" aria-hidden />
               Applied
             </span>
+            {canApply ? (
+              <Button
+                type="button"
+                size="lg"
+                disabled={busy}
+                onClick={() => {
+                  window.open(applyUrl!, "_blank", "noopener,noreferrer");
+                }}
+                className="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto"
+                aria-label={`Open job posting for ${job.company} ${job.role}`}
+              >
+                View posting
+                <ExternalLink className="size-4" aria-hidden />
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              disabled={isUpdating}
+              disabled={busy}
               onClick={() => {
                 void handleMarkUnapplied();
               }}
@@ -167,7 +284,7 @@ export function JobCard({
             onClick={() => {
               void handleApply();
             }}
-            disabled={isUpdating}
+            disabled={busy}
             className={cn(
               buttonVariants({ size: "lg" }),
               "w-full bg-blue-600 text-white hover:bg-blue-700 sm:ml-auto sm:w-auto",
