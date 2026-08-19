@@ -163,6 +163,27 @@ _REMOTE_US_RE = re.compile(
 
 _BARE_REMOTE_RE = re.compile(r"^\s*remote\s*$", re.IGNORECASE)
 
+_VIRTUAL_RE = re.compile(
+    r"\b("
+    r"virtual(?:ized)?"
+    r"|online(?:[- ]only)?"
+    r"|fully[- ]online"
+    r"|remote[- ]only"
+    r"|livestream"
+    r"|zoom"
+    r"|worldwide[- ]online"
+    r")\b",
+    re.IGNORECASE,
+)
+
+_US_TERRITORY_RE = re.compile(
+    r"\b("
+    r"puerto rico|guam|american samoa|u\.?s\.?\s*virgin islands|"
+    r"virgin islands|northern mariana islands|usa?[- ]?territor"
+    r")\b",
+    re.IGNORECASE,
+)
+
 # Clear non-US markers. A job can still pass if it also has a US signal
 # (e.g. "NYC / Toronto" → keep because NYC is US).
 _NON_US_RE = re.compile(
@@ -218,6 +239,177 @@ def has_us_signal(location: str) -> bool:
     if _has_us_city_tag(location):
         return True
     return False
+
+
+def has_non_us_signal(location: str) -> bool:
+    """Return True if ``location`` mentions a clear non-US place."""
+    if not location:
+        return False
+    return _NON_US_RE.search(location) is not None
+
+
+def is_virtual_location(location: str | None, *, is_virtual: bool | None = None) -> bool:
+    """True when the venue is online/virtual rather than a physical city."""
+    if is_virtual is True:
+        return True
+    if not location:
+        return False
+    text = location.strip()
+    if not text:
+        return False
+    if _VIRTUAL_RE.search(text):
+        return True
+    lowered = text.lower()
+    return lowered in {"online", "virtual", "remote", "worldwide"}
+
+
+def classify_conference_location(
+    location: str | None,
+    *,
+    is_virtual: bool | None = None,
+) -> str:
+    """Classify a conference venue: US, VIRTUAL, NON_US, or UNKNOWN.
+
+    Organization names must not be passed in as ``location``.
+    Bare ``Remote`` is VIRTUAL for conferences (jobs still treat it as US).
+    """
+    text = (location or "").strip()
+    empty = (not text) or text.lower() in {"unknown", "n/a", "na", "none", "-"}
+    if empty:
+        return "VIRTUAL" if is_virtual is True else "UNKNOWN"
+
+    us = has_us_signal(text) or _US_TERRITORY_RE.search(text) is not None
+    non_us = has_non_us_signal(text)
+    virtual = is_virtual_location(text, is_virtual=is_virtual)
+
+    if us:
+        return "US"
+    if virtual and not non_us:
+        return "VIRTUAL"
+    if virtual and non_us and re.search(
+        r"^\s*(online|virtual|remote)\b", text, re.IGNORECASE
+    ):
+        return "VIRTUAL"
+    if non_us:
+        return "NON_US"
+    if virtual:
+        return "VIRTUAL"
+    return "UNKNOWN"
+
+
+_CITY_STATE_RE = re.compile(
+    r"^\s*([^,]+),\s*([A-Z]{2})(?:\s*,?\s*(?:USA|U\.S\.A\.|United States))?\s*$",
+    re.IGNORECASE,
+)
+_CITY_COUNTRY_RE = re.compile(
+    r"^\s*(.+?)\s*\(([^)]+)\)\s*$",
+)
+_STATE_NAME_TO_ABBR: dict[str, str] = {
+    "alabama": "AL",
+    "alaska": "AK",
+    "arizona": "AZ",
+    "arkansas": "AR",
+    "california": "CA",
+    "colorado": "CO",
+    "connecticut": "CT",
+    "delaware": "DE",
+    "florida": "FL",
+    "georgia": "GA",
+    "hawaii": "HI",
+    "idaho": "ID",
+    "illinois": "IL",
+    "indiana": "IN",
+    "iowa": "IA",
+    "kansas": "KS",
+    "kentucky": "KY",
+    "louisiana": "LA",
+    "maine": "ME",
+    "maryland": "MD",
+    "massachusetts": "MA",
+    "michigan": "MI",
+    "minnesota": "MN",
+    "mississippi": "MS",
+    "missouri": "MO",
+    "montana": "MT",
+    "nebraska": "NE",
+    "nevada": "NV",
+    "new hampshire": "NH",
+    "new jersey": "NJ",
+    "new mexico": "NM",
+    "new york": "NY",
+    "north carolina": "NC",
+    "north dakota": "ND",
+    "ohio": "OH",
+    "oklahoma": "OK",
+    "oregon": "OR",
+    "pennsylvania": "PA",
+    "rhode island": "RI",
+    "south carolina": "SC",
+    "south dakota": "SD",
+    "tennessee": "TN",
+    "texas": "TX",
+    "utah": "UT",
+    "vermont": "VT",
+    "virginia": "VA",
+    "washington": "WA",
+    "west virginia": "WV",
+    "wisconsin": "WI",
+    "wyoming": "WY",
+    "district of columbia": "DC",
+}
+
+
+def parse_location_parts(location: str | None) -> tuple[str | None, str | None, str | None]:
+    """Best-effort city, state, country from a raw location string.
+
+    Returns ``(city, state, country)``. Unknown parts are None — never guessed
+    from the organization name.
+    """
+    if not location:
+        return None, None, None
+    text = location.strip()
+    if not text or text.lower() in {"unknown", "n/a", "na", "none", "-"}:
+        return None, None, None
+    if is_virtual_location(text):
+        return None, None, None
+
+    match = _CITY_STATE_RE.match(text)
+    if match:
+        city = match.group(1).strip()
+        state = match.group(2).upper()
+        return city, state, "United States"
+
+    paren = _CITY_COUNTRY_RE.match(text)
+    if paren:
+        city = paren.group(1).strip().rstrip(",")
+        country_raw = paren.group(2).strip()
+        country_lower = country_raw.lower()
+        if country_lower in {"usa", "us", "u.s.", "u.s.a.", "united states"}:
+            # "Santa Clara, CA (USA)" or "New York, NY (USA)"
+            inner = _CITY_STATE_RE.match(city) or _CITY_STATE_RE.match(
+                city + ", USA"
+            )
+            if "," in city:
+                bits = [b.strip() for b in city.split(",")]
+                if len(bits) >= 2 and bits[-1].upper() in _US_STATE_ABBR:
+                    return bits[0], bits[-1].upper(), "United States"
+                if len(bits) >= 2 and bits[-1].lower() in _STATE_NAME_TO_ABBR:
+                    return bits[0], _STATE_NAME_TO_ABBR[bits[-1].lower()], "United States"
+            return city, None, "United States"
+        country = country_raw
+        if country_lower in {"uk", "u.k.", "united kingdom", "england"}:
+            country = "United Kingdom"
+        elif country_lower == "canada":
+            country = "Canada"
+        return city, None, country
+
+    if has_us_signal(text) and not has_non_us_signal(text):
+        bits = [b.strip() for b in text.split(",") if b.strip()]
+        if len(bits) >= 2 and bits[1].upper()[:2] in _US_STATE_ABBR:
+            return bits[0], bits[1].upper()[:2], "United States"
+        return bits[0] if bits else None, None, "United States"
+
+    return None, None, None
 
 
 def is_us_location(location: str | None) -> bool:
