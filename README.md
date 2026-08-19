@@ -71,7 +71,7 @@ uvicorn api:app --reload --app-dir .   # API on :8000
 
 Board tokens and provider toggles live in `Backend/app/config/` (`companies.yaml`, `providers.yaml`, `role_families.yaml`, `early_career.yaml`).
 
-Set `GROQ_API_KEY` in `Backend/.env` (optional `GROQ_MODEL`, default `llama-3.3-70b-versatile`) for on-demand resume matching and AI autofill fallback.
+Set `GROQ_API_KEY` in `Backend/.env` (optional `GROQ_MODEL`, default `openai/gpt-oss-120b`) for on-demand resume matching and AI autofill fallback.
 
 Upload a resume for matching (parses once with Groq; returns `resumeId`):
 
@@ -162,3 +162,24 @@ If you're also a new-grad hunting in a noisy market — same energy. Steal ideas
 ## License
 
 MIT
+
+## Conferences
+
+The job pipeline is unchanged. Conference discovery is a sibling CLI + API:
+
+```bash
+cd Backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cd app
+python conferences.py                 # discover + normalize + store
+python conferences.py --verify --verify-limit 50
+python conferences.py --source usenix
+uvicorn api:app --reload --app-dir .
+curl -s 'http://localhost:8000/api/conferences/recommended?limit=25'
+```
+
+Default feed: US + virtual conferences that are `ELIGIBLE`, `LIKELY_ELIGIBLE`, or `NEEDS_VERIFICATION`. Non-US and `NOT_ELIGIBLE` rows stay in the database.
+
+Community lists (developers.events, Awesome AI Conferences) are discovery only. Dates, location, eligibility, and funding are taken from official pages when `--verify` is used.
+

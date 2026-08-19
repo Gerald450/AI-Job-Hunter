@@ -142,6 +142,16 @@ cd Backend/app
 python main.py
 ```
 
+Conference discovery (does not run the job pipeline):
+
+```bash
+python conferences.py
+python conferences.py --verify --verify-limit 50
+```
+
+API: `GET /api/conferences`, `/api/conferences/recommended`, `/api/conferences/deadlines`, `/api/conferences/funding`, `/api/conferences/eligibility`, `/api/conferences/{id}`.
+
+
 ---
 
 ## Design Decisions
