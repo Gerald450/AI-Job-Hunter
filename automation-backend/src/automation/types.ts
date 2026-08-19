@@ -31,6 +31,7 @@ export type AtsPlatform = z.infer<typeof AtsPlatformSchema>;
 export const UserProfileSchema = z
   .object({
     firstName: z.string().optional(),
+    middleName: z.string().optional(),
     lastName: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
