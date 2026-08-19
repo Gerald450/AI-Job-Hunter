@@ -250,6 +250,7 @@ export type JobAnalysisResponse = z.infer<typeof JobAnalysisResponseSchema>;
 
 export const UserProfileSchema = z.object({
   firstName: z.string().optional(),
+  middleName: z.string().optional(),
   lastName: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().optional(),
@@ -277,6 +278,7 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 
 /** Personal defaults applied when a stored profile omits these keys. */
 export const DEFAULT_PROFILE_VALUES: Partial<UserProfile> = {
+  middleName: "Amos",
   gender: "Male",
   race: "Black or African American",
   disability: "No",
