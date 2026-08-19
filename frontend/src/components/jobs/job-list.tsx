@@ -514,7 +514,6 @@ export function JobList() {
     mutationFn: ({
       jobId,
       applied,
-      previousApplied,
     }: {
       jobId: string;
       applied: boolean;
@@ -548,7 +547,6 @@ export function JobList() {
     mutationFn: ({
       jobId,
       saved,
-      previousSaved,
     }: {
       jobId: string;
       saved: boolean;
@@ -582,7 +580,6 @@ export function JobList() {
     mutationFn: ({
       jobId,
       flagged,
-      previousFlagged,
     }: {
       jobId: string;
       flagged: boolean;
