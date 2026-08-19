@@ -279,26 +279,42 @@ export function JobCard({
             </Button>
           </>
         ) : canApply ? (
-          <button
-            type="button"
-            onClick={() => {
-              void handleApply();
-            }}
-            disabled={busy}
-            className={cn(
-              buttonVariants({ size: "lg" }),
-              "w-full bg-blue-600 text-white hover:bg-blue-700 sm:ml-auto sm:w-auto",
-            )}
-          >
-            {isUpdating ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <>
-                Apply
-                <ExternalLink className="size-4" aria-hidden />
-              </>
-            )}
-          </button>
+          <>
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              disabled={busy}
+              onClick={() => {
+                window.open(applyUrl!, "_blank", "noopener,noreferrer");
+              }}
+              className="w-full sm:ml-auto sm:w-auto"
+              aria-label={`View job posting for ${job.company} ${job.role}`}
+            >
+              View post
+              <ExternalLink className="size-4" aria-hidden />
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleApply();
+              }}
+              disabled={busy}
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto",
+              )}
+            >
+              {isUpdating ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : (
+                <>
+                  Apply
+                  <ExternalLink className="size-4" aria-hidden />
+                </>
+              )}
+            </button>
+          </>
         ) : (
           <Button
             disabled
