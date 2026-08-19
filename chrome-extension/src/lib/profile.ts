@@ -22,6 +22,7 @@ export function profileToAutofillMap(profile: UserProfile): Record<string, strin
   };
 
   put("First Name", profile.firstName);
+  put("Middle Name", profile.middleName);
   put("Last Name", profile.lastName);
   put("Email", profile.email);
   put("Phone", profile.phone);

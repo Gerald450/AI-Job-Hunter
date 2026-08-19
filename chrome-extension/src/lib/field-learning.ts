@@ -40,7 +40,9 @@ function profileValueFromCanonical(
   profileField: string,
 ): string | null {
   if (profileField === "full_name") {
-    const parts = [profile.firstName, profile.lastName].filter(Boolean);
+    const parts = [profile.firstName, profile.middleName, profile.lastName].filter(
+      Boolean,
+    );
     return parts.length ? parts.join(" ") : null;
   }
   const key =
