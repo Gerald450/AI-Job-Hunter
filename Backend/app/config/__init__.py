@@ -62,3 +62,33 @@ def load_providers() -> dict[str, Any]:
 def provider_enabled(name: str, providers: dict[str, Any] | None = None) -> bool:
     cfg = (providers or load_providers()).get(name) or {}
     return bool(cfg.get("enabled", True))
+
+
+def load_conference_profile() -> dict[str, Any]:
+    return _load_yaml("conference_profile.yaml")
+
+
+def load_conference_topics() -> dict[str, Any]:
+    return _load_yaml("conference_topics.yaml")
+
+
+def load_conference_providers() -> dict[str, Any]:
+    """Merge conference provider settings without touching job providers."""
+    data = _load_yaml("providers.yaml")
+    block = data.get("conferences") or {}
+    defaults = block.get("defaults") or data.get("defaults") or {}
+    providers = block.get("providers") or {}
+    merged: dict[str, Any] = {}
+    for name, overrides in providers.items():
+        settings = dict(defaults)
+        if isinstance(overrides, dict):
+            settings.update(overrides)
+        merged[str(name)] = settings
+    return merged
+
+
+def conference_provider_enabled(
+    name: str, providers: dict[str, Any] | None = None
+) -> bool:
+    cfg = (providers or load_conference_providers()).get(name) or {}
+    return bool(cfg.get("enabled", True))
