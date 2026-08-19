@@ -9,6 +9,8 @@ import { findElement } from "@/content/detector";
 import {
   CANONICAL_TO_PROFILE,
   inferCanonicalKey,
+  isUrlCanonicalKey,
+  looksLikeUrl,
   normalizeLabel,
 } from "@/lib/semantics";
 import type { AutofillValue, DetectedField, UserProfile } from "@/types";
@@ -16,6 +18,25 @@ import { CONFIDENCE_THRESHOLD } from "@/types";
 
 export { normalizeLabel } from "@/lib/semantics";
 export { categorizeField } from "@/lib/semantics";
+
+const POSTAL_KEYS = new Set(["address", "location", "city", "state", "zip", "country"]);
+
+function isUrlLikeField(field: DetectedField): boolean {
+  if (field.type === "url") return true;
+  if (isUrlCanonicalKey(field.canonicalKey)) return true;
+  return /\b(url|website|web site|portfolio|github|linkedin)\b/i.test(
+    field.label || "",
+  );
+}
+
+/** Profile link to use for website/URL fields — never postal address. */
+function profileUrlValue(profile: UserProfile): string | null {
+  for (const key of ["website", "linkedin"] as const) {
+    const v = profileValue(profile, key);
+    if (v && looksLikeUrl(v)) return v;
+  }
+  return null;
+}
 
 function profileValue(
   profile: UserProfile,
@@ -67,19 +88,37 @@ export function matchFieldToProfile(
   field: DetectedField,
   profile: UserProfile,
 ): string | null {
+  // Workday "Websites → URL" must never receive a street address.
+  if (isUrlLikeField(field)) {
+    if (field.canonicalKey === "linkedin" || field.canonicalKey === "linkedin_url") {
+      return profileValue(profile, "linkedin");
+    }
+    if (field.canonicalKey === "github") {
+      const site = profileValue(profile, "website");
+      return site && looksLikeUrl(site) ? site : null;
+    }
+    return profileUrlValue(profile);
+  }
+
   // Prefer already-normalized canonical key
   if (field.canonicalKey) {
-    if (field.canonicalKey === "address" || field.canonicalKey === "location") {
-      return addressPart(profile, "street") ?? profileValue(profile, "location");
+    if (POSTAL_KEYS.has(field.canonicalKey)) {
+      if (field.canonicalKey === "city") {
+        return addressPart(profile, "city") ?? profileValue(profile, "location");
+      }
+      if (field.canonicalKey === "state") {
+        return addressPart(profile, "state");
+      }
+      if (field.canonicalKey === "zip") {
+        return addressPart(profile, "zip");
+      }
+      if (field.canonicalKey === "address" || field.canonicalKey === "location") {
+        return addressPart(profile, "street") ?? profileValue(profile, "location");
+      }
+      return null;
     }
-    if (field.canonicalKey === "city") {
-      return addressPart(profile, "city") ?? profileValue(profile, "location");
-    }
-    if (field.canonicalKey === "state") {
-      return addressPart(profile, "state");
-    }
-    if (field.canonicalKey === "zip") {
-      return addressPart(profile, "zip");
+    if (isUrlCanonicalKey(field.canonicalKey)) {
+      return profileUrlValue(profile);
     }
     const profileKey = CANONICAL_TO_PROFILE[field.canonicalKey as keyof typeof CANONICAL_TO_PROFILE];
     if (profileKey) {
@@ -88,24 +127,35 @@ export function matchFieldToProfile(
     }
     // full_name special case
     if (field.canonicalKey === "full_name") {
-      const parts = [profile.firstName, profile.lastName].filter(Boolean);
+      const parts = [profile.firstName, profile.middleName, profile.lastName].filter(
+        Boolean,
+      );
       if (parts.length) return parts.join(" ");
     }
   }
 
-  const match = inferCanonicalKey([
-    field.label,
-    field.placeholder,
-    field.ariaLabel,
-    field.ariaLabelledBy,
-    field.nearbyText,
-    field.name,
-    field.id,
-  ]);
+  const match = inferCanonicalKey(
+    [
+      field.label,
+      field.placeholder,
+      field.ariaLabel,
+      field.ariaLabelledBy,
+      field.nearbyText,
+      field.parentSection,
+      field.name,
+      field.id,
+    ],
+    { primaryCount: 4 },
+  );
   if (!match || match.confidence < 0.7) return null;
 
+  if (isUrlCanonicalKey(match.key) || match.key === "website") {
+    return profileUrlValue(profile);
+  }
   if (match.key === "full_name") {
-    const parts = [profile.firstName, profile.lastName].filter(Boolean);
+    const parts = [profile.firstName, profile.middleName, profile.lastName].filter(
+      Boolean,
+    );
     return parts.length ? parts.join(" ") : null;
   }
   if (match.key === "address" || match.key === "location") {
@@ -161,6 +211,11 @@ export function resolveAutofillValues(
         : undefined);
 
     if (backend) {
+      const raw = String(backend.value ?? "");
+      // Drop postal / non-URL values aimed at Website URL controls.
+      if (isUrlLikeField(field) && raw && !looksLikeUrl(raw)) {
+        continue;
+      }
       const target = {
         ...backend,
         field: field.label,

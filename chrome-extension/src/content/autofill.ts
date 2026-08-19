@@ -10,11 +10,20 @@
 
 import { findElement } from "@/content/detector";
 import { logger } from "@/lib/logger";
-import { normalizeLabel } from "@/lib/semantics";
+import { isUrlCanonicalKey, looksLikeUrl, normalizeLabel } from "@/lib/semantics";
 import type { AutofillValue, DetectedField } from "@/types";
 
 const SCOPE = "autofill";
 const HIGHLIGHT_MS = 1600;
+
+function isUrlLikeField(field: DetectedField, el?: HTMLElement | null): boolean {
+  if (field.type === "url") return true;
+  if (el instanceof HTMLInputElement && el.type === "url") return true;
+  if (isUrlCanonicalKey(field.canonicalKey)) return true;
+  return /\b(url|website|web site|portfolio|github|linkedin)\b/i.test(
+    field.label || "",
+  );
+}
 
 function dispatchInputEvents(el: HTMLElement): void {
   el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -356,6 +365,16 @@ export function applyValue(
 
   if (opts.review) {
     highlight(el, "review");
+    return false;
+  }
+
+  const raw = String(value.value ?? "");
+  if (isUrlLikeField(field, el) && raw && !looksLikeUrl(raw)) {
+    logger.warn(
+      SCOPE,
+      `Skipping non-URL value for "${field.label}"`,
+      raw.slice(0, 80),
+    );
     return false;
   }
 
