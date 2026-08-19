@@ -11,6 +11,7 @@ import type { UserProfile } from "@/types";
 /** Canonical semantic keys used across detection → backend → autofill. */
 export type CanonicalKey =
   | "first_name"
+  | "middle_name"
   | "last_name"
   | "full_name"
   | "email"
@@ -61,6 +62,13 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   "preferred name": "first_name",
   fname: "first_name",
 
+  // Middle name
+  "middle name": "middle_name",
+  middlename: "middle_name",
+  "middle initial": "middle_name",
+  "legal middle name": "middle_name",
+  mname: "middle_name",
+
   // Last name
   "last name": "last_name",
   lastname: "last_name",
@@ -95,7 +103,7 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   "home phone": "phone",
   tel: "phone",
 
-  // Links
+  // Links / URLs (keep "web address" / "website url" longer than bare "address")
   linkedin: "linkedin",
   "linkedin url": "linkedin",
   "linkedin profile": "linkedin",
@@ -103,11 +111,19 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   website: "website",
   "personal website": "website",
   "personal url": "website",
+  "website url": "website",
+  "web site": "website",
+  "web site url": "website",
+  "web url": "website",
+  "web address": "website",
+  "site url": "website",
+  url: "website",
   portfolio: "portfolio",
+  "portfolio url": "portfolio",
   github: "github",
   "github url": "github",
 
-  // Location
+  // Location / postal address (never use these for input[type=url] / Website URL)
   location: "location",
   "current location": "location",
   city: "city",
@@ -119,6 +135,9 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   "postal code": "zip",
   address: "address",
   "street address": "address",
+  "address line": "address",
+  "address line 1": "address",
+  "address line 2": "address",
   "preferred location": "preferred_location",
 
   // Work auth
@@ -225,6 +244,7 @@ export const CANONICAL_TO_PROFILE: Partial<
   Record<CanonicalKey, keyof UserProfile>
 > = {
   first_name: "firstName",
+  middle_name: "middleName",
   last_name: "lastName",
   email: "email",
   phone: "phone",
@@ -270,12 +290,37 @@ export interface CanonicalMatch {
   matchedAlias: string;
 }
 
+function matchSignalText(text: string): CanonicalMatch | null {
+  const exact = CANONICAL_ALIASES[text];
+  if (exact) {
+    return { key: exact, confidence: 1, matchedAlias: text };
+  }
+
+  // Substring / contains — prefer longer aliases
+  const aliases = Object.entries(CANONICAL_ALIASES).sort(
+    (a, b) => b[0].length - a[0].length,
+  );
+  for (const [alias, key] of aliases) {
+    if (text.includes(alias)) {
+      const ratio = alias.length / Math.max(text.length, 1);
+      const confidence = Math.min(0.98, 0.7 + ratio * 0.25);
+      return { key, confidence, matchedAlias: alias };
+    }
+  }
+  return null;
+}
+
 /**
- * Infer a canonical key from one or more text signals (label, placeholder,
- * aria, nearby text, name, id). Never relies on CSS class names alone.
+ * Infer a canonical key from text signals (label, placeholder, aria, nearby
+ * text, name, id). Never relies on CSS class names alone.
+ *
+ * Primary signals (label / aria / placeholder) win over secondary ones
+ * (section, name, id). This stops Workday name/id tokens like "address"
+ * from overriding a clear "URL" label on the Websites step.
  */
 export function inferCanonicalKey(
   signals: Array<string | undefined | null>,
+  options?: { primaryCount?: number },
 ): CanonicalMatch | null {
   const cleaned = signals
     .filter((s): s is string => Boolean(s && s.trim()))
@@ -283,35 +328,50 @@ export function inferCanonicalKey(
 
   if (cleaned.length === 0) return null;
 
+  const primaryCount = Math.min(
+    options?.primaryCount ?? cleaned.length,
+    cleaned.length,
+  );
+  const primary = cleaned.slice(0, primaryCount);
+  const secondary = cleaned.slice(primaryCount);
+
   let best: CanonicalMatch | null = null;
-
-  for (const text of cleaned) {
-    // Exact alias hit — highest confidence
-    const exact = CANONICAL_ALIASES[text];
-    if (exact) {
-      const hit: CanonicalMatch = { key: exact, confidence: 1, matchedAlias: text };
-      if (!best || hit.confidence > best.confidence) best = hit;
-      continue;
-    }
-
-    // Substring / contains — prefer longer aliases
-    const aliases = Object.entries(CANONICAL_ALIASES).sort(
-      (a, b) => b[0].length - a[0].length,
-    );
-    for (const [alias, key] of aliases) {
-      if (text.includes(alias)) {
-        // Longer alias relative to text → higher confidence
-        const ratio = alias.length / Math.max(text.length, 1);
-        const confidence = Math.min(0.98, 0.7 + ratio * 0.25);
-        if (!best || confidence > best.confidence) {
-          best = { key, confidence, matchedAlias: alias };
-        }
-        break;
-      }
-    }
+  for (const text of primary) {
+    const hit = matchSignalText(text);
+    if (hit && (!best || hit.confidence > best.confidence)) best = hit;
   }
+  if (best) return best;
 
+  for (const text of secondary) {
+    const hit = matchSignalText(text);
+    if (hit && (!best || hit.confidence > best.confidence)) best = hit;
+  }
   return best;
+}
+
+/** Keys that expect an http(s) / domain value — never a postal address. */
+export const URL_CANONICAL_KEYS = new Set<CanonicalKey>([
+  "website",
+  "portfolio",
+  "github",
+  "linkedin",
+  "linkedin_url",
+]);
+
+export function isUrlCanonicalKey(
+  key: string | undefined | null,
+): key is CanonicalKey {
+  return Boolean(key && URL_CANONICAL_KEYS.has(key as CanonicalKey));
+}
+
+/** True when a string is plausible as a website / profile URL. */
+export function looksLikeUrl(value: string): boolean {
+  const v = value.trim();
+  if (!v) return false;
+  if (/\s/.test(v)) return false; // postal lines have spaces; URLs usually don't need them
+  if (/^(https?:\/\/|www\.)/i.test(v)) return true;
+  if (/^(linkedin\.com|github\.com)\//i.test(v)) return true;
+  return /^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}([/?#].*)?$/i.test(v);
 }
 
 /** Register additional aliases at runtime (options page / experiments). */
