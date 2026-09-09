@@ -26,3 +26,36 @@ providers:
     timeout_seconds: 30
     max_retries: 2
     request_delay_ms: 50
+
+# Conference discovery sources. Job provider keys above are unchanged.
+conferences:
+  defaults:
+    enabled: true
+    timeout_seconds: 30
+    max_retries: 2
+    request_delay_ms: 300
+  providers:
+    developers_events:
+      enabled: true
+      request_delay_ms: 0
+    awesome_ai:
+      enabled: true
+      request_delay_ms: 0
+    usenix:
+      enabled: true
+    neurips:
+      enabled: true
+    icml:
+      enabled: true
+    iclr:
+      enabled: true
+    aaai:
+      enabled: true
+    cvpr:
+      enabled: true
+    acl:
+      enabled: true
+    acm:
+      enabled: true
+    ieee:
+      enabled: true

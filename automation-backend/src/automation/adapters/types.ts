@@ -51,11 +51,15 @@ export const PROFILE_FIELD_MAP: Array<{
   get: (p: UserProfile) => string | number | boolean | undefined;
 }> = [
   { keys: ["first_name", "firstName", "firstname"], get: (p) => p.firstName },
+  {
+    keys: ["middle_name", "middleName", "middlename", "middle_initial", "mi"],
+    get: (p) => p.middleName,
+  },
   { keys: ["last_name", "lastName", "lastname"], get: (p) => p.lastName },
   { keys: ["email", "email_address"], get: (p) => p.email },
   { keys: ["phone", "phone_number", "mobile"], get: (p) => p.phone },
   { keys: ["linkedin", "linkedin_url"], get: (p) => p.linkedin },
-  { keys: ["website", "portfolio", "personal_website"], get: (p) => p.website },
+  { keys: ["website", "portfolio", "personal_website", "url", "website_url"], get: (p) => p.website },
   { keys: ["location", "city", "address", "street_address", "street"], get: (p) => p.location },
   { keys: ["education", "school", "university"], get: (p) => p.education },
   { keys: ["degree"], get: (p) => p.degree },

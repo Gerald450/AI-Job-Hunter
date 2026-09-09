@@ -15,6 +15,7 @@ class ExtensionUserProfile(BaseModel):
     """Contact / preference profile matching the Chrome extension UserProfile."""
 
     firstName: Optional[str] = None
+    middleName: Optional[str] = None
     lastName: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None

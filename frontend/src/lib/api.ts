@@ -302,4 +302,202 @@ export async function analyzeJobsBatch(
   }
 }
 
+export interface FetchConferencesParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  location?: "default" | "all" | "us" | "virtual";
+  eligibility?: string;
+  funding?:
+    | ""
+    | "available"
+    | "travel"
+    | "scholarship"
+    | "waiver"
+    | "none"
+    | "eligible"
+    | "needs_verification";
+  topic?: string;
+  deadline?: string;
+  source?: string;
+  saved?: boolean;
+  trackingStatus?: string;
+  recommended?: boolean;
+  includeNotEligible?: boolean;
+  includeNonUs?: boolean;
+}
+
+function applyConferenceFilters(
+  search: URLSearchParams,
+  params: FetchConferencesParams,
+): void {
+  const location = params.location ?? "us";
+  if (location === "all") {
+    search.set("include_non_us", "true");
+  } else if (location === "us" || location === "default") {
+    search.set("location_status", "US");
+  } else if (location === "virtual") {
+    search.set("virtual", "true");
+  }
+
+  const eligibility = params.eligibility?.trim();
+  if (eligibility) search.set("eligibility", eligibility);
+
+  const funding = params.funding ?? "available";
+  if (funding === "available" || funding === "eligible" || funding === "needs_verification") {
+    search.set("funding_available", "true");
+  }
+  if (funding === "none") search.set("funding_available", "false");
+  if (funding === "travel") search.set("travel_grant_available", "true");
+  if (funding === "scholarship") search.set("scholarship_available", "true");
+  if (funding === "waiver") search.set("registration_waiver_available", "true");
+  if (funding === "eligible") search.set("funding_eligibility", "ELIGIBLE");
+  if (funding === "needs_verification") {
+    search.set("funding_eligibility", "NEEDS_VERIFICATION");
+  }
+
+  const topic = params.topic?.trim();
+  if (topic) search.set("topic", topic);
+
+  const deadline = params.deadline?.trim();
+  if (deadline) search.set("deadline", deadline);
+
+  const source = params.source?.trim();
+  if (source) search.set("source", source);
+
+  const query = params.search?.trim();
+  if (query) search.set("search", query);
+
+  if (params.saved === true) search.set("saved", "true");
+  const tracking = params.trackingStatus?.trim();
+  if (tracking) search.set("tracking_status", tracking);
+
+  if (params.includeNotEligible) search.set("include_not_eligible", "true");
+  if (params.includeNonUs) search.set("include_non_us", "true");
+}
+
+export async function fetchConferences(
+  params: FetchConferencesParams = {},
+): Promise<import("@/types/conference").ConferenceListResponse> {
+  const {
+    limit = DEFAULT_PAGE_SIZE,
+    offset = 0,
+    recommended = true,
+  } = params;
+
+  const search = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  applyConferenceFilters(search, params);
+
+  const path = recommended
+    ? `${API_BASE_URL}/api/conferences/recommended?${search.toString()}`
+    : `${API_BASE_URL}/api/conferences?${search.toString()}`;
+
+  const response = await fetch(path, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load conferences (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchConference(
+  id: string,
+): Promise<import("@/types/conference").Conference> {
+  const response = await fetch(`${API_BASE_URL}/api/conferences/${id}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response));
+  }
+  return response.json();
+}
+
+export async function fetchConferenceStats(
+  params: { includeNonUs?: boolean; includeNotEligible?: boolean } = {},
+): Promise<import("@/types/conference").ConferenceStats> {
+  const search = new URLSearchParams();
+  if (params.includeNonUs) search.set("include_non_us", "true");
+  if (params.includeNotEligible) search.set("include_not_eligible", "true");
+  const suffix = search.toString() ? `?${search.toString()}` : "";
+  const response = await fetch(`${API_BASE_URL}/api/conferences/stats${suffix}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load conference stats (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchConferenceDeadlines(
+  limit = 100,
+): Promise<import("@/types/conference").ConferenceDeadlineListResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/conferences/deadlines?limit=${limit}`,
+    { headers: { Accept: "application/json" } },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to load deadlines (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchConferenceFunding(
+  limit = 100,
+): Promise<import("@/types/conference").ConferenceFundingListResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/conferences/funding?limit=${limit}`,
+    { headers: { Accept: "application/json" } },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to load funding (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function setConferenceSaved(
+  conferenceId: string,
+  saved: boolean,
+): Promise<import("@/types/conference").Conference> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/conferences/${conferenceId}/saved`,
+    {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ saved }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to update saved status (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function setConferenceTracking(
+  conferenceId: string,
+  status: string | null,
+): Promise<import("@/types/conference").Conference> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/conferences/${conferenceId}/tracking`,
+    {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to update tracking status (${response.status})`);
+  }
+  return response.json();
+}
+
 export { DEFAULT_PAGE_SIZE, API_BASE_URL };

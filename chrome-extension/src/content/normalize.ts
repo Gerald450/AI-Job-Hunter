@@ -9,6 +9,7 @@
 import {
   categorizeField,
   inferCanonicalKey,
+  isUrlCanonicalKey,
   type CanonicalKey,
 } from "@/lib/semantics";
 import { logger } from "@/lib/logger";
@@ -16,12 +17,19 @@ import type { DetectedField } from "@/types";
 
 const SCOPE = "normalize";
 
-function signalsFor(field: DetectedField): Array<string | undefined> {
+/** Label / accessible name — trusted over name/id tokens. */
+function primarySignals(field: DetectedField): Array<string | undefined> {
   return [
     field.label,
     field.placeholder,
     field.ariaLabel,
     field.ariaLabelledBy,
+  ];
+}
+
+function allSignals(field: DetectedField): Array<string | undefined> {
+  return [
+    ...primarySignals(field),
     field.ariaDescribedBy,
     field.nearbyText,
     field.parentSection,
@@ -30,22 +38,53 @@ function signalsFor(field: DetectedField): Array<string | undefined> {
   ];
 }
 
+function resolveCanonical(field: DetectedField) {
+  const primary = primarySignals(field);
+  const match = inferCanonicalKey(allSignals(field), {
+    primaryCount: primary.filter((s) => Boolean(s && s.trim())).length || 1,
+  });
+
+  // Native URL inputs are website/link fields even when Workday ids mention "address".
+  if (field.type === "url") {
+    if (match && isUrlCanonicalKey(match.key)) {
+      return match;
+    }
+    return {
+      key: "website" as CanonicalKey,
+      confidence: 1,
+      matchedAlias: "input[type=url]",
+    };
+  }
+
+  return match;
+}
+
 /**
  * Normalize a list of detected fields into the common schema.
  * Idempotent — safe to call after adapter enrichment.
  */
 export function normalizeFields(fields: DetectedField[]): DetectedField[] {
   const normalized = fields.map((field) => {
-    const match = inferCanonicalKey(signalsFor(field));
+    const match = resolveCanonical(field);
     const category =
       field.category ||
-      categorizeField(...signalsFor(field)) ||
+      categorizeField(...allSignals(field)) ||
       (match ? match.key : undefined);
+
+    // Never keep a postal address key on a URL control.
+    let canonicalKey = field.canonicalKey || match?.key;
+    if (
+      field.type === "url" &&
+      canonicalKey &&
+      !isUrlCanonicalKey(canonicalKey)
+    ) {
+      canonicalKey = "website";
+    }
 
     const next: DetectedField = {
       ...field,
       label: field.label || "Unknown Field",
-      canonicalKey: field.canonicalKey || match?.key,
+      canonicalKey,
       category,
       meta: {
         ...field.meta,

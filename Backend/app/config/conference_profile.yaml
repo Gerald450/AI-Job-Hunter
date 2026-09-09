@@ -1,0 +1,57 @@
+# Profile used only for conference eligibility and matching.
+# Do not add citizenship, ethnicity, gender, financial need, disability,
+# veteran, first-generation, or immigration attributes.
+
+university: University of Arkansas at Pine Bluff
+location: Arkansas, United States
+country: United States
+degree: Bachelor's
+degree_level: undergraduate
+majors:
+  - Computer Science
+  - Mathematics
+graduation_date: 2027-05-31
+class_standing: senior
+gpa: 4.0
+experience:
+  - Research Software Engineer
+  - Software engineering
+  - AI/ML
+  - Research
+skills:
+  - Python
+  - C++
+  - JavaScript
+  - TypeScript
+  - React
+  - Next.js
+  - Node.js
+  - FastAPI
+  - PostgreSQL
+backgrounds:
+  - Mathematics
+  - Computer science
+honors:
+  - Academic honors
+  - Honors Program
+organizations:
+  - ACM
+  - NSBE
+  - ColorStack
+  - CodePath
+has_accepted_paper: false
+
+include_locations:
+  - US
+include_unknown_locations: false
+require_funding: true
+
+match_weights:
+  topic_alignment: 35
+  undergraduate_eligible: 15
+  us_or_virtual: 15
+  student_funding: 15
+  funding_likely_eligible: 10
+  deadline_urgency: 10
+
+closing_soon_days: 14

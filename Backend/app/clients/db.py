@@ -1,5 +1,6 @@
 import os
 
+from database import conferencemodel  # noqa: F401 — register Conference* models
 from database import jobmodel  # noqa: F401 — register JobModel with Base
 from database import resumemodel  # noqa: F401 — register Resume* models
 from database.models import Base
@@ -110,6 +111,59 @@ def ensure_schema():
             text(
                 "ALTER TABLE jobs "
                 "ADD COLUMN IF NOT EXISTS min_years_required DOUBLE PRECISION"
+            )
+        )
+
+        conn.execute(
+            text(
+                "ALTER TABLE conferences "
+                "ADD COLUMN IF NOT EXISTS saved BOOLEAN NOT NULL DEFAULT false"
+            )
+        )
+        conn.execute(
+            text(
+                "ALTER TABLE conferences "
+                "ADD COLUMN IF NOT EXISTS saved_at TIMESTAMPTZ"
+            )
+        )
+        conn.execute(
+            text(
+                "ALTER TABLE conferences "
+                "ADD COLUMN IF NOT EXISTS tracking_status VARCHAR"
+            )
+        )
+        conn.execute(
+            text(
+                "ALTER TABLE conferences "
+                "ADD COLUMN IF NOT EXISTS tracking_updated_at TIMESTAMPTZ"
+            )
+        )
+        conn.execute(
+            text(
+                """
+                DO $$
+                BEGIN
+                  IF EXISTS (
+                    SELECT 1 FROM information_schema.tables
+                    WHERE table_name = 'conferences'
+                  ) THEN
+                    DELETE FROM conferences c
+                    WHERE c.is_virtual = true
+                       OR c.location_status = 'VIRTUAL'
+                       OR COALESCE(c.end_date, c.start_date) < CURRENT_DATE
+                       OR (
+                         c.funding_available IS DISTINCT FROM true
+                         AND c.travel_grant_available IS DISTINCT FROM true
+                         AND c.scholarship_available IS DISTINCT FROM true
+                         AND c.registration_waiver_available IS DISTINCT FROM true
+                         AND NOT EXISTS (
+                           SELECT 1 FROM conference_funding cf
+                           WHERE cf.conference_id = c.id
+                         )
+                       );
+                  END IF;
+                END $$;
+                """
             )
         )
 

@@ -1,0 +1,74 @@
+# Keyword families used for conference topic alignment (not prestige).
+
+families:
+  computer_science:
+    - computer science
+    - computing
+    - cs
+    - informatics
+  software_engineering:
+    - software engineering
+    - software
+    - programming
+    - developer
+    - devops
+    - platform
+  artificial_intelligence:
+    - artificial intelligence
+    - ai
+    - neural
+    - nlp
+    - language model
+    - llm
+  machine_learning:
+    - machine learning
+    - ml
+    - deep learning
+    - data mining
+  mathematics:
+    - mathematics
+    - math
+    - statistics
+    - theoretical
+  research:
+    - research
+    - symposium
+    - workshop
+  systems:
+    - systems
+    - operating systems
+    - distributed
+    - networking
+    - osdi
+    - nsdi
+    - sosp
+    - usenix
+  data_infrastructure:
+    - data
+    - database
+    - infrastructure
+    - storage
+  programming:
+    - programming languages
+    - compilers
+    - pldi
+    - oopsla
+  security:
+    - security
+    - privacy
+    - cryptography
+    - usable privacy
+  developer_tech:
+    - javascript
+    - python
+    - web
+    - cloud
+    - open source
+
+irrelevant:
+  - cardiology
+  - oncology
+  - dentistry
+  - marketing summit
+  - real estate
+  - fashion

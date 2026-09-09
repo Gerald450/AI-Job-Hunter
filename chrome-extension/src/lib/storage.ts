@@ -126,6 +126,7 @@ export async function saveCachedProfile(profile: UserProfile): Promise<void> {
 /** Contact / preference keys the user edits locally — never wiped by resume sync. */
 const LOCAL_CONTACT_KEYS: (keyof UserProfile)[] = [
   "firstName",
+  "middleName",
   "lastName",
   "email",
   "phone",

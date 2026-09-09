@@ -149,7 +149,7 @@ Rules:
 - For select/radio/checkbox/combobox, prefer an exact or closest option from
   the provided options list.
 - Infer equivalent labels (e.g. "Given Name", "Legal First Name" → first_name).
-- Common profile_field keys: first_name, last_name, full_name, email, phone,
+- Common profile_field keys: first_name, middle_name, last_name, full_name, email, phone,
   linkedin, website, portfolio, location, preferred_location,
   work_authorization, sponsorship, at_least_18, years_experience, education,
   degree, field_of_study, graduation_date, gpa, current_employer,
@@ -158,6 +158,9 @@ Rules:
 - Booleans for yes/no questions should use true/false or match option text
   (Yes/No) when options are provided.
 - Never invent employers, degrees, dates, or contact details not in the profile.
+- Never put a postal / street address into website, URL, portfolio, or LinkedIn
+  fields. Only fill those with an http(s) URL or domain from the profile; omit
+  the field if no link is available.
 """
 
 

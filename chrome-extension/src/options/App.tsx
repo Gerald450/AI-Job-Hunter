@@ -273,13 +273,21 @@ export function App() {
               Required for name, email, and phone fields. Saved locally and kept
               when the resume profile syncs.
             </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="First Name">
                 <input
                   className={inputClass}
                   value={profile.firstName ?? ""}
                   onChange={(e) => setProfileField("firstName", e.target.value)}
                   autoComplete="given-name"
+                />
+              </Field>
+              <Field label="Middle Name">
+                <input
+                  className={inputClass}
+                  value={profile.middleName ?? ""}
+                  onChange={(e) => setProfileField("middleName", e.target.value)}
+                  autoComplete="additional-name"
                 />
               </Field>
               <Field label="Last Name">

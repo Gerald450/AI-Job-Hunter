@@ -11,6 +11,7 @@ from urllib.parse import quote
 
 from autofill.service import AutofillService, profile_from_parsed
 from clients.db import SessionLocal, create_database
+from conferences_api import router as conferences_router
 from database.crud import (
     delete_job,
     get_job_stats,
@@ -77,6 +78,8 @@ app.add_middleware(
 )
 
 BATCH_CONCURRENCY = 3
+
+app.include_router(conferences_router)
 
 
 def get_db():
