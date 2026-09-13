@@ -325,6 +325,24 @@ export function App() {
                 placeholder="https://linkedin.com/in/…"
               />
             </Field>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="GitHub">
+                <input
+                  className={inputClass}
+                  value={profile.github ?? ""}
+                  onChange={(e) => setProfileField("github", e.target.value)}
+                  placeholder="https://github.com/Gerald450"
+                />
+              </Field>
+              <Field label="Portfolio">
+                <input
+                  className={inputClass}
+                  value={profile.portfolio ?? ""}
+                  onChange={(e) => setProfileField("portfolio", e.target.value)}
+                  placeholder="https://landing-page-sage-gamma-78.vercel.app/"
+                />
+              </Field>
+            </div>
             <Field label="Location / Address">
               <input
                 className={inputClass}

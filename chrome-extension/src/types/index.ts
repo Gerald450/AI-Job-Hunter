@@ -256,6 +256,8 @@ export const UserProfileSchema = z.object({
   phone: z.string().optional(),
   linkedin: z.string().optional(),
   website: z.string().optional(),
+  github: z.string().optional(),
+  portfolio: z.string().optional(),
   location: z.string().optional(),
   authorizedToWork: z.boolean().optional(),
   requiresSponsorship: z.boolean().optional(),
@@ -291,6 +293,8 @@ export const DEFAULT_PROFILE_VALUES: Partial<UserProfile> = {
   requiresSponsorship: true,
   atLeast18: true,
   desiredSalary: "100000",
+  github: "https://github.com/Gerald450",
+  portfolio: "https://landing-page-sage-gamma-78.vercel.app/",
 };
 
 export const ExtensionSettingsSchema = z.object({

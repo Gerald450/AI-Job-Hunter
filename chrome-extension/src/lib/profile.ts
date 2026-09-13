@@ -27,7 +27,10 @@ export function profileToAutofillMap(profile: UserProfile): Record<string, strin
   put("Email", profile.email);
   put("Phone", profile.phone);
   put("LinkedIn", profile.linkedin);
-  put("Website", profile.website);
+  put("Website", profile.website || profile.portfolio);
+  put("GitHub", profile.github);
+  put("Github", profile.github);
+  put("Portfolio", profile.portfolio);
   put("Location", profile.location);
   put("Address", profile.location);
   put("Authorized to Work", profile.authorizedToWork);

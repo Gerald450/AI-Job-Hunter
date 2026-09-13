@@ -29,13 +29,39 @@ function isUrlLikeField(field: DetectedField): boolean {
   );
 }
 
-/** Profile link to use for website/URL fields — never postal address. */
-function profileUrlValue(profile: UserProfile): string | null {
-  for (const key of ["website", "linkedin"] as const) {
+function urlFromProfile(
+  profile: UserProfile,
+  keys: Array<keyof UserProfile>,
+): string | null {
+  for (const key of keys) {
     const v = profileValue(profile, key);
     if (v && looksLikeUrl(v)) return v;
   }
   return null;
+}
+
+/** Profile link to use for generic website/URL fields — never postal address. */
+function profileUrlValue(profile: UserProfile): string | null {
+  return urlFromProfile(profile, ["portfolio", "website", "github", "linkedin"]);
+}
+
+function urlValueForCanonical(
+  profile: UserProfile,
+  key?: string,
+): string | null {
+  if (key === "linkedin" || key === "linkedin_url") {
+    return urlFromProfile(profile, ["linkedin"]);
+  }
+  if (key === "github") {
+    return urlFromProfile(profile, ["github"]);
+  }
+  if (key === "portfolio") {
+    return urlFromProfile(profile, ["portfolio", "website"]);
+  }
+  if (key === "website") {
+    return urlFromProfile(profile, ["website", "portfolio"]);
+  }
+  return profileUrlValue(profile);
 }
 
 function profileValue(
@@ -90,14 +116,7 @@ export function matchFieldToProfile(
 ): string | null {
   // Workday "Websites → URL" must never receive a street address.
   if (isUrlLikeField(field)) {
-    if (field.canonicalKey === "linkedin" || field.canonicalKey === "linkedin_url") {
-      return profileValue(profile, "linkedin");
-    }
-    if (field.canonicalKey === "github") {
-      const site = profileValue(profile, "website");
-      return site && looksLikeUrl(site) ? site : null;
-    }
-    return profileUrlValue(profile);
+    return urlValueForCanonical(profile, field.canonicalKey);
   }
 
   // Prefer already-normalized canonical key
@@ -118,7 +137,7 @@ export function matchFieldToProfile(
       return null;
     }
     if (isUrlCanonicalKey(field.canonicalKey)) {
-      return profileUrlValue(profile);
+      return urlValueForCanonical(profile, field.canonicalKey);
     }
     const profileKey = CANONICAL_TO_PROFILE[field.canonicalKey as keyof typeof CANONICAL_TO_PROFILE];
     if (profileKey) {
@@ -150,7 +169,7 @@ export function matchFieldToProfile(
   if (!match || match.confidence < 0.7) return null;
 
   if (isUrlCanonicalKey(match.key) || match.key === "website") {
-    return profileUrlValue(profile);
+    return urlValueForCanonical(profile, match.key);
   }
   if (match.key === "full_name") {
     const parts = [profile.firstName, profile.middleName, profile.lastName].filter(

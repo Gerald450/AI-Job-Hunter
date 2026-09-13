@@ -37,6 +37,8 @@ export const UserProfileSchema = z
     phone: z.string().optional(),
     linkedin: z.string().optional(),
     website: z.string().optional(),
+    github: z.string().optional(),
+    portfolio: z.string().optional(),
     location: z.string().optional(),
     authorizedToWork: z.boolean().optional(),
     requiresSponsorship: z.boolean().optional(),

@@ -132,6 +132,8 @@ const LOCAL_CONTACT_KEYS: (keyof UserProfile)[] = [
   "phone",
   "linkedin",
   "website",
+  "github",
+  "portfolio",
   "location",
   "authorizedToWork",
   "requiresSponsorship",

@@ -21,6 +21,8 @@ class ExtensionUserProfile(BaseModel):
     phone: Optional[str] = None
     linkedin: Optional[str] = None
     website: Optional[str] = None
+    github: Optional[str] = None
+    portfolio: Optional[str] = None
     location: Optional[str] = None
     authorizedToWork: Optional[bool] = None
     requiresSponsorship: Optional[bool] = None
