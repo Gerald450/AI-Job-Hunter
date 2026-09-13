@@ -51,6 +51,17 @@ export function JobCard({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isFlagging, setIsFlagging] = useState(false);
+  const [askApplied, setAskApplied] = useState(false);
+  const busy = isUpdating || isSaving || isFlagging;
+
+  function handleViewPost() {
+    if (!applyUrl || busy) return;
+
+    window.open(applyUrl, "_blank", "noopener,noreferrer");
+    if (!job.applied) {
+      setAskApplied(true);
+    }
+  }
 
   async function handleApply() {
     if (!applyUrl || isUpdating || isSaving || isFlagging) return;
@@ -62,6 +73,19 @@ export function JobCard({
     setIsUpdating(true);
     try {
       await onToggleApplied(job.id, true);
+      setAskApplied(false);
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
+  async function handleConfirmApplied() {
+    if (job.applied || isUpdating || isSaving || isFlagging) return;
+
+    setIsUpdating(true);
+    try {
+      await onToggleApplied(job.id, true);
+      setAskApplied(false);
     } finally {
       setIsUpdating(false);
     }
@@ -99,8 +123,6 @@ export function JobCard({
       setIsFlagging(false);
     }
   }
-
-  const busy = isUpdating || isSaving || isFlagging;
 
   return (
     <Card className="rounded-xl border border-border/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
@@ -164,7 +186,8 @@ export function JobCard({
         ) : null}
       </CardContent>
 
-      <CardFooter className="flex flex-col items-stretch gap-2 pt-0 sm:flex-row sm:items-center sm:justify-end">
+      <CardFooter className="flex flex-col items-stretch gap-3 pt-0">
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
         {onAnalyze ? (
           <Button
             type="button"
@@ -253,7 +276,7 @@ export function JobCard({
                 size="lg"
                 disabled={busy}
                 onClick={() => {
-                  window.open(applyUrl!, "_blank", "noopener,noreferrer");
+                  handleViewPost();
                 }}
                 className="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto"
                 aria-label={`Open job posting for ${job.company} ${job.role}`}
@@ -286,7 +309,7 @@ export function JobCard({
               variant="outline"
               disabled={busy}
               onClick={() => {
-                window.open(applyUrl!, "_blank", "noopener,noreferrer");
+                handleViewPost();
               }}
               className="w-full sm:ml-auto sm:w-auto"
               aria-label={`View job posting for ${job.company} ${job.role}`}
@@ -325,6 +348,45 @@ export function JobCard({
             Link unavailable
           </Button>
         )}
+        </div>
+        {askApplied && !job.applied ? (
+          <div
+            className="flex flex-col gap-2 rounded-lg bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between"
+            role="region"
+            aria-label="Did you apply to this job?"
+          >
+            <p className="text-sm font-medium text-slate-700">
+              Did you apply to this job?
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  void handleConfirmApplied();
+                }}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                {isUpdating ? (
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                ) : null}
+                Yes
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => {
+                  setAskApplied(false);
+                }}
+              >
+                No
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </CardFooter>
     </Card>
   );
