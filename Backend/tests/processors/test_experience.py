@@ -20,10 +20,12 @@ def test_extract_five_plus_years_product_management() -> None:
     assert exceeds_max_years(5.0, max_years=2) is True
 
 
-def test_extract_allows_zero_to_two_years() -> None:
+def test_extract_allows_zero_to_one_years() -> None:
     assert extract_min_years_required("0-2 years of experience") == 0.0
     assert extract_min_years_required("1+ years of experience") == 1.0
     assert extract_min_years_required("2 years of experience") == 2.0
+    assert exceeds_max_years(1.0, max_years=1) is False
+    assert exceeds_max_years(2.0, max_years=1) is True
     assert exceeds_max_years(2.0, max_years=2) is False
     assert exceeds_max_years(3.0, max_years=2) is True
 

@@ -4,8 +4,8 @@
 max_age_days: 30
 
 # Drop jobs whose description requires more than this many years of experience
-# (e.g. "5+ years of Product Management experience"). 0–2 kept; 3+ flagged out.
-max_years_experience: 2
+# (e.g. "5+ years of Product Management experience"). 0–1 kept; 2+ flagged out.
+max_years_experience: 1
 
 # Companies that do not sponsor — excluded from the default job list and
 # marked no_sponsorship on ingest. Matching is case-insensitive (name equals

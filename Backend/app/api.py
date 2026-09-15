@@ -145,7 +145,7 @@ def list_jobs(
     ),
     exclude_experienced: bool = Query(
         True,
-        description="Exclude roles that require more than max_years_experience (default 2)",
+        description="Exclude roles that require more than max_years_experience (default 1)",
     ),
     applied: Optional[bool] = Query(
         None,

@@ -32,7 +32,7 @@ _WHITESPACE_RE = re.compile(r"\s+")
 def load_max_years_experience() -> float:
     """Max years a posting may require and still stay on the early-career list."""
     cfg = load_filters()
-    return float(cfg.get("max_years_experience", 2))
+    return float(cfg.get("max_years_experience", 1))
 
 
 def normalize_experience_text(text: str) -> str:
