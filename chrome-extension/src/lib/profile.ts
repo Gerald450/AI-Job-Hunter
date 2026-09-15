@@ -39,7 +39,11 @@ export function profileToAutofillMap(profile: UserProfile): Record<string, strin
   put("Desired Salary", profile.desiredSalary);
   put("Expected Salary", profile.desiredSalary);
   put("Years of Experience", profile.yearsExperience);
-  put("Education", profile.education);
+  put("Education", profile.education || profile.school);
+  put("School", profile.school);
+  put("University", profile.school);
+  put("College", profile.school);
+  put("School Name", profile.school);
   put("Degree", profile.degree);
   put("Field of Study", profile.fieldOfStudy);
   put("Major", profile.fieldOfStudy);

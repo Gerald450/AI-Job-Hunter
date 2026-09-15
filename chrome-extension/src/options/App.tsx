@@ -394,6 +394,14 @@ export function App() {
                 placeholder="LinkedIn"
               />
             </Field>
+            <Field label="School">
+              <input
+                className={inputClass}
+                value={profile.school ?? ""}
+                onChange={(e) => setProfileField("school", e.target.value)}
+                placeholder="University of Arkansas at Pine Bluff"
+              />
+            </Field>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Degree">
                 <input

@@ -34,11 +34,13 @@ def profile_from_parsed(parsed: ParsedResume | dict[str, Any]) -> ExtensionUserP
             parsed = ParsedResume()
 
     education_str: Optional[str] = None
+    school: Optional[str] = None
     degree: Optional[str] = None
     graduation: Optional[str] = None
 
     if parsed.education:
         first = parsed.education[0]
+        school = first.school or None
         parts = [p for p in (first.school, first.field) if p]
         education_str = ", ".join(parts) if parts else (first.school or None)
         degree = first.degree or None
@@ -50,6 +52,7 @@ def profile_from_parsed(parsed: ParsedResume | dict[str, Any]) -> ExtensionUserP
 
     return ExtensionUserProfile(
         education=education_str,
+        school=school,
         degree=degree,
         graduationDate=graduation,
         yearsExperience=years,

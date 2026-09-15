@@ -46,6 +46,7 @@ export const UserProfileSchema = z
     desiredSalary: z.string().optional(),
     yearsExperience: z.number().optional(),
     education: z.string().optional(),
+    school: z.string().optional(),
     degree: z.string().optional(),
     fieldOfStudy: z.string().optional(),
     graduationDate: z.string().optional(),

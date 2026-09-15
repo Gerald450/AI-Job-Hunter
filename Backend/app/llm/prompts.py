@@ -152,7 +152,7 @@ Rules:
 - Common profile_field keys: first_name, middle_name, last_name, full_name, email, phone,
   linkedin, website, github, portfolio, location, preferred_location,
   work_authorization, sponsorship, at_least_18, years_experience, education,
-  degree, field_of_study, graduation_date, gpa, current_employer,
+  school, degree, field_of_study, graduation_date, gpa, current_employer,
   salary_expectation, desired_salary, salary, availability, gender, veteran,
   race, disability, hear_about_us.
 - Booleans for yes/no questions should use true/false or match option text

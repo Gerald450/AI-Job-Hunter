@@ -143,6 +143,10 @@ export function matchFieldToProfile(
     if (profileKey) {
       const v = profileValue(profile, profileKey);
       if (v !== null) return v;
+      if (profileKey === "education") {
+        const school = profileValue(profile, "school");
+        if (school !== null) return school;
+      }
     }
     // full_name special case
     if (field.canonicalKey === "full_name") {
@@ -192,7 +196,10 @@ export function matchFieldToProfile(
 
   const profileKey = CANONICAL_TO_PROFILE[match.key];
   if (!profileKey) return null;
-  return profileValue(profile, profileKey);
+  const value = profileValue(profile, profileKey);
+  if (value !== null) return value;
+  if (profileKey === "education") return profileValue(profile, "school");
+  return null;
 }
 
 /**

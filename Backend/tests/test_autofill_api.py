@@ -44,6 +44,7 @@ def test_profile_from_parsed_maps_education() -> None:
     )
     profile = profile_from_parsed(parsed)
     assert profile.education == "MIT, CS"
+    assert profile.school == "MIT"
     assert profile.degree == "BS"
     assert profile.graduationDate == "May 2027"
     assert profile.yearsExperience == 2.0
@@ -157,6 +158,7 @@ def test_extension_profile_success(
     assert body["degree"] == "BS"
     assert body["graduationDate"] == "May 2027"
     assert body["education"] == "MIT, CS"
+    assert body["school"] == "MIT"
 
 
 def test_extension_profile_missing_resume(

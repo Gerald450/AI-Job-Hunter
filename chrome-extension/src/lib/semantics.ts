@@ -29,6 +29,7 @@ export type CanonicalKey =
   | "at_least_18"
   | "years_experience"
   | "education"
+  | "school"
   | "degree"
   | "field_of_study"
   | "graduation_date"
@@ -178,11 +179,18 @@ export const CANONICAL_ALIASES: Record<string, CanonicalKey> = {
   "years experience": "years_experience",
   experience: "years_experience",
   education: "education",
-  school: "education",
-  university: "education",
-  college: "education",
-  "school name": "education",
-  "university name": "education",
+  school: "school",
+  university: "school",
+  college: "school",
+  "school name": "school",
+  "university name": "school",
+  "college name": "school",
+  "name of school": "school",
+  "name of university": "school",
+  "name of college": "school",
+  institution: "school",
+  "institution name": "school",
+  "educational institution": "school",
   degree: "degree",
   "highest degree": "degree",
   "degree type": "degree",
@@ -271,6 +279,7 @@ export const CANONICAL_TO_PROFILE: Partial<
   at_least_18: "atLeast18",
   years_experience: "yearsExperience",
   education: "education",
+  school: "school",
   degree: "degree",
   field_of_study: "fieldOfStudy",
   graduation_date: "graduationDate",

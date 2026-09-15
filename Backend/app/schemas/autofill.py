@@ -30,6 +30,7 @@ class ExtensionUserProfile(BaseModel):
     desiredSalary: Optional[str] = None
     yearsExperience: Optional[float] = None
     education: Optional[str] = None
+    school: Optional[str] = None
     degree: Optional[str] = None
     fieldOfStudy: Optional[str] = None
     graduationDate: Optional[str] = None

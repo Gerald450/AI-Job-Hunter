@@ -144,6 +144,7 @@ const LOCAL_CONTACT_KEYS: (keyof UserProfile)[] = [
   "race",
   "disability",
   "hearAboutUs",
+  "school",
   "degree",
   "fieldOfStudy",
   "desiredSalary",

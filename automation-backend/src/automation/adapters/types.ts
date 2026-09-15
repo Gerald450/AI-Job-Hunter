@@ -63,7 +63,8 @@ export const PROFILE_FIELD_MAP: Array<{
   { keys: ["portfolio", "portfolio_url"], get: (p) => p.portfolio ?? p.website },
   { keys: ["website", "personal_website", "url", "website_url"], get: (p) => p.website ?? p.portfolio },
   { keys: ["location", "city", "address", "street_address", "street"], get: (p) => p.location },
-  { keys: ["education", "school", "university"], get: (p) => p.education },
+  { keys: ["school", "university", "college", "school_name"], get: (p) => p.school },
+  { keys: ["education"], get: (p) => p.education ?? p.school },
   { keys: ["degree"], get: (p) => p.degree },
   {
     keys: ["field_of_study", "fieldOfStudy", "major", "area_of_study"],
