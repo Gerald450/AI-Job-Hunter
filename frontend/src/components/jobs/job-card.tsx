@@ -34,6 +34,47 @@ function matchBadgeClass(score: number): string {
   return "bg-rose-50 text-rose-800 ring-rose-200";
 }
 
+function SourceChip({
+  children,
+  tone = "slate",
+}: {
+  children: string;
+  tone?: "slate" | "sky";
+}) {
+  return (
+    <span
+      className={
+        tone === "sky"
+          ? "inline-flex rounded-md bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800 ring-1 ring-sky-200"
+          : "inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"
+      }
+    >
+      {children}
+    </span>
+  );
+}
+
+function displayBoard(atsSource: string | null | undefined): string | null {
+  const value = (atsSource || "").trim();
+  if (!value) return null;
+  const lower = value.toLowerCase();
+  if (lower === "extension" || lower === "unknown") return null;
+  return value;
+}
+
+function JobSource({ job }: { job: Job }) {
+  if (job.source === "extension") {
+    const board = displayBoard(job.ats_source);
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1.5">
+        {board ? <SourceChip>{board}</SourceChip> : null}
+        <SourceChip tone="sky">External</SourceChip>
+      </span>
+    );
+  }
+  return <>{job.ats_source}</>;
+}
+
 export function JobCard({
   job,
   onToggleApplied,
@@ -170,9 +211,9 @@ export function JobCard({
       </CardHeader>
 
       <CardContent className="space-y-1.5 pb-4 text-sm text-slate-500">
-        <p>
-          <span className="font-medium text-slate-600">Source:</span>{" "}
-          {job.ats_source}
+        <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <span className="font-medium text-slate-600">Source:</span>
+          <JobSource job={job} />
         </p>
         <p>
           <span className="font-medium text-slate-600">Posted:</span>{" "}

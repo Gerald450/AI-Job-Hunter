@@ -321,6 +321,61 @@ def test_extension_job_manual_selection_fields_accepted(
     assert call_body.persistDescription is False
 
 
+def test_extension_job_mark_applied_fields_accepted(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import api as api_module
+
+    job_id = uuid.uuid4()
+    payload = AnalysisResponse(
+        id=str(uuid.uuid4()),
+        jobId=str(job_id),
+        resumeId="resume_aaaaaaaaaaaa",
+        company="Acme",
+        role="SWE",
+        overall_match=88,
+        summary="Good",
+        strengths=["Python"],
+        missing_skills=[],
+        recommended_improvements=[],
+        matched_keywords=["Python"],
+        missing_keywords=[],
+        confidence="High",
+        llm_provider="groq",
+        cached=False,
+        canSaveDescription=False,
+        descriptionPersisted=True,
+        applied=True,
+    )
+
+    service = MagicMock()
+    service.analyze_from_extension = AsyncMock(return_value=payload)
+    monkeypatch.setattr(api_module, "MatchingService", lambda: service)
+
+    res = client.post(
+        "/extension/job",
+        json={
+            "url": "https://boards.greenhouse.io/acme/jobs/applied",
+            "ats": "greenhouse",
+            "title": "SWE",
+            "company": "Acme",
+            "description": "x" * 320,
+            "resumeId": "resume_aaaaaaaaaaaa",
+            "descriptionSource": "manual_selection",
+            "persistDescription": True,
+            "markApplied": True,
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["applied"] is True
+    assert body["descriptionPersisted"] is True
+    assert body["canSaveDescription"] is False
+    call_body = service.analyze_from_extension.await_args.args[1]
+    assert call_body.markApplied is True
+    assert call_body.persistDescription is True
+
+
 def test_flag_job_success(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:

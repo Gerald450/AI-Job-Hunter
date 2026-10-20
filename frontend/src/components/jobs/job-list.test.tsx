@@ -67,6 +67,7 @@ describe("Jobs page still works", () => {
       expect(screen.getByText("Acme")).toBeInTheDocument();
     });
     expect(screen.getByText("New Grad SWE")).toBeInTheDocument();
+    expect(screen.getByText("Greenhouse")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /View job posting/i }),
     ).toBeInTheDocument();

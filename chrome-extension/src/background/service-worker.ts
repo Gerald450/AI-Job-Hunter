@@ -364,6 +364,7 @@ async function handleMessage(
                 refresh: body.refresh,
                 descriptionSource: body.descriptionSource,
                 persistDescription: body.persistDescription,
+                markApplied: body.markApplied,
               }),
             };
           }

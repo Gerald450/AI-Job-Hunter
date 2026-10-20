@@ -756,6 +756,7 @@ async function postAnalyzeJob(params: {
   refresh: boolean;
   descriptionSource?: DescriptionSource;
   persistDescription?: boolean;
+  markApplied?: boolean;
 }): Promise<ExtensionResponse<JobAnalysisResponse>> {
   return send<JobAnalysisResponse>({
     type: "BACKEND_REQUEST",
@@ -766,6 +767,7 @@ async function postAnalyzeJob(params: {
         refresh: params.refresh,
         descriptionSource: params.descriptionSource,
         persistDescription: params.persistDescription,
+        markApplied: params.markApplied,
       },
     },
   });
@@ -804,7 +806,8 @@ async function runAnalyzeResume(
         job,
         refresh,
         descriptionSource: source,
-        persistDescription: false,
+        persistDescription: true,
+        markApplied: true,
       });
       return finishAnalyze(res, handlers, validated.text);
     }
@@ -825,7 +828,7 @@ async function runAnalyzeResume(
       if (validated.ok) {
         job = buildJobFromOverride(validated.text, "manual_selection");
         descriptionSource = "manual_selection";
-        persistDescription = false;
+        persistDescription = true;
         descriptionForSave = validated.text;
       } else {
         // Strip weak scrape so the backend can try DB / ATS fetch.
@@ -844,6 +847,7 @@ async function runAnalyzeResume(
       refresh,
       descriptionSource,
       persistDescription,
+      markApplied: descriptionSource === "manual_selection",
     });
 
     if (
@@ -859,7 +863,8 @@ async function runAnalyzeResume(
           job,
           refresh,
           descriptionSource: "manual_selection",
-          persistDescription: false,
+          persistDescription: true,
+          markApplied: true,
         });
         return finishAnalyze(res, handlers, validated.text);
       }

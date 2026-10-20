@@ -11,6 +11,7 @@ from database.crud import (
     create_extension_job,
     get_job_by_apply_url,
     get_job_by_id,
+    set_job_applied,
 )
 from database.jobmodel import JobModel
 from database.resume_crud import (
@@ -25,13 +26,16 @@ from fetchers.router import FetcherRouter
 from llm.base import LLMError, LLMProvider, LLMRateLimitError, LLMTimeoutError
 from llm.groq import get_llm_provider
 from matching.cache import description_hash as hash_description
+from processors.normalize import ADVANCED
 from schemas.analysis import (
     AnalysisResponse,
     ExtensionJobAnalyzeRequest,
     ParsedResume,
     ResumeMatchResult,
 )
+from schemas.job import infer_ats_source
 from sponsorship.detector import SponsorshipDetector
+from sponsorship.service import SponsorshipService
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -65,6 +69,18 @@ class DescriptionMissingError(MatchingError):
 
 
 MANUAL_DESCRIPTION_SOURCES = frozenset({"manual_selection", "clipboard"})
+_PLACEHOLDER_ATS = frozenset({"", "unknown", "extension"})
+
+
+def _job_ats_source(job: JobModel) -> str | None:
+    ats = job.ats if isinstance(getattr(job, "ats", None), str) else None
+    apply_url = job.apply_url if isinstance(getattr(job, "apply_url", None), str) else None
+    if ats and ats.strip().lower() not in _PLACEHOLDER_ATS:
+        return ats.title() if ats.islower() else ats
+    label = infer_ats_source(apply_url, "")
+    if not label or label.strip().lower() in _PLACEHOLDER_ATS:
+        return None
+    return label
 
 
 def analysis_to_response(
@@ -75,6 +91,9 @@ def analysis_to_response(
     role: str | None = None,
     can_save_description: bool = False,
     description_persisted: bool = False,
+    applied: bool = False,
+    source: str | None = None,
+    ats_source: str | None = None,
 ) -> AnalysisResponse:
     return AnalysisResponse(
         id=str(row.id),
@@ -95,6 +114,9 @@ def analysis_to_response(
         created_at=row.created_at,
         canSaveDescription=can_save_description,
         descriptionPersisted=description_persisted,
+        applied=applied,
+        source=source,
+        atsSource=ats_source,
     )
 
 
@@ -113,6 +135,33 @@ def compose_client_description(
     if responsibilities and responsibilities.strip():
         parts.append("Responsibilities:\n" + responsibilities.strip())
     return "\n\n".join(parts).strip()
+
+
+def enrich_job_from_description(
+    db: Session,
+    job: JobModel,
+    description: str,
+    *,
+    role: str | None = None,
+    commit: bool = True,
+) -> JobModel:
+    """Stamp sponsorship, citizenship, years, and advanced-degree from JD text."""
+    text = (description or "").strip()
+    if not text:
+        return job
+
+    service = SponsorshipService()
+    result = service.analyze(text)
+    service.apply_result(job, result, description=text)
+
+    blob = f"{role or job.role or ''} {text}"
+    if ADVANCED in blob:
+        job.advanced_degree = True
+
+    if commit:
+        db.commit()
+        db.refresh(job)
+    return job
 
 
 def is_richer_description(existing: str | None, candidate: str | None) -> bool:
@@ -478,7 +527,9 @@ class MatchingService:
 
         source = body.descriptionSource
         force = source in MANUAL_DESCRIPTION_SOURCES
-        if body.persistDescription is not None:
+        if body.markApplied:
+            persist = True
+        elif body.persistDescription is not None:
             persist = body.persistDescription
         else:
             # Auto-persist DOM/API text; manual/clipboard waits for explicit Save.
@@ -506,8 +557,18 @@ class MatchingService:
         except DescriptionMissingError:
             raise
 
-        # Offer Save when manual/clipboard text was used but not written to DB.
-        can_save = bool(force and client_desc and not description_persisted)
+        if resolved:
+            enrich_job_from_description(db, job, resolved, role=job.role)
+
+        if body.markApplied:
+            if job.applied is not True:
+                updated = set_job_applied(db, job.id, True)
+                if updated is not None:
+                    job = updated
+            can_save = False
+        else:
+            # Offer Save when manual/clipboard text was used but not written to DB.
+            can_save = bool(force and client_desc and not description_persisted)
 
         return await self._run_analysis(
             db,
@@ -546,6 +607,9 @@ class MatchingService:
                     role=job.role,
                     can_save_description=can_save_description,
                     description_persisted=description_persisted,
+                    applied=job.applied is True,
+                    source=job.source if isinstance(job.source, str) else None,
+                    ats_source=_job_ats_source(job),
                 )
 
         provider = self._provider()
@@ -591,6 +655,9 @@ class MatchingService:
             role=job.role,
             can_save_description=can_save_description,
             description_persisted=description_persisted,
+            applied=job.applied is True,
+            source=job.source if isinstance(job.source, str) else None,
+            ats_source=_job_ats_source(job),
         )
 
 

@@ -12,6 +12,8 @@ interface AnalysisPanelProps {
   analysis: AnalysisResult | null;
   company?: string;
   role?: string;
+  source?: string;
+  atsSource?: string;
   onClose: () => void;
   onRefresh?: () => void;
   refreshing?: boolean;
@@ -44,6 +46,8 @@ export function AnalysisPanel({
   analysis,
   company,
   role,
+  source,
+  atsSource,
   onClose,
   onRefresh,
   refreshing,
@@ -72,6 +76,21 @@ export function AnalysisPanel({
                 {[company, role].filter(Boolean).join(" · ")}
               </p>
             )}
+            {source === "extension" ? (
+              <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                <span className="font-medium text-slate-600">Source:</span>
+                {atsSource &&
+                atsSource.toLowerCase() !== "extension" &&
+                atsSource.toLowerCase() !== "unknown" ? (
+                  <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 font-semibold text-slate-700 ring-1 ring-slate-200">
+                    {atsSource}
+                  </span>
+                ) : null}
+                <span className="inline-flex rounded-md bg-sky-50 px-2 py-0.5 font-semibold text-sky-800 ring-1 ring-sky-200">
+                  External
+                </span>
+              </p>
+            ) : null}
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
             <X className="size-4" aria-hidden />

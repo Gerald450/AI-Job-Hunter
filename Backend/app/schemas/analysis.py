@@ -85,6 +85,8 @@ class ExtensionJobAnalyzeRequest(BaseModel):
     descriptionSource: Optional[DescriptionSource] = None
     # When None: persist for dom/fetched; skip auto-persist for manual/clipboard.
     persistDescription: Optional[bool] = None
+    # Selected-text / clipboard: persist JD, stamp flags, mark the row applied.
+    markApplied: bool = False
 
 
 class SaveJobDescriptionRequest(BaseModel):
@@ -121,3 +123,6 @@ class AnalysisResponse(BaseModel):
     created_at: Optional[datetime] = None
     canSaveDescription: bool = False
     descriptionPersisted: bool = False
+    applied: bool = False
+    source: Optional[str] = None
+    atsSource: Optional[str] = None

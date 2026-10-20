@@ -220,6 +220,7 @@ export async function analyzeJob(
     settings?: ExtensionSettings;
     descriptionSource?: DescriptionSource;
     persistDescription?: boolean;
+    markApplied?: boolean;
   },
 ): Promise<JobAnalysisResponse> {
   const s = options?.settings ?? (await getSettings());
@@ -241,6 +242,7 @@ export async function analyzeJob(
           refresh: options?.refresh ?? false,
           descriptionSource: options?.descriptionSource,
           persistDescription: options?.persistDescription,
+          markApplied: options?.markApplied,
         },
         { timeout: 60_000 },
       ),

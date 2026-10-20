@@ -136,6 +136,7 @@ export interface AnalyzeJobPayload {
   refresh?: boolean;
   descriptionSource?: DescriptionSource;
   persistDescription?: boolean;
+  markApplied?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -220,6 +221,9 @@ export const JobAnalysisResponseSchema = z.object({
   gaps: z.array(z.string()).optional(),
   canSaveDescription: z.boolean().optional(),
   descriptionPersisted: z.boolean().optional(),
+  applied: z.boolean().optional(),
+  source: z.string().nullable().optional(),
+  atsSource: z.string().nullable().optional(),
 }).transform((raw) => {
   const overall =
     raw.overall_match ??
@@ -240,6 +244,9 @@ export const JobAnalysisResponseSchema = z.object({
     summary: raw.summary ?? "",
     canSaveDescription: Boolean(raw.canSaveDescription),
     descriptionPersisted: Boolean(raw.descriptionPersisted),
+    applied: Boolean(raw.applied),
+    source: raw.source ?? null,
+    atsSource: raw.atsSource ?? null,
   };
 });
 export type JobAnalysisResponse = z.infer<typeof JobAnalysisResponseSchema>;

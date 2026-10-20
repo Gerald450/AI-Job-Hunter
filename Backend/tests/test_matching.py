@@ -485,6 +485,232 @@ async def test_analyze_from_extension_uses_client_description(
     assert job.description == "x" * 500
     assert result.descriptionPersisted is True
     llm.analyze_resume.assert_awaited_once()
+    assert result.applied is False
+
+
+def test_enrich_job_from_description_stamps_years_and_sponsorship() -> None:
+    from matching.service import enrich_job_from_description
+
+    job = MagicMock()
+    job.role = "Software Engineer"
+    job.min_years_required = None
+    job.citizenship_required = False
+    job.no_sponsorship = False
+    job.advanced_degree = False
+    job.sponsorship_available = None
+    job.sponsorship_match = None
+    job.sponsorship_confidence = 0.0
+    db = MagicMock()
+
+    description = (
+        "No visa sponsorship for this position.\n"
+        "* 5+ years of software engineering experience\n"
+    )
+    enrich_job_from_description(db, job, description, role=job.role)
+    assert job.min_years_required == 5.0
+    assert job.no_sponsorship is True
+    db.commit.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_analyze_from_extension_mark_applied_persists_and_stamps(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from schemas.analysis import ExtensionJobAnalyzeRequest
+
+    match = ResumeMatchResult(
+        overall_match=80,
+        summary="Ok",
+        strengths=["Python"],
+        missing_skills=[],
+        recommended_improvements=[],
+        matched_keywords=["Python"],
+        missing_keywords=[],
+        confidence="High",
+    )
+    llm = MagicMock()
+    llm.name = "groq"
+    llm.analyze_resume = AsyncMock(return_value=match)
+
+    resume = MagicMock()
+    resume.id = "resume_markapplied"
+    resume.parsed = ParsedResume(skills=["Python"]).model_dump()
+
+    job = MagicMock()
+    job.id = uuid.uuid4()
+    job.description = None
+    job.company = "Acme"
+    job.role = "SWE"
+    job.location = "Remote"
+    job.apply_url = "https://boards.greenhouse.io/acme/jobs/applied-1"
+    job.ats = "greenhouse"
+    job.updated_at = datetime.now(timezone.utc)
+    job.applied = False
+    job.min_years_required = None
+    job.citizenship_required = False
+    job.no_sponsorship = False
+    job.advanced_degree = False
+    job.sponsorship_available = None
+    job.sponsorship_match = None
+    job.sponsorship_confidence = 0.0
+    job.source = "extension"
+
+    saved = MagicMock()
+    saved.id = uuid.uuid4()
+    saved.job_id = job.id
+    saved.resume_id = resume.id
+    saved.overall_match = 80
+    saved.summary = "Ok"
+    saved.strengths = ["Python"]
+    saved.missing_skills = []
+    saved.recommendations = []
+    saved.matched_keywords = ["Python"]
+    saved.missing_keywords = []
+    saved.confidence = "High"
+    saved.llm_provider = "groq"
+    saved.created_at = datetime.now(timezone.utc)
+
+    db = MagicMock()
+    service = MatchingService(llm=llm)
+    service.ensure_resume_parsed = AsyncMock(return_value=resume)  # type: ignore[method-assign]
+
+    import matching.service as service_module
+
+    applied_calls: list[tuple] = []
+
+    def _set_applied(_db, job_id, applied):
+        applied_calls.append((job_id, applied))
+        job.applied = True
+        job.applied_at = datetime.now(timezone.utc)
+        return job
+
+    monkeypatch.setattr(
+        service_module, "get_job_by_apply_url", lambda *_a, **_k: job
+    )
+    monkeypatch.setattr(service_module, "get_cached_analysis", lambda *a, **k: None)
+    monkeypatch.setattr(service_module, "save_analysis", lambda *a, **k: saved)
+    monkeypatch.setattr(service_module, "set_job_applied", _set_applied)
+
+    manual = (
+        "Software Engineer at Acme. No visa sponsorship for this position. "
+        "Requires 5+ years of software engineering experience. "
+        + ("Details. " * 40)
+    )
+    body = ExtensionJobAnalyzeRequest(
+        url=job.apply_url,
+        ats="greenhouse",
+        title="SWE",
+        company="Acme",
+        location="Remote",
+        description=manual,
+        resumeId=resume.id,
+        descriptionSource="manual_selection",
+        persistDescription=True,
+        markApplied=True,
+    )
+    result = await service.analyze_from_extension(db, body)
+    assert result.applied is True
+    assert result.source == "extension"
+    assert result.atsSource == "Greenhouse"
+    assert result.canSaveDescription is False
+    assert result.descriptionPersisted is True
+    assert job.description == manual.strip()
+    assert job.min_years_required == 5.0
+    assert job.no_sponsorship is True
+    assert applied_calls == [(job.id, True)]
+
+    # Second analyze must not un-apply or reset applied_at via another write.
+    applied_calls.clear()
+    job.applied = True
+    result2 = await service.analyze_from_extension(db, body)
+    assert result2.applied is True
+    assert applied_calls == []
+
+
+@pytest.mark.asyncio
+async def test_analyze_from_extension_without_mark_applied_leaves_unapplied(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from schemas.analysis import ExtensionJobAnalyzeRequest
+
+    match = ResumeMatchResult(
+        overall_match=70,
+        summary="Ok",
+        strengths=[],
+        missing_skills=[],
+        recommended_improvements=[],
+        matched_keywords=[],
+        missing_keywords=[],
+        confidence="Medium",
+    )
+    llm = MagicMock()
+    llm.name = "groq"
+    llm.analyze_resume = AsyncMock(return_value=match)
+
+    resume = MagicMock()
+    resume.id = "resume_dompath"
+    resume.parsed = ParsedResume(skills=["Python"]).model_dump()
+
+    job = MagicMock()
+    job.id = uuid.uuid4()
+    job.description = "tiny"
+    job.company = "Acme"
+    job.role = "SWE"
+    job.location = "Remote"
+    job.apply_url = "https://boards.greenhouse.io/acme/jobs/dom-1"
+    job.ats = "greenhouse"
+    job.updated_at = datetime.now(timezone.utc)
+    job.applied = False
+    job.min_years_required = None
+    job.citizenship_required = False
+    job.no_sponsorship = False
+    job.advanced_degree = False
+    job.sponsorship_available = None
+    job.sponsorship_match = None
+    job.sponsorship_confidence = 0.0
+
+    saved = MagicMock()
+    saved.id = uuid.uuid4()
+    saved.job_id = job.id
+    saved.resume_id = resume.id
+    saved.overall_match = 70
+    saved.summary = "Ok"
+    saved.strengths = []
+    saved.missing_skills = []
+    saved.recommendations = []
+    saved.matched_keywords = []
+    saved.missing_keywords = []
+    saved.confidence = "Medium"
+    saved.llm_provider = "groq"
+    saved.created_at = datetime.now(timezone.utc)
+
+    db = MagicMock()
+    service = MatchingService(llm=llm)
+    service.ensure_resume_parsed = AsyncMock(return_value=resume)  # type: ignore[method-assign]
+
+    import matching.service as service_module
+
+    set_applied = MagicMock()
+    monkeypatch.setattr(
+        service_module, "get_job_by_apply_url", lambda *_a, **_k: job
+    )
+    monkeypatch.setattr(service_module, "get_cached_analysis", lambda *a, **k: None)
+    monkeypatch.setattr(service_module, "save_analysis", lambda *a, **k: saved)
+    monkeypatch.setattr(service_module, "set_job_applied", set_applied)
+
+    body = ExtensionJobAnalyzeRequest(
+        url=job.apply_url,
+        ats="greenhouse",
+        title="SWE",
+        company="Acme",
+        location="Remote",
+        description="x" * 500,
+        resumeId=resume.id,
+        descriptionSource="dom",
+    )
+    result = await service.analyze_from_extension(db, body)
+    assert result.applied is False
+    set_applied.assert_not_called()
 
 
 @pytest.mark.asyncio

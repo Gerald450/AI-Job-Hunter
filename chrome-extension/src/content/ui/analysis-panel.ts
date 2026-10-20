@@ -76,26 +76,87 @@ const STYLES = `
 .body { padding: 14px 16px 18px; }
 .score {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   gap: 6px;
-  margin-bottom: 12px;
+  margin: 0 0 10px;
+  min-height: 40px;
+  line-height: 1;
 }
 .score-num {
+  display: block;
   font-size: 36px;
   font-weight: 800;
   letter-spacing: -0.03em;
+  line-height: 1;
   color: #0d9488;
 }
-.score-den { font-size: 14px; color: #64748b; font-weight: 600; }
+.score-den {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+  line-height: 1.2;
+  padding-bottom: 4px;
+}
+.job-line {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
 .meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
-  color: #94a3b8;
-  margin-bottom: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0 0 12px;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.source-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+.source-k {
+  font-weight: 600;
+  color: #475569;
+}
+.source-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.source-chip-external {
+  background: #f0f9ff;
+  color: #075985;
 }
 .section { margin-top: 14px; }
 .section h3 {
   margin: 0 0 6px;
   font-size: 12px;
+  line-height: 1.3;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #64748b;
@@ -246,21 +307,43 @@ function render(state: PanelState): void {
   } else {
     const a = state.analysis;
     const score = a.overall_match ?? a.score ?? 0;
-    const metaBits = [
-      a.company && a.role ? `${a.company} · ${a.role}` : a.company || a.role,
+    const jobLine =
+      a.company && a.role
+        ? `${a.company} · ${a.role}`
+        : a.company || a.role || "";
+    const chips = [
+      a.applied ? "Saved as applied" : null,
+      !a.applied && a.descriptionPersisted ? "Description saved" : null,
       a.cached ? "Cached" : null,
       a.confidence ? `Confidence: ${a.confidence}` : null,
-      a.descriptionPersisted ? "Description saved" : null,
-    ]
-      .filter(Boolean)
-      .join(" · ");
+    ].filter((bit): bit is string => Boolean(bit));
 
     body.innerHTML = `
       <div class="score">
         <span class="score-num">${score}</span>
         <span class="score-den">/ 100</span>
       </div>
-      ${metaBits ? `<div class="meta">${escapeHtml(metaBits)}</div>` : ""}
+      ${jobLine ? `<div class="job-line">${escapeHtml(jobLine)}</div>` : ""}
+      ${
+        a.source === "extension"
+          ? `<div class="source-line"><span class="source-k">Source:</span>${
+              a.atsSource
+                ? `<span class="source-chip">${escapeHtml(a.atsSource)}</span>`
+                : ""
+            }<span class="source-chip source-chip-external">External</span></div>`
+          : ""
+      }
+      ${
+        chips.length
+          ? `<div class="meta">${chips
+              .map((chip, i) =>
+                i === 0 && (a.applied || a.descriptionPersisted)
+                  ? `<span class="badge">${escapeHtml(chip)}</span>`
+                  : `<span>${escapeHtml(chip)}</span>`,
+              )
+              .join("")}</div>`
+          : ""
+      }
       ${
         a.summary
           ? `<div class="section"><h3>Summary</h3><p>${escapeHtml(a.summary)}</p></div>`
@@ -276,6 +359,7 @@ function render(state: PanelState): void {
     const showSave =
       Boolean(a.canSaveDescription) &&
       !a.descriptionPersisted &&
+      !a.applied &&
       !saveDone &&
       !saveDismissed &&
       Boolean(onSaveDescription);
@@ -321,6 +405,12 @@ function render(state: PanelState): void {
       saveActions.appendChild(no);
       prompt.appendChild(saveActions);
       body.appendChild(prompt);
+    } else if (a.applied) {
+      const note = document.createElement("div");
+      note.className = "meta";
+      note.style.marginTop = "12px";
+      note.textContent = "Saved as applied. This role will appear under Applied in the dashboard.";
+      body.appendChild(note);
     } else if (saveDone || a.descriptionPersisted) {
       const note = document.createElement("div");
       note.className = "meta";

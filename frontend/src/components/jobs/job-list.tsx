@@ -971,6 +971,8 @@ export function JobList() {
         analysis={panelAnalysis}
         company={panelJob?.company}
         role={panelJob?.role}
+        source={panelJob?.source}
+        atsSource={panelJob?.ats_source}
         refreshing={panelRefreshing}
         onClose={() => setPanelOpen(false)}
         onRefresh={
