@@ -72,6 +72,8 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ],
+    # MV3 service-worker / options-page requests send Origin: chrome-extension://…
+    allow_origin_regex=r"^chrome-extension://[a-p]{32}$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

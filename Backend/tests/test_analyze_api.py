@@ -442,3 +442,31 @@ def test_flag_job_not_found(
     )
     assert res.status_code == 404
     assert res.json()["detail"] == "Job not found"
+
+
+_EXTENSION_ORIGIN = "chrome-extension://abcdefghijklmnopabcdefghijklmnop"
+
+
+def test_chrome_extension_preflight_allowed(client: TestClient) -> None:
+    res = client.options(
+        "/extension/job",
+        headers={
+            "Origin": _EXTENSION_ORIGIN,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert res.status_code == 200
+    assert res.headers.get("access-control-allow-origin") == _EXTENSION_ORIGIN
+
+
+def test_unknown_origin_preflight_rejected(client: TestClient) -> None:
+    res = client.options(
+        "/extension/job",
+        headers={
+            "Origin": "https://evil.example",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert res.status_code == 400
