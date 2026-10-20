@@ -35,6 +35,7 @@ def _job(**overrides) -> Job:
         "faang": False,
         "no_sponsorship": False,
         "citizenship_required": False,
+        "clearance_required": overrides.get("clearance_required", False),
         "closed": False,
         "advanced_degree": False,
         "ats": overrides.get("ats"),
@@ -105,3 +106,26 @@ async def test_aggregation_dedupes_by_external_id():
     jobs, stats = await service.aggregate()
     assert len(jobs) == 1
     assert stats.duplicates_skipped == 1
+
+
+@pytest.mark.asyncio
+async def test_aggregation_drops_clearance_roles():
+    class ClearanceSource:
+        name = "clearance"
+
+        async def fetch_jobs(self):
+            return [
+                _job(external_id="open", ats="greenhouse"),
+                _job(
+                    role="Software Engineer New Grad - Secret Clearance",
+                    apply_url="https://example.com/secret",
+                    external_id="secret",
+                    ats="greenhouse",
+                    clearance_required=True,
+                ),
+            ]
+
+    service = JobAggregationService(sources=[ClearanceSource()])
+    jobs, stats = await service.aggregate()
+    assert [job.external_id for job in jobs] == ["open"]
+    assert stats.clearance_skipped == 1

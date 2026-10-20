@@ -16,6 +16,8 @@ class Job(BaseModel):
     faang: bool
     no_sponsorship: bool
     citizenship_required: bool
+    # True when the role requires a US security clearance (Secret / TS / SCI).
+    clearance_required: bool = False
     closed: bool
     advanced_degree: bool
     # Minimum years of experience parsed from title/description (if any).

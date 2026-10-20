@@ -42,6 +42,7 @@ class JobResponse(BaseModel):
     faang: bool
     no_sponsorship: bool
     citizenship_required: bool
+    clearance_required: bool = False
     advanced_degree: bool
     closed: bool
     min_years_required: Optional[float] = None

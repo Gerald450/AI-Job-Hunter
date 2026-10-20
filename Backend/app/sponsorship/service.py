@@ -10,7 +10,11 @@ from database.jobmodel import JobModel
 from fetchers.base import JobDescription
 from fetchers.router import FetcherRouter
 from sqlalchemy.orm import Session
-from sponsorship.detector import SponsorshipDetector, detect_citizenship_required
+from sponsorship.detector import (
+    SponsorshipDetector,
+    detect_citizenship_required,
+    detect_clearance_required,
+)
 from sponsorship.models import SponsorshipResult
 from processors.experience import extract_min_years_required
 
@@ -56,6 +60,17 @@ class SponsorshipService:
             job.sponsorship_match = citizenship_phrase
             job.sponsorship_confidence = 1.0
 
+        # Secret / TS/SCI clearance also rules out international applicants.
+        # Never clear a prior True flag.
+        clearance_phrase = detect_clearance_required(description)
+        if clearance_phrase is not None:
+            job.clearance_required = True
+            job.no_sponsorship = True
+            job.sponsorship_available = False
+            if not job.sponsorship_match:
+                job.sponsorship_match = clearance_phrase
+                job.sponsorship_confidence = 1.0
+
         years = extract_min_years_required(description)
         if years is not None:
             existing = job.min_years_required
@@ -68,10 +83,11 @@ class SponsorshipService:
         )
         logger.info(
             "Job %s sponsorship=%s citizenship_required=%s "
-            "min_years_required=%s matched=%s",
+            "clearance_required=%s min_years_required=%s matched=%s",
             log_id,
             result.sponsorship,
             bool(job.citizenship_required),
+            bool(getattr(job, "clearance_required", False)),
             job.min_years_required,
             matched,
         )

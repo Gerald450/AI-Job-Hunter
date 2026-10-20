@@ -79,6 +79,21 @@ _CITIZENSHIP_REQUIRED_RAW: tuple[str, ...] = (
     r"applicant\s+must\s+be\s+(?:a\s+)?us\s+citizen",
 )
 
+# US security-clearance requirements. International students cannot hold these.
+# Negation ("no security clearance required") is handled in the detector.
+_CLEARANCE_REQUIRED_RAW: tuple[str, ...] = (
+    r"top\s+secret(?:\s*/\s*sci|\s+sci)?(?:\s+clearance)?",
+    r"\bts\s*/\s*sci\b",
+    r"secret\s+clearance",
+    r"security\s+clearance",
+    r"\bsci\s+clearance\b",
+    r"clearance\s+level(?:\s+must\s+currently\s+possess)?\s*:\s*(?:secret|top\s+secret|ts\s*/\s*sci)\b",
+    r"(?:active|current|valid)\s+(?:u\.?s\.?\s+)?(?:secret|top\s+secret|security)\s+clearance",
+    r"ability\s+to\s+(?:obtain|get|maintain|hold)\s+(?:and\s+maintain\s+)?(?:a\s+|an\s+)?(?:active\s+|current\s+|valid\s+)?(?:u\.?s\.?\s+)?(?:secret|top\s+secret|ts\s*/\s*sci|security)\s+clearance",
+    r"must\s+(?:be\s+able\s+to\s+)?(?:obtain|hold|maintain|possess)\s+(?:and\s+maintain\s+)?(?:a\s+|an\s+)?(?:active\s+|current\s+|valid\s+)?(?:u\.?s\.?\s+)?(?:secret|top\s+secret|security)\s+clearance",
+    r"(?:eligible|eligibility)\s+(?:for|to\s+obtain)\s+(?:a\s+|an\s+)?(?:secret|top\s+secret|ts\s*/\s*sci|security)\s+clearance",
+)
+
 
 def _compile_all(raw_patterns: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
     return tuple(re.compile(pattern) for pattern in raw_patterns)
@@ -88,4 +103,7 @@ NO_SPONSORSHIP_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(_NO_SPONSORS
 YES_SPONSORSHIP_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(_YES_SPONSORSHIP_RAW)
 CITIZENSHIP_REQUIRED_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(
     _CITIZENSHIP_REQUIRED_RAW
+)
+CLEARANCE_REQUIRED_PATTERNS: tuple[re.Pattern[str], ...] = _compile_all(
+    _CLEARANCE_REQUIRED_RAW
 )

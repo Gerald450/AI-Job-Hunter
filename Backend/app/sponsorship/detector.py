@@ -7,8 +7,18 @@ import re
 from sponsorship.models import SponsorshipResult
 from sponsorship.patterns import (
     CITIZENSHIP_REQUIRED_PATTERNS,
+    CLEARANCE_REQUIRED_PATTERNS,
     NO_SPONSORSHIP_PATTERNS,
     YES_SPONSORSHIP_PATTERNS,
+)
+
+# Negation must sit in the same sentence as the clearance phrase.
+_CLEARANCE_BEFORE_NEGATION = re.compile(
+    r"(?:\bno|\bnot|\bwithout|\bdoes not|\bdo not|\bdoesn'?t|\bwill not|\bwon'?t)\b"
+)
+_CLEARANCE_AFTER_NEGATION = re.compile(
+    r"^\s*(?:is\s+|are\s+)?not\s+(?:a\s+)?(?:requirement|required|needed|necessary)"
+    r"|^\s*isn'?t\s+(?:a\s+)?(?:requirement|required|needed|necessary)"
 )
 
 _WHITESPACE_RE = re.compile(r"\s+")
@@ -37,6 +47,41 @@ def detect_citizenship_required(description: str | None) -> str | None:
     if description is None or not str(description).strip():
         return None
     return _first_match(normalize_description(description), CITIZENSHIP_REQUIRED_PATTERNS)
+
+
+def _clearance_span_is_negated(text: str, start: int, end: int) -> bool:
+    """True when nearby words say a clearance is not required."""
+    before = text[max(0, start - 80) : start]
+    if "." in before:
+        before = before.rsplit(".", 1)[-1]
+    after = text[end : end + 48]
+    if _CLEARANCE_AFTER_NEGATION.search(after):
+        return True
+    negation = _CLEARANCE_BEFORE_NEGATION.search(before)
+    if negation is None:
+        return False
+    # "will not sponsor, but a secret clearance is required" is still a hit.
+    between = before[negation.end() :]
+    if re.search(r"\b(?:but|however)\b", between):
+        return False
+    return True
+
+
+def detect_clearance_required(description: str | None) -> str | None:
+    """Return the matched clearance phrase, or None if not required.
+
+    Covers Secret, Top Secret, TS/SCI, and "security clearance" requirements.
+    A nearby denial ("no security clearance required") does not count.
+    """
+    if description is None or not str(description).strip():
+        return None
+    text = normalize_description(description)
+    for pattern in CLEARANCE_REQUIRED_PATTERNS:
+        for match in pattern.finditer(text):
+            if _clearance_span_is_negated(text, match.start(), match.end()):
+                continue
+            return match.group(0)
+    return None
 
 
 class SponsorshipDetector:

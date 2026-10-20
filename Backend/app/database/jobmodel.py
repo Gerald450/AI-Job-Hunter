@@ -25,6 +25,9 @@ class JobModel(Base):
     faang: Mapped[bool] = mapped_column(Boolean)
     no_sponsorship: Mapped[bool] = mapped_column(Boolean)
     citizenship_required: Mapped[bool] = mapped_column(Boolean)
+    clearance_required: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
     advanced_degree: Mapped[bool] = mapped_column(Boolean)
     closed: Mapped[bool] = mapped_column(Boolean)
     min_years_required: Mapped[Optional[float]] = mapped_column(
@@ -78,6 +81,7 @@ class JobModel(Base):
             faang=job.faang,
             no_sponsorship=job.no_sponsorship,
             citizenship_required=job.citizenship_required,
+            clearance_required=job.clearance_required,
             advanced_degree=job.advanced_degree,
             closed=job.closed,
             min_years_required=job.min_years_required,

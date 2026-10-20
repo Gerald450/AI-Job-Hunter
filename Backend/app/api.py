@@ -97,6 +97,7 @@ def on_startup():
     try:
         from enrich import (
             rescan_citizenship_from_stored_descriptions,
+            rescan_clearance_from_stored_jobs,
             rescan_experience_from_stored_descriptions,
             rewrite_broken_apply_urls,
         )
@@ -106,6 +107,12 @@ def on_startup():
             logger.info(
                 "Startup citizenship backfill: flagged=%s jobs from stored JDs",
                 flagged,
+            )
+        clearance_flagged = rescan_clearance_from_stored_jobs(db)
+        if clearance_flagged:
+            logger.info(
+                "Startup clearance backfill: flagged=%s jobs",
+                clearance_flagged,
             )
         stamped = rescan_experience_from_stored_descriptions(db)
         if stamped:
@@ -142,6 +149,9 @@ def list_jobs(
     ),
     exclude_citizenship_required: bool = Query(
         True, description="Exclude roles that require US citizenship"
+    ),
+    exclude_clearance_required: bool = Query(
+        True, description="Exclude roles that require a US security clearance"
     ),
     exclude_experienced: bool = Query(
         True,
@@ -186,6 +196,7 @@ def list_jobs(
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
         exclude_citizenship_required=exclude_citizenship_required,
+        exclude_clearance_required=exclude_clearance_required,
         exclude_experienced=exclude_experienced,
         applied=applied,
         saved=saved,
@@ -203,6 +214,7 @@ def list_jobs(
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
         exclude_citizenship_required=exclude_citizenship_required,
+        exclude_clearance_required=exclude_clearance_required,
         exclude_experienced=exclude_experienced,
     )
 

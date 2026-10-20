@@ -308,6 +308,7 @@ def test_infer_citizenship_required_from_text() -> None:
         }
     )
     assert job.citizenship_required is True
+    assert job.clearance_required is True
     assert job.no_sponsorship is True
 
 

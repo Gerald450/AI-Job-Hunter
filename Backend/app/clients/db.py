@@ -113,6 +113,13 @@ def ensure_schema():
                 "ADD COLUMN IF NOT EXISTS min_years_required DOUBLE PRECISION"
             )
         )
+        conn.execute(
+            text(
+                "ALTER TABLE jobs "
+                "ADD COLUMN IF NOT EXISTS clearance_required "
+                "BOOLEAN NOT NULL DEFAULT false"
+            )
+        )
 
         conn.execute(
             text(

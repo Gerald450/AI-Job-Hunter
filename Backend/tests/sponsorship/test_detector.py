@@ -266,6 +266,7 @@ def test_service_apply_result_flags_us_citizenship_required() -> None:
     job.id = "gdit-1"
     job.no_sponsorship = False
     job.citizenship_required = False
+    job.clearance_required = False
     job.sponsorship_match = None
 
     unknown = SponsorshipResult(
@@ -279,6 +280,7 @@ def test_service_apply_result_flags_us_citizenship_required() -> None:
         description="US Citizenship Required: Yes\nClearance Level: Secret",
     )
     assert job.citizenship_required is True
+    assert job.clearance_required is True
     assert job.no_sponsorship is True
     assert job.sponsorship_available is False
     assert "citizenship required" in (job.sponsorship_match or "").lower()
@@ -298,6 +300,83 @@ def test_detect_citizenship_required_phrases(text: str) -> None:
     from sponsorship.detector import detect_citizenship_required
 
     assert detect_citizenship_required(text) is not None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Active Secret clearance required.",
+        "Must be able to obtain and maintain a Top Secret clearance.",
+        "This position requires TS/SCI.",
+        "Ability to obtain a security clearance.",
+        "Clearance Level: Secret",
+        "Clearance Level Must Currently Possess: Secret",
+        "Eligibility for a TS/SCI clearance.",
+    ],
+)
+def test_detect_clearance_required_phrases(text: str) -> None:
+    from sponsorship.detector import detect_clearance_required
+
+    assert detect_clearance_required(text) is not None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Competitive salary and benefits.",
+        "Visa sponsorship available.",
+        "No security clearance required.",
+        "This position does not require a security clearance.",
+        "Security clearance is not required.",
+        "Secret clearance isn't a requirement for this role.",
+    ],
+)
+def test_detect_clearance_required_ignores_denials_and_unrelated_text(text: str) -> None:
+    from sponsorship.detector import detect_clearance_required
+
+    assert detect_clearance_required(text) is None
+
+
+def test_detect_clearance_required_keeps_real_requirement_after_a_denial() -> None:
+    from sponsorship.detector import detect_clearance_required
+
+    text = (
+        "Intern tracks need no security clearance. "
+        "Engineers must hold an active Secret clearance."
+    )
+    assert detect_clearance_required(text) is not None
+
+
+def test_detect_clearance_required_survives_an_unrelated_denial() -> None:
+    from sponsorship.detector import detect_clearance_required
+
+    text = "We will not sponsor visas, but an active Secret clearance is required."
+    assert detect_clearance_required(text) is not None
+
+
+def test_service_apply_result_flags_secret_clearance() -> None:
+    service = SponsorshipService()
+    job = MagicMock()
+    job.id = "clearance-1"
+    job.no_sponsorship = False
+    job.citizenship_required = False
+    job.clearance_required = False
+    job.sponsorship_match = None
+
+    unknown = SponsorshipResult(
+        sponsorship=None,
+        matched_phrase=None,
+        confidence=0.0,
+    )
+    service.apply_result(
+        job,
+        unknown,
+        description="Applicants must be able to obtain a Secret clearance.",
+    )
+    assert job.clearance_required is True
+    assert job.no_sponsorship is True
+    assert job.sponsorship_available is False
+    assert "secret clearance" in (job.sponsorship_match or "").lower()
 
 
 def test_detect_citizenship_required_ignores_unrelated_text() -> None:

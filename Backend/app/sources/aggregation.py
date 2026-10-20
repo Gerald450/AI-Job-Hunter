@@ -27,6 +27,7 @@ class AggregationStats:
     after_filters: int = 0
     duplicates_skipped: int = 0
     stale_skipped: int = 0
+    clearance_skipped: int = 0
     elapsed_ms: float = 0.0
 
     @property
@@ -67,7 +68,11 @@ class JobAggregationService:
 
         filtered: list[Job] = []
         stale_skipped = 0
+        clearance_skipped = 0
         for job in combined:
+            if job.clearance_required:
+                clearance_skipped += 1
+                continue
             if not is_within_max_age(age=job.age, max_age_days=self._max_age_days):
                 stale_skipped += 1
                 continue
@@ -88,6 +93,7 @@ class JobAggregationService:
             after_filters=len(filtered),
             duplicates_skipped=dupes,
             stale_skipped=stale_skipped,
+            clearance_skipped=clearance_skipped,
             elapsed_ms=(time.perf_counter() - started) * 1000,
         )
         self._log_stats(stats, kept=len(deduped))
@@ -149,12 +155,13 @@ class JobAggregationService:
         logger.info(
             "Aggregation complete fetched=%s after_filters=%s "
             "deduped=%s duplicates_skipped=%s stale_skipped=%s "
-            "failures=%s elapsed_ms=%.0f",
+            "clearance_skipped=%s failures=%s elapsed_ms=%.0f",
             stats.fetched,
             stats.after_filters,
             kept,
             stats.duplicates_skipped,
             stats.stale_skipped,
+            stats.clearance_skipped,
             len(stats.failures),
             stats.elapsed_ms,
         )

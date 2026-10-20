@@ -61,6 +61,7 @@ def _base_jobs_query(
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
     exclude_citizenship_required: bool = True,
+    exclude_clearance_required: bool = True,
     exclude_experienced: bool = True,
     exclude_flagged: bool = True,
     exclude_saved: bool = True,
@@ -76,6 +77,9 @@ def _base_jobs_query(
 
     if exclude_citizenship_required:
         query = query.filter(JobModel.citizenship_required.is_(False))
+
+    if exclude_clearance_required:
+        query = query.filter(JobModel.clearance_required.is_(False))
 
     if exclude_experienced:
         max_years = load_max_years_experience()
@@ -124,6 +128,7 @@ def get_job_stats(
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
     exclude_citizenship_required: bool = True,
+    exclude_clearance_required: bool = True,
     exclude_experienced: bool = True,
     exclude_flagged: bool = True,
     exclude_saved: bool = True,
@@ -135,6 +140,7 @@ def get_job_stats(
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
         exclude_citizenship_required=exclude_citizenship_required,
+        exclude_clearance_required=exclude_clearance_required,
         exclude_experienced=exclude_experienced,
         exclude_flagged=exclude_flagged,
         exclude_saved=exclude_saved,
@@ -180,6 +186,44 @@ def _matches_source(job: JobModel, source: str) -> bool:
     return needle in url
 
 
+def resolve_job_list_gates(
+    *,
+    sponsoring_only: bool = True,
+    exclude_closed: bool = True,
+    exclude_advanced_degree: bool = True,
+    exclude_internships: bool = True,
+    exclude_citizenship_required: bool = True,
+    exclude_clearance_required: bool = True,
+    exclude_experienced: bool = True,
+    exclude_flagged: bool = True,
+    exclude_saved: bool = True,
+    applied: Optional[bool] = None,
+    saved: Optional[bool] = None,
+    flagged: Optional[bool] = None,
+) -> dict:
+    """Discovery filters for job lists. Applied/flagged tabs skip career gates."""
+    if saved is True:
+        exclude_saved = False
+    if flagged is True:
+        exclude_flagged = False
+        exclude_saved = False
+        sponsoring_only = False
+        exclude_citizenship_required = False
+        exclude_clearance_required = False
+        exclude_experienced = False
+    return {
+        "sponsoring_only": sponsoring_only,
+        "exclude_closed": exclude_closed,
+        "exclude_advanced_degree": exclude_advanced_degree,
+        "exclude_internships": exclude_internships,
+        "exclude_citizenship_required": exclude_citizenship_required,
+        "exclude_clearance_required": exclude_clearance_required,
+        "exclude_experienced": exclude_experienced,
+        "exclude_flagged": exclude_flagged,
+        "exclude_saved": exclude_saved,
+    }
+
+
 def get_jobs(
     db: Session,
     *,
@@ -188,6 +232,7 @@ def get_jobs(
     exclude_advanced_degree: bool = True,
     exclude_internships: bool = True,
     exclude_citizenship_required: bool = True,
+    exclude_clearance_required: bool = True,
     exclude_experienced: bool = True,
     exclude_flagged: bool = True,
     exclude_saved: bool = True,
@@ -200,27 +245,24 @@ def get_jobs(
     limit: int = 25,
     offset: int = 0,
 ) -> Tuple[List[JobModel], int]:
-    # Saved / flagged tabs: include those rows; flagged also skips sponsorship
-    # gates so manually hidden roles remain reviewable.
-    if saved is True:
-        exclude_saved = False
-    if flagged is True:
-        exclude_flagged = False
-        exclude_saved = False
-        sponsoring_only = False
-        exclude_citizenship_required = False
-        exclude_experienced = False
-
-    query = _base_jobs_query(
-        db,
+    gates = resolve_job_list_gates(
         sponsoring_only=sponsoring_only,
         exclude_closed=exclude_closed,
         exclude_advanced_degree=exclude_advanced_degree,
         exclude_internships=exclude_internships,
         exclude_citizenship_required=exclude_citizenship_required,
+        exclude_clearance_required=exclude_clearance_required,
         exclude_experienced=exclude_experienced,
         exclude_flagged=exclude_flagged,
         exclude_saved=exclude_saved,
+        applied=applied,
+        saved=saved,
+        flagged=flagged,
+    )
+
+    query = _base_jobs_query(
+        db,
+        **gates,
     )
 
     if applied is not None:
@@ -327,6 +369,7 @@ def create_extension_job(
         faang=False,
         no_sponsorship=False,
         citizenship_required=False,
+        clearance_required=False,
         advanced_degree=False,
         closed=False,
         applied=False,
@@ -424,6 +467,7 @@ def insert_jobs(db: Session, jobs: List[Job]) -> dict:
             "faang": job.faang,
             "no_sponsorship": job.no_sponsorship,
             "citizenship_required": job.citizenship_required,
+            "clearance_required": job.clearance_required,
             "advanced_degree": job.advanced_degree,
             "closed": job.closed,
             "min_years_required": job.min_years_required,
@@ -460,6 +504,9 @@ def insert_jobs(db: Session, jobs: List[Job]) -> dict:
             ),
             "citizenship_required": text(
                 "jobs.citizenship_required OR EXCLUDED.citizenship_required"
+            ),
+            "clearance_required": text(
+                "jobs.clearance_required OR EXCLUDED.clearance_required"
             ),
             "min_years_required": text(
                 """

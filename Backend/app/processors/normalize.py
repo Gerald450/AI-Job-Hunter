@@ -8,7 +8,11 @@ from model.job import Job
 from processors.apply_url import rewrite_apply_url
 from processors.company_filter import is_excluded_company
 from processors.experience import extract_min_years_required
-from sponsorship.detector import SponsorshipDetector, detect_citizenship_required
+from sponsorship.detector import (
+    SponsorshipDetector,
+    detect_citizenship_required,
+    detect_clearance_required,
+)
 from utils.fingerprint import create_fingerprint
 
 # Emoji markers used by PittCSC / SimplifyJobs READMEs.
@@ -39,6 +43,13 @@ def infer_citizenship_required(text: str) -> bool:
     return detect_citizenship_required(text) is not None
 
 
+def infer_clearance_required(text: str) -> bool:
+    """Return True when text requires a US security clearance."""
+    if not text:
+        return False
+    return detect_clearance_required(text) is not None
+
+
 def normalize_job(job: dict[str, Any]) -> Job:
     """Convert a raw parser dict into a fingerprintable ``Job``."""
     normalized = dict(job)
@@ -55,13 +66,16 @@ def normalize_job(job: dict[str, Any]) -> Job:
 
     text_blob = f"{role} {notes} {location} {description}"
     citizenship = infer_citizenship_required(text_blob)
+    clearance = infer_clearance_required(text_blob)
     normalized["citizenship_required"] = citizenship
+    normalized["clearance_required"] = clearance
     normalized["min_years_required"] = extract_min_years_required(text_blob)
 
     normalized["no_sponsorship"] = (
         bool(normalized.get("_text_no_sponsorship"))
         or infer_no_sponsorship(text_blob)
         or citizenship
+        or clearance
     )
 
     for marker in [FAANG, NO_SPONSOR, US_CITIZEN, CLOSED, ADVANCED]:
@@ -109,6 +123,7 @@ def normalize_job(job: dict[str, Any]) -> Job:
         faang=bool(normalized["faang"]),
         no_sponsorship=bool(normalized["no_sponsorship"]),
         citizenship_required=bool(normalized["citizenship_required"]),
+        clearance_required=bool(normalized["clearance_required"]),
         closed=bool(normalized["closed"]),
         advanced_degree=bool(normalized["advanced_degree"]),
         min_years_required=normalized.get("min_years_required"),

@@ -54,6 +54,38 @@ def rescan_citizenship_from_stored_descriptions(db: Session) -> int:
     return flagged
 
 
+def rescan_clearance_from_stored_jobs(db: Session) -> int:
+    """Flag security-clearance roles from stored titles and descriptions.
+
+    Returns the number of jobs newly flagged.
+    """
+    from sponsorship.detector import detect_clearance_required
+
+    service = SponsorshipService()
+    jobs = (
+        db.query(JobModel)
+        .filter(JobModel.clearance_required.is_(False))
+        .all()
+    )
+    flagged = 0
+    for job in jobs:
+        blob = f"{job.role or ''}\n{job.description or ''}"
+        if detect_clearance_required(blob) is None:
+            continue
+        description = (job.description or "").strip()
+        if description:
+            result = service.analyze(description)
+            service.apply_result(job, result, description=description)
+        if not job.clearance_required:
+            job.clearance_required = True
+            job.no_sponsorship = True
+        flagged += 1
+
+    if flagged:
+        db.commit()
+    return flagged
+
+
 def rescan_experience_from_stored_descriptions(db: Session) -> int:
     """Parse min years from stored JDs that have not been scanned yet.
 
@@ -167,6 +199,12 @@ async def enrich_pending_jobs(
         logger.info(
             "Citizenship backfill from stored descriptions: flagged=%s",
             backfilled,
+        )
+    clearance_flagged = rescan_clearance_from_stored_jobs(db)
+    if clearance_flagged:
+        logger.info(
+            "Clearance backfill from stored jobs: flagged=%s",
+            clearance_flagged,
         )
     experience_stamped = rescan_experience_from_stored_descriptions(db)
     if experience_stamped:

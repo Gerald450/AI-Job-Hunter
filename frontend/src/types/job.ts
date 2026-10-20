@@ -10,6 +10,7 @@ export interface Job {
   faang: boolean;
   no_sponsorship: boolean;
   citizenship_required: boolean;
+  clearance_required?: boolean;
   advanced_degree: boolean;
   closed: boolean;
   applied: boolean;
