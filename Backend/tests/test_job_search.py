@@ -40,6 +40,9 @@ def test_matches_source_on_source_ats_and_url():
         "lever",
     )
     assert not _matches_source(_FakeJob(source="pittcsc"), "ashby")
+    assert _matches_source(_FakeJob(source="extension"), "external")
+    assert _matches_source(_FakeJob(source="extension"), "JobBoard")
+    assert not _matches_source(_FakeJob(source="pittcsc"), "external")
 
 
 def test_rtx_is_excluded_company():
@@ -50,6 +53,26 @@ def test_rtx_is_excluded_company():
     assert is_excluded_company("Raytheon Technologies", excluded)
     assert not is_excluded_company("Acme", excluded)
     assert not is_excluded_company("Vertex AI", excluded)
+
+
+def test_applied_list_skips_discovery_gates():
+    from database.crud import resolve_job_list_gates
+
+    default = resolve_job_list_gates()
+    assert default["sponsoring_only"] is True
+    assert default["exclude_clearance_required"] is True
+    assert default["exclude_experienced"] is True
+    assert default["exclude_internships"] is True
+    assert default["exclude_advanced_degree"] is True
+
+    applied = resolve_job_list_gates(applied=True)
+    assert applied["sponsoring_only"] is False
+    assert applied["exclude_citizenship_required"] is False
+    assert applied["exclude_clearance_required"] is False
+    assert applied["exclude_experienced"] is False
+    assert applied["exclude_internships"] is False
+    assert applied["exclude_advanced_degree"] is False
+    assert applied["exclude_flagged"] is True
 
 
 def test_job_stats_and_saved_update_schemas():

@@ -171,12 +171,19 @@ def get_job_stats(
     }
 
 
+_EXTERNAL_SOURCE_ALIASES = frozenset(
+    {"extension", "external", "jobboard", "job board"}
+)
+
+
 def _matches_source(job: JobModel, source: str) -> bool:
     """Match discovery source, ATS id, or common ATS tokens in the apply URL."""
     needle = source.strip().lower()
     if not needle:
         return True
 
+    if (job.source or "").lower() == "extension" and needle in _EXTERNAL_SOURCE_ALIASES:
+        return True
     if needle in (job.source or "").lower():
         return True
     if job.ats and needle in job.ats.lower():
@@ -211,6 +218,15 @@ def resolve_job_list_gates(
         exclude_citizenship_required = False
         exclude_clearance_required = False
         exclude_experienced = False
+    if applied is True:
+        # Externally applied roles must remain visible even if the JD is
+        # senior, internship-like, non-sponsoring, or clearance-gated.
+        sponsoring_only = False
+        exclude_citizenship_required = False
+        exclude_clearance_required = False
+        exclude_experienced = False
+        exclude_internships = False
+        exclude_advanced_degree = False
     return {
         "sponsoring_only": sponsoring_only,
         "exclude_closed": exclude_closed,
