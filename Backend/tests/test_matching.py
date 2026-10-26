@@ -710,6 +710,109 @@ async def test_analyze_from_extension_without_mark_applied_leaves_unapplied(
     )
     result = await service.analyze_from_extension(db, body)
     assert result.applied is False
+    assert result.askListing is False
+    set_applied.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_selected_text_defers_listing_until_the_user_chooses(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from schemas.analysis import ExtensionJobAnalyzeRequest
+
+    match = ResumeMatchResult(
+        overall_match=77,
+        summary="Ok",
+        strengths=["Python"],
+        missing_skills=[],
+        recommended_improvements=[],
+        matched_keywords=["Python"],
+        missing_keywords=[],
+        confidence="High",
+    )
+    llm = MagicMock()
+    llm.name = "groq"
+    llm.analyze_resume = AsyncMock(return_value=match)
+
+    resume = MagicMock()
+    resume.id = "resume_deferlist"
+    resume.parsed = ParsedResume(skills=["Python"]).model_dump()
+
+    job = MagicMock()
+    job.id = uuid.uuid4()
+    job.description = None
+    job.company = "Acme"
+    job.role = "SWE"
+    job.location = "Remote"
+    job.apply_url = "https://example.com/external-role"
+    job.ats = None
+    job.updated_at = datetime.now(timezone.utc)
+    job.applied = False
+    job.list_status = None
+    job.source = "extension"
+    job.min_years_required = None
+    job.citizenship_required = False
+    job.no_sponsorship = False
+    job.advanced_degree = False
+    job.sponsorship_available = None
+    job.sponsorship_match = None
+    job.sponsorship_confidence = 0.0
+
+    saved = MagicMock()
+    saved.id = uuid.uuid4()
+    saved.job_id = job.id
+    saved.resume_id = resume.id
+    saved.overall_match = 77
+    saved.summary = "Ok"
+    saved.strengths = ["Python"]
+    saved.missing_skills = []
+    saved.recommendations = []
+    saved.matched_keywords = ["Python"]
+    saved.missing_keywords = []
+    saved.confidence = "High"
+    saved.llm_provider = "groq"
+    saved.created_at = datetime.now(timezone.utc)
+
+    db = MagicMock()
+    service = MatchingService(llm=llm)
+    service.ensure_resume_parsed = AsyncMock(return_value=resume)  # type: ignore[method-assign]
+
+    import matching.service as service_module
+
+    created: dict = {}
+
+    def _create(_db, **kwargs):
+        created.update(kwargs)
+        job.list_status = kwargs.get("list_status")
+        job.apply_url = kwargs["apply_url"]
+        return job
+
+    set_applied = MagicMock()
+    monkeypatch.setattr(service_module, "get_job_by_apply_url", lambda *_a, **_k: None)
+    monkeypatch.setattr(service_module, "create_extension_job", _create)
+    monkeypatch.setattr(service_module, "get_cached_analysis", lambda *a, **k: None)
+    monkeypatch.setattr(service_module, "save_analysis", lambda *a, **k: saved)
+    monkeypatch.setattr(service_module, "set_job_applied", set_applied)
+
+    manual = "Selected external job description. " * 20
+    body = ExtensionJobAnalyzeRequest(
+        url="https://example.com/external-role",
+        ats="unknown",
+        title="SWE",
+        company="Acme",
+        location="Remote",
+        description=manual,
+        resumeId=resume.id,
+        descriptionSource="manual_selection",
+        persistDescription=True,
+        deferListing=True,
+    )
+    result = await service.analyze_from_extension(db, body)
+    assert created["list_status"] == "hidden"
+    assert result.askListing is True
+    assert result.applied is False
+    assert result.listStatus == "hidden"
+    assert result.descriptionPersisted is True
     set_applied.assert_not_called()
 
 

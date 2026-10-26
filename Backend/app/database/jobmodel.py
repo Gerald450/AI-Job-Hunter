@@ -45,6 +45,11 @@ class JobModel(Base):
     flagged_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True, default=None
     )
+    # NULL = normal discovery row. applied/not_applied = user listed an
+    # external job. hidden = analyzed but kept off the dashboard.
+    list_status: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True, default=None
+    )
     ats: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
     external_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
     role_family: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)

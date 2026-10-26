@@ -87,6 +87,7 @@ import type {
   ExtensionSettings,
   JobAnalysisResponse,
   JobExtraction,
+  JobListingChoice,
   QuestionsResponse,
   ToastPayload,
   UserProfile,
@@ -708,6 +709,22 @@ type AnalyzeOptions = {
 let pendingSave:
   | { jobId: string; description: string }
   | null = null;
+let pendingListing: { jobId: string } | null = null;
+
+const LISTING_LABELS: Record<JobListingChoice, { title: string; message: string }> = {
+  applied: {
+    title: "Listed as applied",
+    message: "This role will appear under Applied in the dashboard.",
+  },
+  not_applied: {
+    title: "Listed as not applied",
+    message: "This role will appear in your job list.",
+  },
+  unlisted: {
+    title: "Not listed",
+    message: "This job will stay off your dashboard.",
+  },
+};
 
 function isMissingDescriptionError(message: string | undefined): boolean {
   if (!message) return false;
@@ -748,6 +765,26 @@ function buildPanelHandlers(options: AnalyzeOptions): AnalysisPanelHandlers {
       });
       pendingSave = null;
     },
+    onListJob: async (choice) => {
+      if (!pendingListing) return;
+      const res = await send({
+        type: "BACKEND_REQUEST",
+        payload: {
+          action: "set_listing",
+          payload: { jobId: pendingListing.jobId, choice },
+        },
+      });
+      if (!res.ok) {
+        showToast({
+          kind: "error",
+          title: "Could not update listing",
+          message: res.error || "Try again in a moment.",
+        });
+        throw new Error(res.error || "Listing update failed");
+      }
+      const copy = LISTING_LABELS[choice];
+      showToast({ kind: "success", title: copy.title, message: copy.message });
+    },
   };
 }
 
@@ -757,6 +794,7 @@ async function postAnalyzeJob(params: {
   descriptionSource?: DescriptionSource;
   persistDescription?: boolean;
   markApplied?: boolean;
+  deferListing?: boolean;
 }): Promise<ExtensionResponse<JobAnalysisResponse>> {
   return send<JobAnalysisResponse>({
     type: "BACKEND_REQUEST",
@@ -768,6 +806,7 @@ async function postAnalyzeJob(params: {
         descriptionSource: params.descriptionSource,
         persistDescription: params.persistDescription,
         markApplied: params.markApplied,
+        deferListing: params.deferListing,
       },
     },
   });
@@ -779,6 +818,7 @@ async function runAnalyzeResume(
   const refresh = Boolean(options?.refresh);
   const handlers = buildPanelHandlers(options ?? {});
   pendingSave = null;
+  pendingListing = null;
   showAnalysisLoading(handlers);
 
   try {
@@ -802,14 +842,16 @@ async function runAnalyzeResume(
           ? "clipboard"
           : "manual_selection";
       const job = buildJobFromOverride(validated.text, source);
+      const askListing = source === "manual_selection";
       const res = await postAnalyzeJob({
         job,
         refresh,
         descriptionSource: source,
         persistDescription: true,
-        markApplied: true,
+        markApplied: source === "clipboard",
+        deferListing: askListing,
       });
-      return finishAnalyze(res, handlers, validated.text);
+      return finishAnalyze(res, handlers, validated.text, askListing);
     }
 
     // Default Analyze Resume: DOM → selection (≥300) → backend fetch → guided error
@@ -842,12 +884,13 @@ async function runAnalyzeResume(
       }
     }
 
+    const selectionListing = descriptionSource === "manual_selection";
     let res = await postAnalyzeJob({
       job,
       refresh,
       descriptionSource,
       persistDescription,
-      markApplied: descriptionSource === "manual_selection",
+      deferListing: selectionListing,
     });
 
     if (
@@ -864,9 +907,9 @@ async function runAnalyzeResume(
           refresh,
           descriptionSource: "manual_selection",
           persistDescription: true,
-          markApplied: true,
+          deferListing: true,
         });
-        return finishAnalyze(res, handlers, validated.text);
+        return finishAnalyze(res, handlers, validated.text, true);
       }
       const msg = FALLBACK_GUIDANCE;
       showAnalysisError(msg, handlers);
@@ -882,7 +925,7 @@ async function runAnalyzeResume(
       return { ok: false, error: msg };
     }
 
-    return finishAnalyze(res, handlers, descriptionForSave);
+    return finishAnalyze(res, handlers, descriptionForSave, selectionListing);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Resume analysis failed";
     logger.error(SCOPE, "Analyze resume failed", err);
@@ -895,6 +938,7 @@ function finishAnalyze(
   res: ExtensionResponse<JobAnalysisResponse>,
   handlers: AnalysisPanelHandlers,
   descriptionForSave?: string,
+  askListing = false,
 ): ExtensionResponse<JobAnalysisResponse> {
   if (!res.ok || !res.data) {
     const msg =
@@ -919,8 +963,12 @@ function finishAnalyze(
     pendingSave = null;
   }
 
-  showAnalysisResult(res.data, handlers);
-  return { ok: true, data: res.data };
+  const shouldAsk = (askListing || Boolean(res.data.askListing)) && Boolean(res.data.jobId);
+  pendingListing = shouldAsk && res.data.jobId ? { jobId: res.data.jobId } : null;
+
+  const analysis = { ...res.data, askListing: shouldAsk };
+  showAnalysisResult(analysis, handlers);
+  return { ok: true, data: analysis };
 }
 
 async function runAnalyzeSelection(

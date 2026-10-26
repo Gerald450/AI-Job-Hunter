@@ -321,6 +321,173 @@ def test_extension_job_manual_selection_fields_accepted(
     assert call_body.persistDescription is False
 
 
+def test_extension_job_defer_listing_fields_accepted(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import api as api_module
+
+    job_id = uuid.uuid4()
+    payload = AnalysisResponse(
+        id=str(uuid.uuid4()),
+        jobId=str(job_id),
+        resumeId="resume_aaaaaaaaaaaa",
+        company="Acme",
+        role="SWE",
+        overall_match=88,
+        summary="Good",
+        strengths=["Python"],
+        missing_skills=[],
+        recommended_improvements=[],
+        matched_keywords=["Python"],
+        missing_keywords=[],
+        confidence="High",
+        llm_provider="groq",
+        cached=False,
+        canSaveDescription=False,
+        descriptionPersisted=True,
+        applied=False,
+        askListing=True,
+        listStatus="hidden",
+    )
+
+    service = MagicMock()
+    service.analyze_from_extension = AsyncMock(return_value=payload)
+    monkeypatch.setattr(api_module, "MatchingService", lambda: service)
+
+    res = client.post(
+        "/extension/job",
+        json={
+            "url": "https://example.com/jobs/selected",
+            "ats": "unknown",
+            "title": "SWE",
+            "company": "Acme",
+            "description": "x" * 320,
+            "resumeId": "resume_aaaaaaaaaaaa",
+            "descriptionSource": "manual_selection",
+            "persistDescription": True,
+            "deferListing": True,
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["askListing"] is True
+    assert body["applied"] is False
+    assert body["listStatus"] == "hidden"
+    call_body = service.analyze_from_extension.await_args.args[1]
+    assert call_body.deferListing is True
+    assert call_body.markApplied is False
+
+
+def test_extension_job_listing_choices(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import api as api_module
+
+    job_id = uuid.uuid4()
+    state = {"applied": False, "list_status": "hidden"}
+
+    class _Job:
+        id = job_id
+
+        @property
+        def applied(self):
+            return state["applied"]
+
+        @property
+        def list_status(self):
+            return state["list_status"]
+
+    def _set(_db, jid, choice):
+        assert jid == job_id
+        if choice == "applied":
+            state["applied"] = True
+            state["list_status"] = "applied"
+        elif choice == "not_applied":
+            state["applied"] = False
+            state["list_status"] = "not_applied"
+        elif choice == "unlisted":
+            state["applied"] = False
+            state["list_status"] = "hidden"
+        else:
+            return None
+        return _Job()
+
+    monkeypatch.setattr(api_module, "set_job_listing", _set)
+
+    not_applied = client.post(
+        f"/extension/job/{job_id}/listing",
+        json={"choice": "not_applied"},
+    )
+    assert not_applied.status_code == 200
+    assert not_applied.json()["applied"] is False
+    assert not_applied.json()["listStatus"] == "not_applied"
+
+    applied = client.post(
+        f"/extension/job/{job_id}/listing",
+        json={"choice": "applied"},
+    )
+    assert applied.status_code == 200
+    assert applied.json()["applied"] is True
+    assert applied.json()["listStatus"] == "applied"
+
+    hidden = client.post(
+        f"/extension/job/{job_id}/listing",
+        json={"choice": "unlisted"},
+    )
+    assert hidden.status_code == 200
+    assert hidden.json()["applied"] is False
+    assert hidden.json()["listStatus"] == "hidden"
+
+
+def test_extension_job_listing_not_found(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import api as api_module
+
+    monkeypatch.setattr(api_module, "set_job_listing", lambda *_a, **_k: None)
+    res = client.post(
+        f"/extension/job/{uuid.uuid4()}/listing",
+        json={"choice": "applied"},
+    )
+    assert res.status_code == 404
+    assert res.json()["detail"] == "Job not found"
+
+
+def test_set_job_listing_updates_row() -> None:
+    from unittest.mock import patch
+
+    from database.crud import set_job_listing
+
+    job = MagicMock()
+    job.applied = False
+    job.applied_at = None
+    job.list_status = None
+    job.is_active = True
+    db = MagicMock()
+
+    with patch("database.crud.get_job_by_id", return_value=job):
+        assert set_job_listing(db, uuid.uuid4(), "not_applied") is job
+    assert job.list_status == "not_applied"
+    assert job.applied is False
+    assert job.applied_at is None
+    assert job.is_active is True
+
+    with patch("database.crud.get_job_by_id", return_value=job):
+        set_job_listing(db, uuid.uuid4(), "applied")
+    assert job.list_status == "applied"
+    assert job.applied is True
+    assert job.applied_at is not None
+
+    with patch("database.crud.get_job_by_id", return_value=job):
+        set_job_listing(db, uuid.uuid4(), "unlisted")
+    assert job.list_status == "hidden"
+    assert job.applied is False
+    assert job.applied_at is None
+
+    with patch("database.crud.get_job_by_id", return_value=None):
+        assert set_job_listing(db, uuid.uuid4(), "applied") is None
+
+
 def test_extension_job_mark_applied_fields_accepted(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:

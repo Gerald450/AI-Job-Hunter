@@ -131,12 +131,16 @@ export const DescriptionSourceSchema = z.enum([
 ]);
 export type DescriptionSource = z.infer<typeof DescriptionSourceSchema>;
 
+export type JobListingChoice = "applied" | "not_applied" | "unlisted";
+
 export interface AnalyzeJobPayload {
   job: JobExtraction;
   refresh?: boolean;
   descriptionSource?: DescriptionSource;
   persistDescription?: boolean;
   markApplied?: boolean;
+  /** Selected text: analyze first, then ask how to list the job. */
+  deferListing?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -224,6 +228,8 @@ export const JobAnalysisResponseSchema = z.object({
   applied: z.boolean().optional(),
   source: z.string().nullable().optional(),
   atsSource: z.string().nullable().optional(),
+  askListing: z.boolean().optional(),
+  listStatus: z.enum(["applied", "not_applied", "hidden"]).nullable().optional(),
 }).transform((raw) => {
   const overall =
     raw.overall_match ??
@@ -247,6 +253,8 @@ export const JobAnalysisResponseSchema = z.object({
     applied: Boolean(raw.applied),
     source: raw.source ?? null,
     atsSource: raw.atsSource ?? null,
+    askListing: Boolean(raw.askListing),
+    listStatus: raw.listStatus ?? null,
   };
 });
 export type JobAnalysisResponse = z.infer<typeof JobAnalysisResponseSchema>;

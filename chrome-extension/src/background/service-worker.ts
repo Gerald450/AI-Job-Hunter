@@ -15,6 +15,7 @@ import {
   requestAiAutofill,
   requestAutofill,
   saveJobDescription,
+  setJobListing,
 } from "@/lib/api";
 import {
   checkAutomationHealth,
@@ -330,7 +331,8 @@ async function handleMessage(
           | "questions"
           | "profile"
           | "job"
-          | "save_description";
+          | "save_description"
+          | "set_listing";
         payload: unknown;
       };
       try {
@@ -365,8 +367,17 @@ async function handleMessage(
                 descriptionSource: body.descriptionSource,
                 persistDescription: body.persistDescription,
                 markApplied: body.markApplied,
+                deferListing: body.deferListing,
               }),
             };
+          }
+          case "set_listing": {
+            const body = payload as {
+              jobId: string;
+              choice: "applied" | "not_applied" | "unlisted";
+            };
+            await setJobListing(body.jobId, body.choice);
+            return { ok: true };
           }
           case "save_description": {
             const body = payload as { jobId: string; description: string };

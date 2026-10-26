@@ -2,7 +2,7 @@
  * In-page analysis results panel (Shadow DOM).
  */
 
-import type { JobAnalysisResponse } from "@/types";
+import type { JobAnalysisResponse, JobListingChoice } from "@/types";
 import { logger } from "@/lib/logger";
 
 const SCOPE = "ui/analysis-panel";
@@ -17,6 +17,7 @@ export interface AnalysisPanelHandlers {
   onRetry?: () => void;
   onRefresh?: () => void;
   onSaveDescription?: () => void | Promise<void>;
+  onListJob?: (choice: JobListingChoice) => void | Promise<void>;
 }
 
 let hostEl: HTMLElement | null = null;
@@ -24,9 +25,12 @@ let shadow: ShadowRoot | null = null;
 let onRetry: (() => void) | null = null;
 let onRefresh: (() => void) | null = null;
 let onSaveDescription: (() => void | Promise<void>) | null = null;
+let onListJob: ((choice: JobListingChoice) => void | Promise<void>) | null = null;
 let saveBusy = false;
 let saveDone = false;
 let saveDismissed = false;
+let listingBusy = false;
+let listingChoice: JobListingChoice | null = null;
 
 const STYLES = `
 :host {
@@ -229,6 +233,12 @@ const STYLES = `
   opacity: 0.55;
   cursor: not-allowed;
 }
+.listing-actions {
+  flex-direction: column;
+}
+.listing-actions button {
+  width: 100%;
+}
 `;
 
 function ensureHost(): ShadowRoot {
@@ -262,6 +272,9 @@ function applyHandlers(handlers?: AnalysisPanelHandlers): void {
   if (handlers?.onRefresh) onRefresh = handlers.onRefresh;
   if (handlers?.onSaveDescription !== undefined) {
     onSaveDescription = handlers.onSaveDescription;
+  }
+  if (handlers?.onListJob !== undefined) {
+    onListJob = handlers.onListJob;
   }
 }
 
@@ -311,9 +324,20 @@ function render(state: PanelState): void {
       a.company && a.role
         ? `${a.company} · ${a.role}`
         : a.company || a.role || "";
+    const pendingListing =
+      Boolean(a.askListing) && !listingChoice && Boolean(onListJob);
+    const listedAsApplied =
+      listingChoice === "applied" || (a.applied && !pendingListing && listingChoice == null);
     const chips = [
-      a.applied ? "Saved as applied" : null,
-      !a.applied && a.descriptionPersisted ? "Description saved" : null,
+      listedAsApplied ? "Saved as applied" : null,
+      listingChoice === "not_applied" ? "Listed as not applied" : null,
+      !listedAsApplied &&
+      listingChoice !== "not_applied" &&
+      listingChoice !== "unlisted" &&
+      !pendingListing &&
+      a.descriptionPersisted
+        ? "Description saved"
+        : null,
       a.cached ? "Cached" : null,
       a.confidence ? `Confidence: ${a.confidence}` : null,
     ].filter((bit): bit is string => Boolean(bit));
@@ -336,8 +360,10 @@ function render(state: PanelState): void {
       ${
         chips.length
           ? `<div class="meta">${chips
-              .map((chip, i) =>
-                i === 0 && (a.applied || a.descriptionPersisted)
+              .map((chip) =>
+                chip === "Saved as applied" ||
+                chip === "Listed as not applied" ||
+                chip === "Description saved"
                   ? `<span class="badge">${escapeHtml(chip)}</span>`
                   : `<span>${escapeHtml(chip)}</span>`,
               )
@@ -357,6 +383,8 @@ function render(state: PanelState): void {
     `;
 
     const showSave =
+      !pendingListing &&
+      !listingChoice &&
       Boolean(a.canSaveDescription) &&
       !a.descriptionPersisted &&
       !a.applied &&
@@ -364,7 +392,53 @@ function render(state: PanelState): void {
       !saveDismissed &&
       Boolean(onSaveDescription);
 
-    if (showSave) {
+    if (pendingListing) {
+      const prompt = document.createElement("div");
+      prompt.className = "save-prompt";
+      const label = document.createElement("p");
+      label.textContent = "List this job?";
+      const hint = document.createElement("p");
+      hint.style.color = "#0f766e";
+      hint.textContent =
+        "Applied, not applied, or leave it off your dashboard.";
+      prompt.appendChild(label);
+      prompt.appendChild(hint);
+      const listActions = document.createElement("div");
+      listActions.className = "actions listing-actions";
+      listActions.style.marginTop = "0";
+
+      const choices: { choice: JobListingChoice; label: string; secondary?: boolean }[] =
+        [
+          { choice: "applied", label: "Applied" },
+          { choice: "not_applied", label: "Not applied", secondary: true },
+          { choice: "unlisted", label: "Don't list", secondary: true },
+        ];
+
+      for (const item of choices) {
+        const button = document.createElement("button");
+        button.type = "button";
+        if (item.secondary) button.className = "secondary";
+        button.textContent = listingBusy ? "Saving…" : item.label;
+        button.disabled = listingBusy;
+        button.addEventListener("click", async () => {
+          if (!onListJob || listingBusy) return;
+          listingBusy = true;
+          render(state);
+          try {
+            await onListJob(item.choice);
+            listingChoice = item.choice;
+          } catch {
+            // The caller surfaces the error. Keep the prompt so they can retry.
+          } finally {
+            listingBusy = false;
+            render(state);
+          }
+        });
+        listActions.appendChild(button);
+      }
+      prompt.appendChild(listActions);
+      body.appendChild(prompt);
+    } else if (showSave) {
       const prompt = document.createElement("div");
       prompt.className = "save-prompt";
       const label = document.createElement("p");
@@ -405,11 +479,23 @@ function render(state: PanelState): void {
       saveActions.appendChild(no);
       prompt.appendChild(saveActions);
       body.appendChild(prompt);
-    } else if (a.applied) {
+    } else if (listingChoice === "applied" || (a.applied && !listingChoice)) {
       const note = document.createElement("div");
       note.className = "meta";
       note.style.marginTop = "12px";
-      note.textContent = "Saved as applied. This role will appear under Applied in the dashboard.";
+      note.textContent = "Listed as applied. This role will appear under Applied in the dashboard.";
+      body.appendChild(note);
+    } else if (listingChoice === "not_applied") {
+      const note = document.createElement("div");
+      note.className = "meta";
+      note.style.marginTop = "12px";
+      note.textContent = "Listed as not applied. This role will appear in your job list.";
+      body.appendChild(note);
+    } else if (listingChoice === "unlisted") {
+      const note = document.createElement("div");
+      note.className = "meta";
+      note.style.marginTop = "12px";
+      note.textContent = "This job will not be listed.";
       body.appendChild(note);
     } else if (saveDone || a.descriptionPersisted) {
       const note = document.createElement("div");
@@ -439,6 +525,8 @@ export function showAnalysisLoading(handlers?: AnalysisPanelHandlers): void {
   saveBusy = false;
   saveDone = false;
   saveDismissed = false;
+  listingBusy = false;
+  listingChoice = null;
   render({ kind: "loading" });
 }
 
@@ -459,6 +547,8 @@ export function showAnalysisResult(
   saveBusy = false;
   saveDone = Boolean(analysis.descriptionPersisted);
   saveDismissed = false;
+  listingBusy = false;
+  listingChoice = null;
   render({ kind: "result", analysis });
 }
 
@@ -467,7 +557,10 @@ export function hideAnalysisPanel(): void {
   hostEl = null;
   shadow = null;
   onSaveDescription = null;
+  onListJob = null;
   saveBusy = false;
   saveDone = false;
   saveDismissed = false;
+  listingBusy = false;
+  listingChoice = null;
 }

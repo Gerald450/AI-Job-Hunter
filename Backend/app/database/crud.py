@@ -53,6 +53,25 @@ def delete_stale_jobs(
     return int(deleted)
 
 
+LIST_STATUS_APPLIED = "applied"
+LIST_STATUS_NOT_APPLIED = "not_applied"
+LIST_STATUS_HIDDEN = "hidden"
+_EXPLICIT_LIST_STATUSES = (LIST_STATUS_APPLIED, LIST_STATUS_NOT_APPLIED)
+
+
+def _visible_on_dashboard():
+    """Pipeline rows (NULL) and user-listed rows. Hidden analyses stay out."""
+    return or_(
+        JobModel.list_status.is_(None),
+        JobModel.list_status != LIST_STATUS_HIDDEN,
+    )
+
+
+def _keep_or_user_listed(condition):
+    """User-listed external jobs stay visible even when discovery gates fail."""
+    return or_(condition, JobModel.list_status.in_(_EXPLICIT_LIST_STATUSES))
+
+
 def _base_jobs_query(
     db: Session,
     *,
@@ -67,26 +86,32 @@ def _base_jobs_query(
     exclude_saved: bool = True,
     active_only: bool = True,
 ):
-    query = db.query(JobModel)
+    query = db.query(JobModel).filter(_visible_on_dashboard())
 
     if active_only:
         query = query.filter(JobModel.is_active.is_(True))
 
     if sponsoring_only:
-        query = query.filter(JobModel.no_sponsorship.is_(False))
+        query = query.filter(_keep_or_user_listed(JobModel.no_sponsorship.is_(False)))
 
     if exclude_citizenship_required:
-        query = query.filter(JobModel.citizenship_required.is_(False))
+        query = query.filter(
+            _keep_or_user_listed(JobModel.citizenship_required.is_(False))
+        )
 
     if exclude_clearance_required:
-        query = query.filter(JobModel.clearance_required.is_(False))
+        query = query.filter(
+            _keep_or_user_listed(JobModel.clearance_required.is_(False))
+        )
 
     if exclude_experienced:
         max_years = load_max_years_experience()
         query = query.filter(
-            or_(
-                JobModel.min_years_required.is_(None),
-                JobModel.min_years_required <= max_years,
+            _keep_or_user_listed(
+                or_(
+                    JobModel.min_years_required.is_(None),
+                    JobModel.min_years_required <= max_years,
+                )
             )
         )
 
@@ -97,18 +122,22 @@ def _base_jobs_query(
         query = query.filter(JobModel.saved.is_(False))
 
     if exclude_closed:
-        query = query.filter(JobModel.closed.is_(False))
+        query = query.filter(_keep_or_user_listed(JobModel.closed.is_(False)))
 
     if exclude_advanced_degree:
-        query = query.filter(JobModel.advanced_degree.is_(False))
+        query = query.filter(
+            _keep_or_user_listed(JobModel.advanced_degree.is_(False))
+        )
 
     if exclude_internships:
         # No job_type column yet — exclude internship-like titles.
         query = query.filter(
-            not_(
-                or_(
-                    JobModel.role.ilike("%intern%"),
-                    JobModel.role.ilike("%internship%"),
+            _keep_or_user_listed(
+                not_(
+                    or_(
+                        JobModel.role.ilike("%intern%"),
+                        JobModel.role.ilike("%internship%"),
+                    )
                 )
             )
         )
@@ -151,6 +180,7 @@ def get_job_stats(
     saved_rows = _without_excluded_companies(
         db.query(JobModel)
         .filter(
+            _visible_on_dashboard(),
             JobModel.is_active.is_(True),
             JobModel.saved.is_(True),
             JobModel.flagged.is_(False),
@@ -159,7 +189,11 @@ def get_job_stats(
     )
     flagged_rows = _without_excluded_companies(
         db.query(JobModel)
-        .filter(JobModel.is_active.is_(True), JobModel.flagged.is_(True))
+        .filter(
+            _visible_on_dashboard(),
+            JobModel.is_active.is_(True),
+            JobModel.flagged.is_(True),
+        )
         .all()
     )
     return {
@@ -354,6 +388,7 @@ def create_extension_job(
     location: str,
     ats: Optional[str] = None,
     description: Optional[str] = None,
+    list_status: Optional[str] = None,
 ) -> JobModel:
     """Insert a lightweight job row sourced from the Chrome extension."""
     from utils.fingerprint import create_fingerprint
@@ -393,6 +428,7 @@ def create_extension_job(
         flagged=False,
         ats=ats if ats and ats != "unknown" else None,
         is_active=True,
+        list_status=list_status,
         description=description,
         sponsorship_confidence=0.0,
         created_at=now,
@@ -414,6 +450,38 @@ def set_job_applied(
     now = datetime.now(timezone.utc)
     job.applied = applied
     job.applied_at = now if applied else None
+    job.updated_at = now
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+def set_job_listing(
+    db: Session, job_id: uuid.UUID, choice: str
+) -> Optional[JobModel]:
+    """Record whether an analyzed external job is listed, and as what."""
+    job = get_job_by_id(db, job_id)
+    if job is None:
+        return None
+
+    now = datetime.now(timezone.utc)
+    if choice == "applied":
+        job.list_status = LIST_STATUS_APPLIED
+        job.applied = True
+        job.applied_at = now
+        job.is_active = True
+    elif choice == "not_applied":
+        job.list_status = LIST_STATUS_NOT_APPLIED
+        job.applied = False
+        job.applied_at = None
+        job.is_active = True
+    elif choice == "unlisted":
+        job.list_status = LIST_STATUS_HIDDEN
+        job.applied = False
+        job.applied_at = None
+    else:
+        return None
+
     job.updated_at = now
     db.commit()
     db.refresh(job)

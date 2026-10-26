@@ -18,6 +18,7 @@ from database.crud import (
     get_jobs,
     set_job_applied,
     set_job_flagged,
+    set_job_listing,
     set_job_saved,
 )
 from database.resume_crud import get_match_scores_for_jobs, get_resume_row
@@ -41,6 +42,8 @@ from schemas.analysis import (
     AnalyzeRequest,
     BatchAnalyzeRequest,
     ExtensionJobAnalyzeRequest,
+    JobListingRequest,
+    JobListingResponse,
     ParsedResume,
     ResumeDetailResponse,
     SaveJobDescriptionRequest,
@@ -565,6 +568,25 @@ async def analyze_extension_job(
         raise _http_from_matching(exc) from exc
     except MatchingError as exc:
         raise _http_from_matching(exc) from exc
+
+
+@app.post("/extension/job/{job_id}/listing", response_model=JobListingResponse)
+def update_extension_job_listing(
+    job_id: uuid.UUID,
+    body: JobListingRequest,
+    db: Session = Depends(get_db),
+):
+    """List a selected-text external job as applied, not applied, or not at all."""
+    job = set_job_listing(db, job_id, body.choice)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return JobListingResponse(
+        jobId=str(job.id),
+        applied=job.applied is True,
+        listStatus=job.list_status
+        if job.list_status in ("applied", "not_applied", "hidden")
+        else None,
+    )
 
 
 @app.post("/extension/job/{job_id}/description", response_model=JobResponse)

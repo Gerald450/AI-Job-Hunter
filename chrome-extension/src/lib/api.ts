@@ -221,6 +221,7 @@ export async function analyzeJob(
     descriptionSource?: DescriptionSource;
     persistDescription?: boolean;
     markApplied?: boolean;
+    deferListing?: boolean;
   },
 ): Promise<JobAnalysisResponse> {
   const s = options?.settings ?? (await getSettings());
@@ -243,11 +244,28 @@ export async function analyzeJob(
           descriptionSource: options?.descriptionSource,
           persistDescription: options?.persistDescription,
           markApplied: options?.markApplied,
+          deferListing: options?.deferListing,
         },
         { timeout: 60_000 },
       ),
     );
     return parse(JobAnalysisResponseSchema, res.data, "job analysis");
+  } catch (err) {
+    throw toApiError(err);
+  }
+}
+
+export async function setJobListing(
+  jobId: string,
+  choice: "applied" | "not_applied" | "unlisted",
+  settings?: ExtensionSettings,
+): Promise<void> {
+  const s = settings ?? (await getSettings());
+  try {
+    const client = createClient(s);
+    await withRetry(() =>
+      client.post(`/extension/job/${jobId}/listing`, { choice }),
+    );
   } catch (err) {
     throw toApiError(err);
   }

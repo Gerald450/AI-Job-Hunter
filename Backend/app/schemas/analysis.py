@@ -87,12 +87,27 @@ class ExtensionJobAnalyzeRequest(BaseModel):
     persistDescription: Optional[bool] = None
     # Selected-text / clipboard: persist JD, stamp flags, mark the row applied.
     markApplied: bool = False
+    # Selected text: analyze now, but keep a new row off the dashboard until
+    # the user chooses applied, not applied, or don't list.
+    deferListing: bool = False
 
 
 class SaveJobDescriptionRequest(BaseModel):
     """Persist a job description onto an existing job row."""
 
     description: str = Field(..., min_length=1)
+
+
+class JobListingRequest(BaseModel):
+    """How a selected-text external job should appear on the dashboard."""
+
+    choice: Literal["applied", "not_applied", "unlisted"]
+
+
+class JobListingResponse(BaseModel):
+    jobId: str
+    applied: bool = False
+    listStatus: Optional[Literal["applied", "not_applied", "hidden"]] = None
 
 
 class ResumeDetailResponse(BaseModel):
@@ -126,3 +141,6 @@ class AnalysisResponse(BaseModel):
     applied: bool = False
     source: Optional[str] = None
     atsSource: Optional[str] = None
+    # Present after selected-text analysis so the extension can ask how to list it.
+    askListing: bool = False
+    listStatus: Optional[Literal["applied", "not_applied", "hidden"]] = None

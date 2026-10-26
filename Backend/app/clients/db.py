@@ -120,6 +120,9 @@ def ensure_schema():
                 "BOOLEAN NOT NULL DEFAULT false"
             )
         )
+        conn.execute(
+            text("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS list_status VARCHAR")
+        )
 
         conn.execute(
             text(

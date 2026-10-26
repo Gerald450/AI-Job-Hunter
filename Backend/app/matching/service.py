@@ -83,6 +83,13 @@ def _job_ats_source(job: JobModel) -> str | None:
     return label
 
 
+def _job_list_status(job: JobModel) -> str | None:
+    value = getattr(job, "list_status", None)
+    if value in ("applied", "not_applied", "hidden"):
+        return value
+    return None
+
+
 def analysis_to_response(
     row: ResumeAnalysisModel,
     *,
@@ -94,6 +101,8 @@ def analysis_to_response(
     applied: bool = False,
     source: str | None = None,
     ats_source: str | None = None,
+    ask_listing: bool = False,
+    list_status: str | None = None,
 ) -> AnalysisResponse:
     return AnalysisResponse(
         id=str(row.id),
@@ -117,6 +126,8 @@ def analysis_to_response(
         applied=applied,
         source=source,
         atsSource=ats_source,
+        askListing=ask_listing,
+        listStatus=list_status if list_status in ("applied", "not_applied", "hidden") else None,
     )
 
 
@@ -495,6 +506,10 @@ class MatchingService:
         role = (body.title or "").strip() or "Unknown Role"
         location = (body.location or "").strip() or "Unknown"
 
+        # Selected text asks the user before the row shows up on the dashboard.
+        # markApplied still wins so an explicit apply is never deferred.
+        defer_listing = bool(body.deferListing) and not body.markApplied
+
         job = get_job_by_apply_url(db, apply_url)
         if job is None:
             job = create_extension_job(
@@ -504,6 +519,7 @@ class MatchingService:
                 role=role,
                 location=location,
                 ats=body.ats,
+                list_status="hidden" if defer_listing else None,
             )
         else:
             # Fill missing metadata from the live page when DB fields are placeholders.
@@ -531,6 +547,9 @@ class MatchingService:
             persist = True
         elif body.persistDescription is not None:
             persist = body.persistDescription
+        elif defer_listing:
+            # Keep the JD on the hidden row so listing it later does not refetch.
+            persist = True
         else:
             # Auto-persist DOM/API text; manual/clipboard waits for explicit Save.
             persist = not force
@@ -578,6 +597,7 @@ class MatchingService:
             refresh=body.refresh,
             can_save_description=can_save,
             description_persisted=description_persisted,
+            ask_listing=defer_listing,
         )
 
     async def _run_analysis(
@@ -590,6 +610,7 @@ class MatchingService:
         refresh: bool,
         can_save_description: bool = False,
         description_persisted: bool = False,
+        ask_listing: bool = False,
     ) -> AnalysisResponse:
         desc_hash = hash_description(description)
         if not refresh:
@@ -610,6 +631,8 @@ class MatchingService:
                     applied=job.applied is True,
                     source=job.source if isinstance(job.source, str) else None,
                     ats_source=_job_ats_source(job),
+                    ask_listing=ask_listing,
+                    list_status=_job_list_status(job),
                 )
 
         provider = self._provider()
@@ -658,6 +681,8 @@ class MatchingService:
             applied=job.applied is True,
             source=job.source if isinstance(job.source, str) else None,
             ats_source=_job_ats_source(job),
+            ask_listing=ask_listing,
+            list_status=_job_list_status(job),
         )
 
 
