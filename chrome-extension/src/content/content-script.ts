@@ -854,7 +854,8 @@ async function runAnalyzeResume(
       return finishAnalyze(res, handlers, validated.text, askListing);
     }
 
-    // Default Analyze Resume: DOM → selection (≥300) → backend fetch → guided error
+    // Default Analyze Resume: DOM → selection (≥300) → backend fetch → guided error.
+    // Ask applied / not applied / don't list before the row is shown.
     let job = extractJobForPage({ force: true });
     let descriptionSource: DescriptionSource | undefined = isDomDescriptionUsable(
       job.description,
@@ -884,13 +885,12 @@ async function runAnalyzeResume(
       }
     }
 
-    const selectionListing = descriptionSource === "manual_selection";
     let res = await postAnalyzeJob({
       job,
       refresh,
       descriptionSource,
       persistDescription,
-      deferListing: selectionListing,
+      deferListing: true,
     });
 
     if (
@@ -925,7 +925,7 @@ async function runAnalyzeResume(
       return { ok: false, error: msg };
     }
 
-    return finishAnalyze(res, handlers, descriptionForSave, selectionListing);
+    return finishAnalyze(res, handlers, descriptionForSave, true);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Resume analysis failed";
     logger.error(SCOPE, "Analyze resume failed", err);

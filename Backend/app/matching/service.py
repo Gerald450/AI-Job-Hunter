@@ -506,7 +506,7 @@ class MatchingService:
         role = (body.title or "").strip() or "Unknown Role"
         location = (body.location or "").strip() or "Unknown"
 
-        # Selected text asks the user before the row shows up on the dashboard.
+        # Analyze Resume and selected text ask before a new row is listed.
         # markApplied still wins so an explicit apply is never deferred.
         defer_listing = bool(body.deferListing) and not body.markApplied
 
