@@ -5,6 +5,15 @@ import type {
   ResumeUploadResponse,
 } from "@/types/analysis";
 import type { AppliedFilter, Job, JobListResponse } from "@/types/job";
+import type {
+  CompanyListResponse,
+  ContactCreate,
+  ContactListResponse,
+  ContactUpdate,
+  LinkedInContact,
+  ReachoutSort,
+  ReachoutStatus,
+} from "@/types/reachout";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
@@ -496,6 +505,112 @@ export async function setConferenceTracking(
   );
   if (!response.ok) {
     throw new Error(`Failed to update tracking status (${response.status})`);
+  }
+  return response.json();
+}
+
+export interface FetchContactsParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  company?: string;
+  status?: ReachoutStatus;
+  sort?: ReachoutSort;
+  order?: "asc" | "desc";
+}
+
+export async function fetchContacts(
+  params: FetchContactsParams = {},
+): Promise<ContactListResponse> {
+  const {
+    limit = DEFAULT_PAGE_SIZE,
+    offset = 0,
+    search = "",
+    company = "",
+    status = "all",
+    sort = "importance",
+    order = "desc",
+  } = params;
+
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+    sort,
+    order,
+  });
+  const term = search.trim();
+  if (term) query.set("search", term);
+  const companyName = company.trim();
+  if (companyName) query.set("company", companyName);
+  if (status !== "all") query.set("status", status);
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/reachout/contacts?${query.toString()}`,
+    { headers: { Accept: "application/json" } },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to load contacts (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchContactCompanies(): Promise<CompanyListResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/reachout/companies`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load companies (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function createContact(
+  body: ContactCreate,
+): Promise<LinkedInContact> {
+  const response = await fetch(`${API_BASE_URL}/api/reachout/contacts`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response));
+  }
+  return response.json();
+}
+
+export async function deleteContact(contactId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/reachout/contacts/${contactId}`,
+    {
+      method: "DELETE",
+      headers: { Accept: "application/json" },
+    },
+  );
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response));
+  }
+}
+
+export async function updateContact(
+  contactId: string,
+  patch: ContactUpdate,
+): Promise<LinkedInContact> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/reachout/contacts/${contactId}`,
+    {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(patch),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(await readErrorDetail(response));
   }
   return response.json();
 }
