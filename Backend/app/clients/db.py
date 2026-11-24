@@ -2,6 +2,7 @@ import os
 
 from database import conferencemodel  # noqa: F401 — register Conference* models
 from database import jobmodel  # noqa: F401 — register JobModel with Base
+from database import reachoutmodel  # noqa: F401 — register LinkedInContact
 from database import resumemodel  # noqa: F401 — register Resume* models
 from database.models import Base
 from dotenv import load_dotenv
