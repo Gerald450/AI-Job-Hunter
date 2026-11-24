@@ -1,0 +1,2739 @@
+[
+  {
+    "name": "Mindy Holt",
+    "company": "PayPal",
+    "role": "Manager, Global Early Talent Programs, PayPal (since 2024)",
+    "why": "94 mutual; manages PayPal's global early-talent programmes — a top early-career contact.",
+    "importance": 98
+  },
+  {
+    "name": "Jill Coleraine Maness",
+    "company": "AutoZone",
+    "role": "University Relations Program Manager, AutoZone (since June 2023); leads summer internship recruiting",
+    "why": "university-relations/internship recruiting at AutoZone.",
+    "importance": 97
+  },
+  {
+    "name": "Valerie Farfan",
+    "company": "Bloomberg",
+    "role": "Inclusion Recruiter Program Manager, Bloomberg LP; Engineering Inclusion Recruiter Program Manager (since Jan 2026)",
+    "why": "22+ mutual; Bloomberg engineering inclusion recruiting — a top recruiter find.",
+    "importance": 97
+  },
+  {
+    "name": "Darian Ubogagu",
+    "company": "Google",
+    "role": "Campus Program Manager, Google (since June 2021)",
+    "why": "28 mutual; runs campus programmes at Google, a top university-recruiting contact.",
+    "importance": 97
+  },
+  {
+    "name": "Sanjana Sipani",
+    "company": "PayPal",
+    "role": "University Recruitment & Experience Leader APAC, PayPal (since July 2022)",
+    "why": "9 mutual; PayPal university hiring (APAC-focused).",
+    "importance": 97
+  },
+  {
+    "name": "Lisa Burin",
+    "company": "Plaid",
+    "role": "University Recruiter, Plaid (last 2 months); previously Coinbase and Walmart Early Career Senior Recruiter",
+    "why": "university recruiter at Plaid with Walmart early-career experience. (Update to her earlier entry.)",
+    "importance": 97
+  },
+  {
+    "name": "Olivia DuBois",
+    "company": "Splunk",
+    "role": "Program Manager, Global Emerging Talent, Splunk (since June 2022; leads HBCU scholarship programmes)",
+    "why": "26 mutual; emerging-talent/HBCU programmes, strong fit for a UAPB graduate.",
+    "importance": 97
+  },
+  {
+    "name": "Katie Knowles",
+    "company": "Upstart",
+    "role": "Senior Recruiter, Upstart (since Apr 2026); previously Senior University Recruiter, PayPal (technology)",
+    "why": "22 mutual; recent university-recruiting experience at PayPal.",
+    "importance": 97
+  },
+  {
+    "name": "Larissa Kabia",
+    "company": "Citadel",
+    "role": "EMEA Campus Recruiter, Citadel / Citadel Securities (since Nov 2025)",
+    "why": "18 mutual; campus recruiting at a top quant firm (EMEA-focused).",
+    "importance": 96
+  },
+  {
+    "name": "Isaac Hanson",
+    "company": "HP",
+    "role": "University Recruiting, HP (last 4 months; previously Figma, Twitter, Lyft)",
+    "why": "30 mutual, San Francisco Bay Area; serial university recruiter now at HP.",
+    "importance": 96
+  },
+  {
+    "name": "Sydney Scott",
+    "company": "LinkedIn",
+    "role": "Emerging Talent Recruiter, LinkedIn (since May 2024; technical sourcing for Productivity Engineering: software, UI, mobile)",
+    "why": "18 mutual; early-talent recruiter at LinkedIn itself, sourcing the exact SWE roles Gerald wants.",
+    "importance": 96
+  },
+  {
+    "name": "Corey Corrick",
+    "company": "Walton Enterprises",
+    "role": "Director of Software Engineering, Walton Enterprises (last 5 months; previously VP of IT Applications)",
+    "why": "9 mutual; engineering director at the internship employer, most direct full-time-conversion contact.",
+    "importance": 96
+  },
+  {
+    "name": "Spenser Levien",
+    "company": "Skool",
+    "role": "Talent / Recruiting Lead & Founding Recruiter, Skool (since May 2025; previously Meta, AWS, Palantir)",
+    "why": "67 mutual; ex-big-tech recruiter now leading hiring, including backend engineering.",
+    "importance": 94
+  },
+  {
+    "name": "Cindy Whiteaker",
+    "company": "Walmart",
+    "role": "Director, Systems Engineering, Wal-Mart Stores, Inc. (Bentonville, AR)",
+    "why": "5 mutual; most senior Walmart contact found.",
+    "importance": 94
+  },
+  {
+    "name": "Doneshia Boyd",
+    "company": "Amazon",
+    "role": "Senior HR Business Partner, Amazon (Little Rock)",
+    "why": "28 mutual; senior HR contact inside Amazon (ask about teams/referral routes, not a requisition).",
+    "importance": 93
+  },
+  {
+    "name": "Albert Dennis",
+    "company": "AutoZone",
+    "role": "HR Director, AutoZone (since Dec 2022, Memphis)",
+    "why": "9 mutual; AutoZone HR director.",
+    "importance": 93
+  },
+  {
+    "name": "Julio Murphy Bueno",
+    "company": "Bloomberg",
+    "role": "Software Engineering Inclusive Recruiting Programs Lead, Bloomberg Engineering (since June 2020)",
+    "why": "17 mutual; leads SWE recruiting programmes at Bloomberg.",
+    "importance": 93
+  },
+  {
+    "name": "Thabo Traoré",
+    "company": "Capital One",
+    "role": "CS @ Alabama A&M; networked with Adobe, Equitable and Capital One recruiters",
+    "why": "220+ mutual; student.",
+    "importance": 93
+  },
+  {
+    "name": "Norel Austin",
+    "company": "LinkedIn",
+    "role": "Senior Customer Success Manager, Enterprise, LinkedIn (since Apr 2025); advises on talent acquisition",
+    "why": "11+ mutual; LinkedIn employee in a talent-adjacent role. (Was already in the Other group; now confirmed at LinkedIn.)",
+    "importance": 93
+  },
+  {
+    "name": "David Samuelson",
+    "company": "Meta",
+    "role": "Technical Recruiting Director, Meta, July 2016–May 2025 (led Data Science, Mobile Engineering, Core Engineering and Reality Labs recruiting); now business owner/investor",
+    "why": "22 mutual; ex-Meta recruiting director — ask for hiring-process insight, not a requisition.",
+    "importance": 93
+  },
+  {
+    "name": "Ahunna Ike-Njoku",
+    "company": "Microsoft",
+    "role": "Previously Engineering Emerging Leader @ Goldman Sachs; BAM Academy Fellow @ Microsoft",
+    "why": "288 mutual; Goldman Sachs emerging leader with a Microsoft fellowship.",
+    "importance": 93
+  },
+  {
+    "name": "Maureen Tryon, PHR",
+    "company": "Nordstrom",
+    "role": "Human Resources Manager, Nordstrom; Recruitment Supervisor (since June 2022)",
+    "why": "connected 14 Jan 2026; Nordstrom HR manager.",
+    "importance": 93
+  },
+  {
+    "name": "Curtis Tuttle",
+    "company": "Snorkel AI",
+    "role": "Lead Technical Recruiter, Snorkel AI (since Feb 2025; previously LegalZoom)",
+    "why": "connected 25 Aug 2026; lead technical recruiter at an AI startup.",
+    "importance": 93
+  },
+  {
+    "name": "Ali Naqvi",
+    "company": "Walmart",
+    "role": "Continuous Skills Development Area Manager, Walmart (since Sep 2023); full-cycle recruitment",
+    "why": "Walmart area manager with recruiting experience.",
+    "importance": 93
+  },
+  {
+    "name": "Jonathan Pantall",
+    "company": "Walton Enterprises",
+    "role": "Staff Software Engineer, Walton Enterprises",
+    "why": "most senior Walton engineer found.",
+    "importance": 93
+  },
+  {
+    "name": "Jessica Nathaniel",
+    "company": "Gainwell Technologies",
+    "role": "Talent Acquisition Consultant, Early Career, Gainwell Technologies (Royal, AR; sourcing specialist since May 2022)",
+    "why": "21 mutual; early-career recruiting in Arkansas.",
+    "importance": 92
+  },
+  {
+    "name": "Mary Earl, MS",
+    "company": "Murphy USA",
+    "role": "Corporate Recruiter II, Murphy USA",
+    "why": "connected 1 Oct 2026; active corporate recruiter at an Arkansas employer.",
+    "importance": 92
+  },
+  {
+    "name": "Janice DiNaso",
+    "company": "Nordstrom",
+    "role": "Associate Recruiter, Talent Acquisition / Stores, Nordstrom",
+    "why": "connected 16 Apr 2026; Nordstrom recruiter.",
+    "importance": 92
+  },
+  {
+    "name": "Rosa Conde",
+    "company": "Nordstrom",
+    "role": "Talent Acquisition Specialist, Nordstrom",
+    "why": "connected 14 Jan 2026; Nordstrom talent acquisition.",
+    "importance": 92
+  },
+  {
+    "name": "Tori Kesselring",
+    "company": "Nordstrom",
+    "role": "Associate Recruiter, Nordstrom (High Volume, Northeast Stores)",
+    "why": "connected 14 Jan 2026; Nordstrom recruiter.",
+    "importance": 92
+  },
+  {
+    "name": "Charlie Doria",
+    "company": "Roblox",
+    "role": "Talent Business Partner, Early Career, Roblox (since Aug 2025)",
+    "why": "11 mutual; early-career hiring at Roblox.",
+    "importance": 92
+  },
+  {
+    "name": "Talha T.",
+    "company": "Amazon",
+    "role": "Lead Data Engineer @ Molex (Bengaluru)",
+    "why": "10,513 followers; lead data engineer.",
+    "importance": 90
+  },
+  {
+    "name": "Harsh Tamakuwala",
+    "company": "Bloomberg",
+    "role": "Senior Software Engineer, Bloomberg (AI/LLM tooling)",
+    "why": "1 mutual; senior Bloomberg SWE.",
+    "importance": 90
+  },
+  {
+    "name": "Haseeb Shahbaz",
+    "company": "Honeywell",
+    "role": "Senior DevOps Engineer, Honeywell (since Mar 2023; Kubernetes/Terraform)",
+    "why": "13 mutual; senior DevOps engineer.",
+    "importance": 90
+  },
+  {
+    "name": "Aashia Mehta",
+    "company": "Meta",
+    "role": "Senior Software Engineer, Meta (since Jan 2021)",
+    "why": "senior SWE, strong referral prospect.",
+    "importance": 90
+  },
+  {
+    "name": "Karen Ka",
+    "company": "Meta",
+    "role": "Senior Software Engineer, Meta (since June 2021; Business AI)",
+    "why": "25 mutual; senior SWE.",
+    "importance": 90
+  },
+  {
+    "name": "Nathaniel Lee",
+    "company": "Meta",
+    "role": "Senior Software Engineer, Meta (last 3 months; ex-Instagram Ads)",
+    "why": "senior SWE, Bay Area.",
+    "importance": 90
+  },
+  {
+    "name": "Sowmya Reddy",
+    "company": "Nationwide",
+    "role": "Senior Cloud / DevOps Engineer, Nationwide (since Feb 2023); AWS and DevOps",
+    "why": "16+ mutual; senior cloud/DevOps engineer.",
+    "importance": 90
+  },
+  {
+    "name": "Venkatesh Sankar",
+    "company": "PayPal",
+    "role": "Senior Software Engineer, PayPal (since May 2025, Austin; 5+ YOE)",
+    "why": "4 mutual; senior PayPal SWE. (Also Gerald's PayPal Career Academy mentor.)",
+    "importance": 90
+  },
+  {
+    "name": "Dylan Trooien",
+    "company": "Swoogo",
+    "role": "Senior Software Engineer, Level Two at Swoogo (2021–2025)",
+    "why": "7 mutual; senior SWE. (Update to his earlier entry — employer now shown.)",
+    "importance": 90
+  },
+  {
+    "name": "Thabhelo Duve",
+    "company": "Amazon",
+    "role": "Ex-SDE @ Amazon; ex-ML Engineer @ Analytical AI; AI Safety, BlueDot",
+    "why": "309+ mutual; ex-Amazon SDE with a very large shared network.",
+    "importance": 89
+  },
+  {
+    "name": "Augustine Manu-Frimpong",
+    "company": "LinkedIn",
+    "role": "Software Engineer, Backend & AI Infrastructure; previously @ LinkedIn; CS @ Grambling",
+    "why": "310 mutual; SWE with a LinkedIn background and a very large shared network. (Current employer not shown in headline; found via Microsoft search.)",
+    "importance": 89
+  },
+  {
+    "name": "Henry A",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (San Francisco Bay Area)",
+    "why": "281 mutual; posts job opportunities daily.",
+    "importance": 89
+  },
+  {
+    "name": "Daniel Sobowale",
+    "company": "Microsoft",
+    "role": "CS @ Fisk; Previously SWE @ Splita",
+    "why": "276 mutual; ex-Splita SWE.",
+    "importance": 89
+  },
+  {
+    "name": "Grace Sodipo",
+    "company": "Adobe",
+    "role": "AfroTech '26; Software Engineer; Freshman at UAPB; Chancellor scholar; Campus Ambassador at Adobe",
+    "why": "185+ mutual; UAPB freshman and Adobe campus ambassador.",
+    "importance": 88
+  },
+  {
+    "name": "Shalom Donga",
+    "company": "Adobe",
+    "role": "Design Engineer | UX Design + Frontend Engineering; Former UX Design @ Tiffany & Co. (Grambling)",
+    "why": "194 mutual; design engineer.",
+    "importance": 88
+  },
+  {
+    "name": "Abdullah Hilowle",
+    "company": "Amazon",
+    "role": "SDE, Amazon; previously Nordstrom; CS @ ASU; Google SWE Fellow",
+    "why": "137 mutual; current Amazon SDE.",
+    "importance": 88
+  },
+  {
+    "name": "Chidinma Chinedu",
+    "company": "Amazon",
+    "role": "Software Development Engineer, Amazon (SDE I since July 2024; ML Systems, Distributed Systems, AWS, Austin)",
+    "why": "130 mutual; best Amazon referral prospect.",
+    "importance": 88
+  },
+  {
+    "name": "Olutade Jegede",
+    "company": "Apple",
+    "role": "Software Engineer, Apple (last 3 months; Retail/Marcom; ex-McKinsey, Citi)",
+    "why": "106+ mutual; current Apple SWE with a very large shared network.",
+    "importance": 88
+  },
+  {
+    "name": "John Anim",
+    "company": "Google",
+    "role": "Previously SWE @ Microsoft; AI Infra (Cornell)",
+    "why": "116+ mutual; ex-Microsoft SWE now in AI infrastructure.",
+    "importance": 88
+  },
+  {
+    "name": "Hawulethu Ndlovu",
+    "company": "Intuit",
+    "role": "Product Manager II, Intuit (Pine Bluff, AR)",
+    "why": "206 mutual; Intuit PM in Gerald's UAPB town, can intro to Intuit engineering.",
+    "importance": 88
+  },
+  {
+    "name": "Zainab Gbadamosi",
+    "company": "LinkedIn",
+    "role": "Software Engineer, LinkedIn (San Francisco Bay Area)",
+    "why": "191 mutual; current LinkedIn SWE.",
+    "importance": 88
+  },
+  {
+    "name": "Aurelien Takou",
+    "company": "Meta",
+    "role": "Software Engineer, Meta; Georgia Tech",
+    "why": "106 mutual; current Meta SWE.",
+    "importance": 88
+  },
+  {
+    "name": "Jonathan Trans",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (San Francisco Bay Area)",
+    "why": "111 mutual; current Meta SWE.",
+    "importance": 88
+  },
+  {
+    "name": "Prosper Banda",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (Huntsville, AL)",
+    "why": "121 mutual; current Meta SWE.",
+    "importance": 88
+  },
+  {
+    "name": "Adelwin Awuni",
+    "company": "Microsoft",
+    "role": "AI/ML @ Zetheta Algorithms (Atlanta)",
+    "why": "159 mutual; AI/ML engineer.",
+    "importance": 88
+  },
+  {
+    "name": "Arnold Bhebhe",
+    "company": "Microsoft",
+    "role": "Software Engineer, Microsoft (Redmond)",
+    "why": "146 mutual; established Microsoft SWE, best referral prospect there.",
+    "importance": 88
+  },
+  {
+    "name": "Kwaku Asare",
+    "company": "Microsoft",
+    "role": "Previously SWE @ Duolingo; CS & Japanese @ Howard; AI/ML",
+    "why": "235+ mutual; ex-Duolingo SWE with a very large shared network.",
+    "importance": 88
+  },
+  {
+    "name": "Mason A. Brown",
+    "company": "Microsoft",
+    "role": "Software Engineer, Microsoft (Redmond); Morehouse College",
+    "why": "103 mutual; Microsoft SWE and HBCU peer.",
+    "importance": 88
+  },
+  {
+    "name": "Alex Umeasalugo",
+    "company": "Salesforce",
+    "role": "Software Engineer, Salesforce (Slack); CS @ Grambling State University",
+    "why": "232+ mutual; Salesforce SWE.",
+    "importance": 88
+  },
+  {
+    "name": "Precious Onah",
+    "company": "Salesforce",
+    "role": "Software Engineer, Salesforce; Stillman College alum; San Francisco Bay Area",
+    "why": "190+ mutual; Salesforce SWE with a very large shared network.",
+    "importance": 88
+  },
+  {
+    "name": "Kamal Gupta",
+    "company": "Walmart",
+    "role": "Senior Director, Technical Program Management, Walmart Global Tech (Bentonville, since May 2024)",
+    "why": "12 mutual; senior Walmart Global Tech leader.",
+    "importance": 88
+  },
+  {
+    "name": "Arjun Sakthi",
+    "company": "AT&T",
+    "role": "Software Engineer @ AT&T (Suwanee, GA)",
+    "why": "9 mutual; AT&T SWE.",
+    "importance": 86
+  },
+  {
+    "name": "John Fuentes",
+    "company": "AT&T",
+    "role": "Network Engineer, AT&T (Atlanta)",
+    "why": "network engineer at AT&T.",
+    "importance": 86
+  },
+  {
+    "name": "John Okyere",
+    "company": "Adobe",
+    "role": "Systems Engineer @ AmaliTech (Accra)",
+    "why": "22,959 followers; systems engineer.",
+    "importance": 86
+  },
+  {
+    "name": "Kwenda Goodwill",
+    "company": "Adobe",
+    "role": "Electrical Engineer @ Kiewit (Kansas City)",
+    "why": "96+ mutual; electrical engineer.",
+    "importance": 86
+  },
+  {
+    "name": "Muhammad Haris Ahsan",
+    "company": "Adobe",
+    "role": "Software/AI Engineer; Trainer & Mentor & Judge; 200+ LeetCode; 3x Int'l Hackathon Winner; CS50x'25-26 @ Harvard; SL Mentor '25 & SL '26 @ Stanford (CIP) (Faisalabad, Pakistan)",
+    "why": "8,495 followers; software/AI engineer and mentor.",
+    "importance": 86
+  },
+  {
+    "name": "Yann Djoumessi",
+    "company": "Amazon",
+    "role": "Software Engineer, Amazon (since Feb 2026; Prime Video, Seattle)",
+    "why": "83 mutual.",
+    "importance": 86
+  },
+  {
+    "name": "Nolan Ngim",
+    "company": "BAE Systems",
+    "role": "Software Engineer, BAE Systems (Boston)",
+    "why": "current BAE Systems SWE.",
+    "importance": 86
+  },
+  {
+    "name": "ABHIJAAT PANDEY",
+    "company": "BlackRock",
+    "role": "SDE Analyst @ BlackRock; AI/ML & Applied Data Science (Gurugram)",
+    "why": "4,538 followers; SDE analyst at BlackRock.",
+    "importance": 86
+  },
+  {
+    "name": "Parfait Leandre Ndagijimana",
+    "company": "Bloomberg",
+    "role": "CS & Finance; aspiring SWE & quant dev; CFA scholar",
+    "why": "78 mutual; aspiring quant developer.",
+    "importance": 86
+  },
+  {
+    "name": "Sanjay Praveen",
+    "company": "Capgemini",
+    "role": "Software Engineer, Capgemini (since Sep 2025, Pune)",
+    "why": "current Capgemini SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Nihal Patel",
+    "company": "Chewy",
+    "role": "Software Engineer, Chewy (since Nov 2025; Sponsored Ads & Search, Bellevue)",
+    "why": "57 mutual; current Chewy SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Manisha Bose",
+    "company": "Cognizant",
+    "role": "Software Engineer, Cognizant (since Aug 2025; GenAI, Bengaluru)",
+    "why": "current Cognizant SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Chidubem Ishie",
+    "company": "Datadog",
+    "role": "Education Engineer, Datadog; ex-Oracle SWE",
+    "why": "Datadog engineer with Oracle SWE history.",
+    "importance": 86
+  },
+  {
+    "name": "DurgaBhavani Pothineni",
+    "company": "Dollar General",
+    "role": "ML Data Engineering & Analytics, Dollar General (since Oct 2023)",
+    "why": "3 mutual; ML/data engineer at Dollar General.",
+    "importance": 86
+  },
+  {
+    "name": "Javarius Youmans",
+    "company": "Duke Energy",
+    "role": "Software Engineer, Duke Energy (last 6 months); Claflin; NSBE",
+    "why": "current Duke Energy SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Enmanuel Hernandez",
+    "company": "GM Cruise",
+    "role": "AI/ML Engineer, GM Cruise; ex-Meta SWE",
+    "why": "AI/ML engineer at Cruise with Meta history.",
+    "importance": 86
+  },
+  {
+    "name": "Aarya Ravishankar",
+    "company": "Goldman Sachs",
+    "role": "Software Engineer, Goldman Sachs (UT Dallas; Dallas–Fort Worth)",
+    "why": "8 mutual; current Goldman SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Victor Asum",
+    "company": "Goldman Sachs",
+    "role": "CS + Math @ Ashesi; iGEM Gold Medalist; aspiring ML/AI & SWE",
+    "why": "student.",
+    "importance": 86
+  },
+  {
+    "name": "Aditya Dhonde",
+    "company": "Google",
+    "role": "Software Engineer, Google (since Nov 2025; Android APK auditing)",
+    "why": "10 mutual; current Google SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Azra Bano",
+    "company": "Google",
+    "role": "Software Engineer, Google; previously NASA and Microsoft",
+    "why": "50 mutual; Google SWE with big-tech history.",
+    "importance": 86
+  },
+  {
+    "name": "Evan Henkle",
+    "company": "Google",
+    "role": "Software Engineer, Google; previously AWS and Nextdoor",
+    "why": "current Google SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Yuze Jiang",
+    "company": "Google",
+    "role": "Software Engineer, Google (since Feb 2026; Google Cloud Applied AI)",
+    "why": "10 mutual, Bay Area; current Google SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Amenuveve Tsetse",
+    "company": "Gusto",
+    "role": "Software Engineer, Gusto (Security Identity Engineering); ex-Salesforce Futureforce",
+    "why": "current Gusto SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Enzo Nkouekam",
+    "company": "HPE",
+    "role": "Technical Solutions Engineer, HPE (since Feb 2026)",
+    "why": "technical solutions engineer at HPE.",
+    "importance": 86
+  },
+  {
+    "name": "Jay Kannam",
+    "company": "IBM",
+    "role": "Hardware Developer, IBM (Austin)",
+    "why": "11 mutual; hardware developer at IBM (adjacent to SWE).",
+    "importance": 86
+  },
+  {
+    "name": "Sai Sritej A",
+    "company": "Intuit",
+    "role": "Software Engineer, Intuit (since Aug 2024, Little Rock, AR)",
+    "why": "16 mutual; Arkansas-based Intuit SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Christian Wilkins",
+    "company": "JPMorgan",
+    "role": "Software Engineer, JPMorganChase (since Feb 2026; AI/ML databases, Columbus, OH)",
+    "why": "90+ mutual; current JPMorgan SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Mandeep Khatri",
+    "company": "JPMorgan",
+    "role": "CS Student @ Alabama A&M; Software Engineering",
+    "why": "student.",
+    "importance": 86
+  },
+  {
+    "name": "Stephanie Nhi Le",
+    "company": "LexisNexis",
+    "role": "Software Engineer II, LexisNexis Risk Solutions; SWE Innovator @ Google Cloud",
+    "why": "89 mutual; SWE II with Google Cloud experience.",
+    "importance": 86
+  },
+  {
+    "name": "Ezequiel Cordero",
+    "company": "Liberty Mutual",
+    "role": "Software Engineer @ Liberty Mutual (Cambridge, MA)",
+    "why": "21 mutual; Liberty Mutual SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Cindy Zheng",
+    "company": "LinkedIn",
+    "role": "Software Engineer, LinkedIn Aug 2025–Oct 2026",
+    "why": "ex-LinkedIn SWE (current role not shown).",
+    "importance": 86
+  },
+  {
+    "name": "Caelan Dever",
+    "company": "Meta",
+    "role": "Linux Systems / Cloud Engineer, Meta",
+    "why": "infrastructure/cloud contact at Meta.",
+    "importance": 86
+  },
+  {
+    "name": "Daniel Youn",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (since Aug 2025)",
+    "why": "25 mutual.",
+    "importance": 86
+  },
+  {
+    "name": "Hassan Shafi",
+    "company": "Meta",
+    "role": "Software Engineer, Meta Superintelligence Labs (San Francisco Bay Area)",
+    "why": "Meta AI-lab SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Jama Kadyr",
+    "company": "Meta",
+    "role": "SDET, Epic (since Oct 2023); previously Software Engineer in Test @ Meta 2022–23",
+    "why": "test engineer at Epic with Meta history.",
+    "importance": 86
+  },
+  {
+    "name": "John Vu",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (since Nov 2025; Messenger)",
+    "why": "27 mutual.",
+    "importance": 86
+  },
+  {
+    "name": "Joy Itodo",
+    "company": "Meta",
+    "role": "Software Engineer, Meta / WhatsApp (Austin)",
+    "why": "current Meta SWE, connected 30 Jan 2026.",
+    "importance": 86
+  },
+  {
+    "name": "Mahgoub Husien",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (VM sandboxes for AI agents)",
+    "why": "43 mutual.",
+    "importance": 86
+  },
+  {
+    "name": "Menna Mahmoud",
+    "company": "Meta",
+    "role": "Application Developer, Meta (Cairo)",
+    "why": "full-stack engineer at Meta since Mar 2023.",
+    "importance": 86
+  },
+  {
+    "name": "Nikhil Surapaneni",
+    "company": "Meta",
+    "role": "Software Engineer, Meta SuperIntelligence Labs (Greater Houston)",
+    "why": "28 mutual; Meta AI-lab SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Patrick Hsu",
+    "company": "Meta",
+    "role": "Software Developer, Facebook (since Apr 2020; ex-Amazon)",
+    "why": "long-tenured Meta engineer.",
+    "importance": 86
+  },
+  {
+    "name": "Rohan Monagoni",
+    "company": "Meta",
+    "role": "Operations Engineer, AMD; ex-Data Center Engineer @ Meta",
+    "why": "operations engineer at AMD with Meta history.",
+    "importance": 86
+  },
+  {
+    "name": "Saksham Jairath",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (WhatsApp growth)",
+    "why": "44 mutual.",
+    "importance": 86
+  },
+  {
+    "name": "Seeon Chang",
+    "company": "Meta",
+    "role": "Engineer, Meta Ads Serving; Production Engineer (New York)",
+    "why": "47 mutual; Meta production engineer.",
+    "importance": 86
+  },
+  {
+    "name": "Shiven Sharma",
+    "company": "Meta",
+    "role": "Data Engineer, Meta (Reels ranking)",
+    "why": "20 mutual; data engineer at Meta.",
+    "importance": 86
+  },
+  {
+    "name": "Shreyas Chatterjee",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (since Mar 2025; LLM reranking)",
+    "why": "21 mutual.",
+    "importance": 86
+  },
+  {
+    "name": "Suraj Mehrotra",
+    "company": "Meta",
+    "role": "Machine Learning Engineer, Meta",
+    "why": "ML engineer at Meta.",
+    "importance": 86
+  },
+  {
+    "name": "Yaw Boateng",
+    "company": "Meta",
+    "role": "Founding MTS, Infragrid; previously @ Meta",
+    "why": "founding engineer with Meta history.",
+    "importance": 86
+  },
+  {
+    "name": "Yilin Liu",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (Bellevue)",
+    "why": "current Meta SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Akaius Elps",
+    "company": "Microsoft",
+    "role": "Cloud and AI Solutions Engineer, Microsoft (since Oct 2025)",
+    "why": "shared UAPB link (both worked at UAPB).",
+    "importance": 86
+  },
+  {
+    "name": "Ankit Sharma",
+    "company": "Microsoft",
+    "role": "SDE2, Microsoft (Jaipur, India)",
+    "why": "SWE contact, though India-based.",
+    "importance": 86
+  },
+  {
+    "name": "Dexter Slinn",
+    "company": "Microsoft",
+    "role": "AI @ Fluency Firm (Atlanta)",
+    "why": "3 mutual; AI engineer/founder.",
+    "importance": 86
+  },
+  {
+    "name": "Fares Amamou",
+    "company": "Microsoft",
+    "role": "Software Engineer, Microsoft | Azure Core (Miami)",
+    "why": "66 mutual; Azure SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Sheick Ali SIMPORE",
+    "company": "Microsoft",
+    "role": "Software Developer and Tester @ Informatique CDC; AI, Full-Stack (France)",
+    "why": "software developer/tester.",
+    "importance": 86
+  },
+  {
+    "name": "Valence Yagayandi",
+    "company": "Microsoft",
+    "role": "Software Engineer, Microsoft (Seattle)",
+    "why": "47 mutual; Microsoft SWE referral contact.",
+    "importance": 86
+  },
+  {
+    "name": "Eric Williams",
+    "company": "NVIDIA",
+    "role": "Roboticist, NVIDIA (last 6 months; ex-Figure AI)",
+    "why": "20 mutual; robotics engineer at NVIDIA.",
+    "importance": 86
+  },
+  {
+    "name": "Laura Mullings",
+    "company": "NVIDIA",
+    "role": "Systems Software Engineer, NVIDIA (since Jan 2026; ML/Autonomous Vehicles, San Jose)",
+    "why": "62 mutual; current NVIDIA SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Edward Willis",
+    "company": "Netflix",
+    "role": "President, Prospectorworks; previously SWE Manager @ Netflix (2020–2024)",
+    "why": "ex-Netflix engineering manager.",
+    "importance": 86
+  },
+  {
+    "name": "Anushka Narsima A.",
+    "company": "Oracle",
+    "role": "AI/ML Engineer; Systems Engineering Graduate (Dubai)",
+    "why": "8 mutual; AI/ML engineer.",
+    "importance": 86
+  },
+  {
+    "name": "Lathish Balaji Baskaran",
+    "company": "Oracle",
+    "role": "Data Scientist at Rowan University; Photonic computing; Azure & AWS Certified AI Engineer; Gen AI",
+    "why": "3 mutual; data scientist.",
+    "importance": 86
+  },
+  {
+    "name": "Mark Strickland",
+    "company": "Splunk",
+    "role": "Solutions Engineer, Splunk (since Dec 2022); Army Veteran, Active Clearance",
+    "why": "1 mutual; Splunk solutions engineer (Olivia DuBois is also at Splunk).",
+    "importance": 86
+  },
+  {
+    "name": "Alexander Koo",
+    "company": "Stripe",
+    "role": "Engineering @ Stripe (SWE at Stripe, last 4 months; Data & AI)",
+    "why": "3 mutual; current Stripe engineer.",
+    "importance": 86
+  },
+  {
+    "name": "Mario Pringle",
+    "company": "Trimble",
+    "role": "Software Engineer, Trimble (since Apr 2025; real-time graphics)",
+    "why": "12 mutual; current Trimble SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Rian Corcino",
+    "company": "U.S. Treasury",
+    "role": "AI Engineer, U.S. Treasury (San Francisco Bay Area)",
+    "why": "81 mutual; AI engineer in government tech.",
+    "importance": 86
+  },
+  {
+    "name": "Oluwatoyosi Peter Abolaji",
+    "company": "UAPB",
+    "role": "AfroTech '26; SWE; AI/ML; CS x Maths @ UAPB (connected 30 Oct 2025)",
+    "why": "UAPB peer SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Tuan Vu",
+    "company": "Veterans United Home Loans",
+    "role": "Software Engineer @ Veterans United Home Loans; CS @ Kansas",
+    "why": "13 mutual; current SWE.",
+    "importance": 86
+  },
+  {
+    "name": "Horatio Ware",
+    "company": "Walmart",
+    "role": "Software Engineer III, Walmart (Centerton, AR; automation, APIs, CI/CD)",
+    "why": "5 mutual; working Walmart SWE in Gerald's home region.",
+    "importance": 86
+  },
+  {
+    "name": "Feyi Ogunsanya",
+    "company": "Waymo",
+    "role": "Machine Learning Engineer, Waymo (San Francisco)",
+    "why": "4 mutual; ML engineer at Waymo.",
+    "importance": 86
+  },
+  {
+    "name": "David Akhihiero",
+    "company": "Woven by Toyota",
+    "role": "Software Engineer, Woven by Toyota (Detroit, last 1 month; autonomous driving)",
+    "why": "8 mutual; SWE in autonomous driving.",
+    "importance": 86
+  },
+  {
+    "name": "Becky Lewis",
+    "company": "Walton Enterprises",
+    "role": "Senior Workflow Automation Engineer, Walton Enterprises (since Feb 2026)",
+    "why": "automation engineer at Walton.",
+    "importance": 85
+  },
+  {
+    "name": "Brian Marcotte",
+    "company": "Walton Enterprises",
+    "role": "Senior Software Engineer, Walton Enterprises (since Jan 2023)",
+    "why": "connected 23 Jul 2026.",
+    "importance": 85
+  },
+  {
+    "name": "Samuel Reagan",
+    "company": "Walton Enterprises",
+    "role": "Senior Software Engineer, Walton Enterprises (since Feb 2026)",
+    "why": "connected 23 Jul 2026.",
+    "importance": 85
+  },
+  {
+    "name": "Otutochi Nwadinkpa",
+    "company": "Amazon",
+    "role": "2x SDE Intern at Amazon; CS & Math @ UAPB",
+    "why": "285 mutual; fellow UAPB student with two Amazon internships.",
+    "importance": 81
+  },
+  {
+    "name": "Daniel Osuoha",
+    "company": "Google",
+    "role": "Previously SWE Intern @ Google; previously TPM @ Microsoft",
+    "why": "314 mutual; peer with Google + Microsoft internship experience.",
+    "importance": 81
+  },
+  {
+    "name": "Immanuella Umoren",
+    "company": "Meta",
+    "role": "Software Engineer (previously intern at Meta, ServiceNow, Oracle)",
+    "why": "285+ mutual; peer SWE with big-tech internship history.",
+    "importance": 81
+  },
+  {
+    "name": "Kudzi Chikowore",
+    "company": "Microsoft",
+    "role": "Previously Microsoft (Xbox); CS @ UAPB; SWE + PM intern at Microsoft Apr–Aug 2026",
+    "why": "334 mutual; fellow UAPB student with a recent Microsoft internship, closest peer route to a referral.",
+    "importance": 81
+  },
+  {
+    "name": "Olaoluwa James-Owolabi",
+    "company": "Microsoft",
+    "role": "Previously SWE Intern @ LinkedIn; previously CoreAI @ Microsoft; Dell; NASA (Little Rock)",
+    "why": "366 mutual; peer with LinkedIn, Microsoft, Dell and NASA internships.",
+    "importance": 81
+  },
+  {
+    "name": "Sharon Owusu",
+    "company": "Goldman Sachs",
+    "role": "Ex-product engineering intern @ Allstate; CS @ Grambling",
+    "why": "170 mutual; ex-Allstate intern.",
+    "importance": 80
+  },
+  {
+    "name": "Sunday Ochigbo",
+    "company": "Goldman Sachs",
+    "role": "ECE @ AAMU; Previously EPM Intern @ Apple; Previously SWE+PM Intern @ Microsoft (Huntsville)",
+    "why": "218 mutual; peer with Apple and Microsoft internships.",
+    "importance": 80
+  },
+  {
+    "name": "Aimen Moten",
+    "company": "Google",
+    "role": "Software Engineer, Google (since Dec 2025; ex-STEP intern)",
+    "why": "154 mutual, San Francisco; current Google SWE with a large shared network.",
+    "importance": 80
+  },
+  {
+    "name": "Hudson Chen",
+    "company": "Meta",
+    "role": "Senior Program Manager, Meta (since Sep 2022)",
+    "why": "senior Meta programme manager.",
+    "importance": 80
+  },
+  {
+    "name": "Sunpairre Tamene",
+    "company": "Microsoft",
+    "role": "Previously SWE intern @ Bank of America; previously SWE intern @ PCF; Nextech Systems",
+    "why": "165+ mutual; ex-Bank of America intern.",
+    "importance": 80
+  },
+  {
+    "name": "Jillian Patterson",
+    "company": "Nordstrom",
+    "role": "Senior Manager, Program Management, Nordstrom",
+    "why": "connected 9 Jun 2026; senior Nordstrom manager.",
+    "importance": 80
+  },
+  {
+    "name": "Ravi Wood",
+    "company": "Samsung Semiconductor",
+    "role": "Senior Manager, BIM, Samsung Semiconductor (since Apr 2024; ex-Tesla)",
+    "why": "tech-adjacent senior manager.",
+    "importance": 80
+  },
+  {
+    "name": "Amanda White",
+    "company": "Walmart",
+    "role": "Technical Program Manager, Cybersecurity, Walmart Global Tech (Bentonville)",
+    "why": "27 mutual; can point to SWE openings.",
+    "importance": 80
+  },
+  {
+    "name": "Brandon Starks",
+    "company": "Walmart",
+    "role": "Senior Manager, EV Charging – Business Development, Walmart (Bentonville)",
+    "why": "Walmart manager (not SWE, but a senior Walmart contact).",
+    "importance": 80
+  },
+  {
+    "name": "John Bernardini",
+    "company": "Walmart",
+    "role": "Infrastructure Engineering, Walmart",
+    "why": "Walmart infrastructure engineer.",
+    "importance": 80
+  },
+  {
+    "name": "Antwon Walls",
+    "company": "NSBE",
+    "role": "Corporate Liaison, National Society of Black Engineers (last 6 months); prior CodePath recruitment work",
+    "why": "103+ mutual; NSBE liaison with recruiting experience — network/intro value.",
+    "importance": 79
+  },
+  {
+    "name": "Abdul Resha",
+    "company": "Accenture",
+    "role": "Forward Deployed Engineer, Associate Manager, Accenture (last 2 months; AI Data Specialist)",
+    "why": "13 mutual; Accenture AI engineer/manager.",
+    "importance": 78
+  },
+  {
+    "name": "Ankita Maurya",
+    "company": "Amazon",
+    "role": "SDE Intern @ Amazon; ex-SWE Intern @ PayPal",
+    "why": "peer intern.",
+    "importance": 78
+  },
+  {
+    "name": "Sahra Mohamad",
+    "company": "Amazon",
+    "role": "SDE, Amazon (since June 2025, Kindle home team); previously Microsoft intern",
+    "why": "current Amazon SDE.",
+    "importance": 78
+  },
+  {
+    "name": "Uzoma Okey-Anyanwu",
+    "company": "Bloomberg",
+    "role": "Previously SWE intern @ Gusto (Grambling)",
+    "why": "ex-Gusto intern.",
+    "importance": 78
+  },
+  {
+    "name": "Atiba Page",
+    "company": "Bristol-Myers Squibb",
+    "role": "Inclusion Partner, Global Engagement & Culture, Bristol-Myers Squibb (since Sep 2016); Senior University Recruiter / Delivery Recruitment Lead",
+    "why": "8 mutual; senior university recruiter at BMS.",
+    "importance": 78
+  },
+  {
+    "name": "Robert Carroll",
+    "company": "Cartesian",
+    "role": "Head of Talent Acquisition, Cartesian (since Mar 2026; Meta & BCG alum)",
+    "why": "head of talent acquisition (small firm, but a senior hiring contact).",
+    "importance": 78
+  },
+  {
+    "name": "Prateek Jha",
+    "company": "Cognizant",
+    "role": "Associate SWE @ Cognizant; Backend Java/Spring Boot (Chennai)",
+    "why": "associate SWE.",
+    "importance": 78
+  },
+  {
+    "name": "Carleen Guerra-Haydon",
+    "company": "CrowdStrike",
+    "role": "Sr. University Talent Acquisition Partner, CrowdStrike (since Jan 2026; ex-Meta, Twitter, Lyft)",
+    "why": "19 mutual; senior university recruiter.",
+    "importance": 78
+  },
+  {
+    "name": "Justin Francisco Rios",
+    "company": "DoorDash",
+    "role": "Software Engineer, DoorDash; ex-Microsoft intern",
+    "why": "current DoorDash SWE.",
+    "importance": 78
+  },
+  {
+    "name": "Annabel Tu",
+    "company": "Goldman Sachs",
+    "role": "Previously SWE Intern @ Wells Fargo; CS & DS @ UNC",
+    "why": "peer intern.",
+    "importance": 78
+  },
+  {
+    "name": "Mesomachukwu Nwankwo",
+    "company": "Google",
+    "role": "Software Engineer, Reddit; Howard; STEP Intern @ Google 2023",
+    "why": "84 mutual; Reddit SWE with a Google internship.",
+    "importance": 78
+  },
+  {
+    "name": "Berhane Wheeler",
+    "company": "JPMorgan",
+    "role": "CS @ Berea; Previously @ Snapchat, JPMorgan Chase; SWE Intern at JPMorganChase (June–Aug 2025)",
+    "why": "peer with Snapchat and JPMorgan internships.",
+    "importance": 78
+  },
+  {
+    "name": "Sara Deshmukh",
+    "company": "JPMorgan",
+    "role": "Previously 2x SWE Intern @ Meta; AI Studio Intern @ JPMorganChase",
+    "why": "28 mutual; peer with Meta internships and a JPMorgan AI internship.",
+    "importance": 78
+  },
+  {
+    "name": "Brian Larosiliere",
+    "company": "Liberty Mutual",
+    "role": "Associate Software Engineer, Liberty Mutual Insurance (since Dec 2025)",
+    "why": "4 mutual; current Liberty Mutual SWE.",
+    "importance": 78
+  },
+  {
+    "name": "Haniyyah Bashir",
+    "company": "McKinsey",
+    "role": "Early Talent & Campus Recruiting, McKinsey (Senior Recruiter Sep 2022–Nov 2026, leading undergraduate recruiting)",
+    "why": "8 mutual; campus-recruiting lead (consulting, not a SWE employer).",
+    "importance": 78
+  },
+  {
+    "name": "Benjamin Cuff",
+    "company": "Mercury",
+    "role": "Software Engineer, Mercury; ex-Meta intern",
+    "why": "44 mutual; current Mercury SWE.",
+    "importance": 78
+  },
+  {
+    "name": "Daniel Aguilar",
+    "company": "Meta",
+    "role": "Software Engineer, Meta (since July 2025; ex-Meta University intern)",
+    "why": "41 mutual; converted intern.",
+    "importance": 78
+  },
+  {
+    "name": "Ansh Patel",
+    "company": "Microsoft",
+    "role": "SWE Intern / Incoming SWE @ Microsoft",
+    "why": "fellow interns who can share the new-grad pipeline.",
+    "importance": 78
+  },
+  {
+    "name": "Colter Holmes",
+    "company": "Microsoft",
+    "role": "Software Engineer, Microsoft; ex-SWE intern at Microsoft and Boeing",
+    "why": "22 mutual; recently converted intern-to-full-time, can advise on that path.",
+    "importance": 78
+  },
+  {
+    "name": "David Majekodunmi",
+    "company": "Microsoft",
+    "role": "AI Engineering and Release Program Manager, ServiceNow; previously intern at Microsoft and ServiceNow",
+    "why": "10 mutual; ServiceNow programme manager.",
+    "importance": 78
+  },
+  {
+    "name": "Eyimofe Ajagunna",
+    "company": "Microsoft",
+    "role": "2x SWE Intern @ Microsoft; AfroTech 2026",
+    "why": "peer with two Microsoft internships.",
+    "importance": 78
+  },
+  {
+    "name": "Jackson Turnbull",
+    "company": "Microsoft",
+    "role": "CS & PM @ UF; Previously SWE intern @ BNY; MLT CP27; Citi Scholar (Gainesville)",
+    "why": "peer with BNY and Citi experience.",
+    "importance": 78
+  },
+  {
+    "name": "Jason Dixon",
+    "company": "Microsoft",
+    "role": "SWE Intern / Incoming SWE @ Microsoft",
+    "why": "fellow interns who can share the new-grad pipeline.",
+    "importance": 78
+  },
+  {
+    "name": "Sophie Nguyen",
+    "company": "Microsoft",
+    "role": "SWE Intern / Incoming SWE @ Microsoft",
+    "why": "fellow interns who can share the new-grad pipeline.",
+    "importance": 78
+  },
+  {
+    "name": "Javier Pacheco",
+    "company": "Netflix",
+    "role": "Software Engineer, Netflix (since Feb 2026; Core-SRE; ex-intern)",
+    "why": "95 mutual; current Netflix SWE.",
+    "importance": 78
+  },
+  {
+    "name": "Pratheesh Krishnan",
+    "company": "PayPal",
+    "role": "Incoming @ PayPal; former SWE intern @ PayPal",
+    "why": "incoming PayPal engineer (peer).",
+    "importance": 78
+  },
+  {
+    "name": "Maiko Ashby",
+    "company": "PepsiCo",
+    "role": "VP, Global Executive & Leadership Talent Acquisition, PepsiCo (since Mar 2025)",
+    "why": "VP-level talent acquisition (executive/leadership hiring, not early-career).",
+    "importance": 78
+  },
+  {
+    "name": "Ricardo Mejia",
+    "company": "RTX",
+    "role": "SWE Co-op @ RTX (NJIT); AI/ML & Full-Stack (New York)",
+    "why": "33+ mutual; SWE co-op at RTX.",
+    "importance": 78
+  },
+  {
+    "name": "Gideon Sanni",
+    "company": "Snowflake",
+    "role": "AfroTech '26; Previously SWE Intern @ Solera; CS @ GSU",
+    "why": "peer intern.",
+    "importance": 78
+  },
+  {
+    "name": "Kenan Ye",
+    "company": "Snowflake",
+    "role": "Cortex AI Engineer, Snowflake (since Apr 2026; ex-Meta SWE intern)",
+    "why": "30 mutual; AI engineer at Snowflake.",
+    "importance": 78
+  },
+  {
+    "name": "Julian Mangual",
+    "company": "Target",
+    "role": "Software Engineer, Target (since Sep 2025; ex-intern at Target and Expedia)",
+    "why": "44 mutual; SWE at a large employer with a new-grad programme.",
+    "importance": 78
+  },
+  {
+    "name": "Kameela Graves",
+    "company": "Truist",
+    "role": "Data Engineer, Truist (since July 2025); ex-SWE intern at Truist",
+    "why": "9 mutual; data engineer at Truist.",
+    "importance": 78
+  },
+  {
+    "name": "Myah Webb",
+    "company": "Adobe",
+    "role": "Program Manager for the Center of AI and Data Analytics (CAIDA); UAPB Alumni; Upcoming Computer Science Graduate",
+    "why": "71 mutual; UAPB alumna and PM.",
+    "importance": 76
+  },
+  {
+    "name": "Vladana Hrivnakova",
+    "company": "Adobe",
+    "role": "Program Manager and Communications Specialist for Small Businesses (Indio, CA)",
+    "why": "3 mutual; programme manager.",
+    "importance": 76
+  },
+  {
+    "name": "Joseph Pena",
+    "company": "Amazon",
+    "role": "Area Manager, Amazon (since June 2025); hiring operations, logistics & supply chain",
+    "why": "Amazon hiring-operations manager.",
+    "importance": 76
+  },
+  {
+    "name": "Chemia Woods",
+    "company": "Entergy",
+    "role": "HR Program Manager, Workforce Strategy, Entergy",
+    "why": "connected 10 Oct 2026; HR/workforce contact at a large Arkansas employer.",
+    "importance": 76
+  },
+  {
+    "name": "Tanyra Williams",
+    "company": "Microsoft",
+    "role": "PMP, MBA; Project Management & Business Analysis (Conway, AR)",
+    "why": "52+ mutual; project manager in Arkansas.",
+    "importance": 76
+  },
+  {
+    "name": "Wagar Ahmed",
+    "company": "S&P Global",
+    "role": "Product Manager, S&P Global; previously Microsoft and NASA; Howard alumna",
+    "why": "30 mutual; PM at S&P Global with Microsoft/NASA history.",
+    "importance": 76
+  },
+  {
+    "name": "Donnie Dean",
+    "company": "Walmart",
+    "role": "Technical Program Manager, Emerging Technology / Cybersecurity / Data Security, Enterprise Technology (Walmart)",
+    "why": "Walmart TPM.",
+    "importance": 76
+  },
+  {
+    "name": "Joshua Brewer",
+    "company": "Walton Enterprises",
+    "role": "Software Engineer, Walton Enterprises",
+    "why": "connected 23 Jul 2026.",
+    "importance": 76
+  },
+  {
+    "name": "Joshua Senty",
+    "company": "Walton Enterprises",
+    "role": "Technical Support Manager, Walton Enterprises",
+    "why": "23 mutual; Walton contact (support, not engineering).",
+    "importance": 76
+  },
+  {
+    "name": "Kelly Hielscher",
+    "company": "Walton Enterprises",
+    "role": "Walton Enterprises (role not shown)",
+    "why": "Walton contact.",
+    "importance": 76
+  },
+  {
+    "name": "Kristen Cobbs",
+    "company": "Walton Enterprises",
+    "role": "Project Manager, Walton Enterprises",
+    "why": "Walton PM contact.",
+    "importance": 76
+  },
+  {
+    "name": "Tim Heminger",
+    "company": "Walton Enterprises",
+    "role": "UI/UX Designer, Walton Enterprises",
+    "why": "design contact at Walton.",
+    "importance": 76
+  },
+  {
+    "name": "Sathvik Kukkadapu",
+    "company": "Amex",
+    "role": "Lead Data Engineer, American Express (since Oct 2025); ex-AWS Data Engineer",
+    "why": "4 mutual; lead data engineer at Amex.",
+    "importance": 73
+  },
+  {
+    "name": "Bisrat Kebere",
+    "company": "EarlyVet",
+    "role": "AI Engineering Lead, EarlyVet",
+    "why": "AI engineering lead at a startup.",
+    "importance": 73
+  },
+  {
+    "name": "Abhilash K",
+    "company": "Other",
+    "role": "Senior Data Engineer, VISA INN (since Oct 2023)",
+    "why": "senior data engineer.",
+    "importance": 73
+  },
+  {
+    "name": "Danish Mustafa",
+    "company": "Other",
+    "role": "Founding Software Engineer, Biby & Partners",
+    "why": "founding SWE.",
+    "importance": 73
+  },
+  {
+    "name": "Joel Cummings",
+    "company": "Other",
+    "role": "Senior Network Engineer & Cyber Security",
+    "why": "senior network/cyber engineer.",
+    "importance": 73
+  },
+  {
+    "name": "Muhammad Arslan",
+    "company": "Other",
+    "role": "Software Engineer; Stanford CiP Section Leader (Pakistan)",
+    "why": "SWE and Stanford Code in Place leader.",
+    "importance": 73
+  },
+  {
+    "name": "Olamidipupo Agboola",
+    "company": "Other",
+    "role": "Backend Engineering Lead; Backend Developer @ Autogon AI",
+    "why": "backend engineering lead.",
+    "importance": 73
+  },
+  {
+    "name": "Safari Germain",
+    "company": "Other",
+    "role": "Lead ML Engineer, Admind (Cracow, Poland)",
+    "why": "69 mutual; lead ML engineer.",
+    "importance": 73
+  },
+  {
+    "name": "Thierry Ilboudo",
+    "company": "Other",
+    "role": "Co-Founder/CTO, Ilboudo Technology Solution; previously Senior Web Engineer at Roundedcube (Kansas City)",
+    "why": "151 mutual; CTO.",
+    "importance": 73
+  },
+  {
+    "name": "Christian Rawley",
+    "company": "Walmart",
+    "role": "Incoming SWE II, Walmart",
+    "why": "connected 20 Apr 2026; incoming Walmart SWE.",
+    "importance": 72
+  },
+  {
+    "name": "Chisom Okonkwo",
+    "company": "Other",
+    "role": "Previously SWE x PM @ Microsoft (Memphis)",
+    "why": "265+ mutual; ex-Microsoft SWE/PM.",
+    "importance": 71
+  },
+  {
+    "name": "Melody Enwerem",
+    "company": "Other",
+    "role": "AI Engineer, Automation Anywhere; Black Girls Code",
+    "why": "268 mutual; AI engineer.",
+    "importance": 71
+  },
+  {
+    "name": "Richmond Azadze",
+    "company": "Other",
+    "role": "AI-Native Software Engineer & Technical Founder; Founder, Scan2T (Grambling, LA)",
+    "why": "272 mutual; AI SWE/founder.",
+    "importance": 71
+  },
+  {
+    "name": "Ephraim Duncan",
+    "company": "Documenso",
+    "role": "Software Engineer, Documenso (since Sep 2024, Accra)",
+    "why": "current Documenso SWE (also listed as Design Engineer).",
+    "importance": 68
+  },
+  {
+    "name": "Teliyah Wynder",
+    "company": "Fidelity",
+    "role": "Engineer, Enterprise Cybersecurity, Fidelity Investments",
+    "why": "connected 2 Apr 2026; cybersecurity engineer at Fidelity.",
+    "importance": 68
+  },
+  {
+    "name": "Natascha Mwambwa",
+    "company": "Huawei",
+    "role": "Transmission Engineer, Huawei (since Nov 2025, Lusaka)",
+    "why": "transmission engineer at Huawei.",
+    "importance": 68
+  },
+  {
+    "name": "Fiker Kifle",
+    "company": "ISmile Technologies",
+    "role": "Software Engineer, ISmile Technologies (Columbus, OH)",
+    "why": "SWE at a smaller tech company.",
+    "importance": 68
+  },
+  {
+    "name": "Shivendra Bhagat",
+    "company": "Intel",
+    "role": "Full-Stack AI Engineer; AI Agents & Backend; Ambassador @ Intel (Austin)",
+    "why": "55 mutual; full-stack AI engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Kehinde Timothy Ajeigbe",
+    "company": "LearnFlo",
+    "role": "Software Engineer, LearnFlo (since Nov 2024; C#/.NET/AI, Ibadan)",
+    "why": "43 mutual; current LearnFlo SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Abderraouf A. Abla",
+    "company": "Other",
+    "role": "Building in Stealth; Cloud-Native / DevOps / Data / SWE",
+    "why": "88 mutual; cloud/DevOps/SWE builder.",
+    "importance": 68
+  },
+  {
+    "name": "Abdullah Saeed",
+    "company": "Other",
+    "role": "Full-Stack Developer; MS CS @ Georgia Tech (UAE)",
+    "why": "full-stack developer.",
+    "importance": 68
+  },
+  {
+    "name": "Ahmad Sultan",
+    "company": "Other",
+    "role": "Software Engineer; Ex-AI Engineer @ MagDrive Technologies + 5 previous SWE roles; 7x Hackathon Winner",
+    "why": "connected 28 Apr 2026; experienced SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Ali Hassan",
+    "company": "Other",
+    "role": "ASE, Devsinc; Full-stack Developer (Pakistan)",
+    "why": "full-stack developer.",
+    "importance": 68
+  },
+  {
+    "name": "Anjan Mandal",
+    "company": "Other",
+    "role": "Co-Founder, SocialBridge AI; Software Engineer @ SquarePlanIT (Monroe, LA)",
+    "why": "86 mutual; full-stack/AI engineer and founder.",
+    "importance": 68
+  },
+  {
+    "name": "Asantwa Smith",
+    "company": "Other",
+    "role": "Software Engineer → Data Engineer (documenting the Gen Z tech journey)",
+    "why": "peer engineer, no employer shown.",
+    "importance": 68
+  },
+  {
+    "name": "Barry Msibi",
+    "company": "Other",
+    "role": "Product Sales Engineer, Civil, Bentley Systems (South Africa)",
+    "why": "product sales engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Bret Muchoni",
+    "company": "Other",
+    "role": "Software Developer, wCyber Solutions (Harare)",
+    "why": "software developer.",
+    "importance": 68
+  },
+  {
+    "name": "Bright Owusu",
+    "company": "Other",
+    "role": "Previously Cloud Security @ Palo Alto Networks; AWS skills",
+    "why": "153 mutual; cloud-security engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Brittney Sypert",
+    "company": "Other",
+    "role": "Frontend Web Engineer",
+    "why": "connected 2 Apr 2026; frontend engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Chaoyi Jiang",
+    "company": "Other",
+    "role": "Software Engineer, CCAI (since Mar 2026); previously Amazon SDE",
+    "why": "SWE with Amazon history.",
+    "importance": 68
+  },
+  {
+    "name": "Collins Isiwu",
+    "company": "Other",
+    "role": "Software Engineer | Python Developer (Abuja)",
+    "why": "SWE/Python developer.",
+    "importance": 68
+  },
+  {
+    "name": "Danny W Chen",
+    "company": "Other",
+    "role": "Software Engineer, Ultra (YC W24); founder, DreamyUni (NYC)",
+    "why": "66 mutual; YC-backed SWE/founder.",
+    "importance": 68
+  },
+  {
+    "name": "David Nintang",
+    "company": "Other",
+    "role": "CS @ Grambling; previously SWE @ Slack; building aeero.io",
+    "why": "154 mutual; ex-Slack SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Ebube Lakshmi Wobo",
+    "company": "Other",
+    "role": "AI/LLM Engineer (Atlanta)",
+    "why": "28+ mutual; AI/LLM engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Elysée NIYIBIZI",
+    "company": "Other",
+    "role": "Software Engineer (Backend-Focused), Kigali, Rwanda",
+    "why": "connected 2 Apr 2026; backend SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Emmanuel Reese",
+    "company": "Other",
+    "role": "Previously AI SWE @ Apple; previously SDE @ Amazon",
+    "why": "peer with Apple + Amazon experience.",
+    "importance": 68
+  },
+  {
+    "name": "Eric Ekwenibe",
+    "company": "Other",
+    "role": "Software Engineer; CS @ MU; NSBE",
+    "why": "connected 28 May 2026; SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Fitzroey Mutambirwa",
+    "company": "Other",
+    "role": "Electronics Engineer (Harare)",
+    "why": "electronics engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Godsheritage Adeoye",
+    "company": "Other",
+    "role": "Software Engineer, Sunwest Mortgage Company; ex-Apple Vision Pro & AI/ML",
+    "why": "121 mutual; SWE with Apple history.",
+    "importance": 68
+  },
+  {
+    "name": "Hassan Mehmood",
+    "company": "Other",
+    "role": "Software Engineer, Agentic AI & Full Stack; founder, Threadly AI (Lahore)",
+    "why": "SWE/founder.",
+    "importance": 68
+  },
+  {
+    "name": "Joe G.",
+    "company": "Other",
+    "role": "\"swe\" (no employer shown)",
+    "why": "SWE contact with no company detail.",
+    "importance": 68
+  },
+  {
+    "name": "Joshua Oyekunle",
+    "company": "Other",
+    "role": "Data Analyst | Software Engineer, Independent Contractor (London)",
+    "why": "freelance SWE/data analyst.",
+    "importance": 68
+  },
+  {
+    "name": "Kafui Gle",
+    "company": "Other",
+    "role": "Software Developer, BC SSDT; previously Ford and Johnson & Johnson; CS @ Berea",
+    "why": "110 mutual; software developer with Ford/J&J history.",
+    "importance": 68
+  },
+  {
+    "name": "Krushal Kalkani",
+    "company": "Other",
+    "role": "Software Engineer | ML Engineer (San Francisco Bay Area)",
+    "why": "13 mutual; SWE/ML engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Lennon Rozo",
+    "company": "Other",
+    "role": "BS in Computer Science | SWE (connected 6 Nov 2025)",
+    "why": "SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Lleyton Magama",
+    "company": "Other",
+    "role": "Software Engineer, Loko (since Apr 2026)",
+    "why": "current Loko SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Mani Chenna Kesava Reddy Jeereddy",
+    "company": "Other",
+    "role": "Associate Software Engineer, Centific (Hyderabad)",
+    "why": "associate SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Michael Olubode",
+    "company": "Other",
+    "role": "Founder & AI Engineer (connected 6 Nov 2025)",
+    "why": "10,000+ followers; founder/AI engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Olayinka Vaughan",
+    "company": "Other",
+    "role": "Head Web Developer, Wesleyan Science Journal; Production Engineering Fellow, Meta x MLH '26",
+    "why": "87+ mutual; Meta fellow.",
+    "importance": 68
+  },
+  {
+    "name": "Osborn Worlasi Edudzi",
+    "company": "Other",
+    "role": "Founder & CEO, Verflow Innovations; Software Engineer (Accra)",
+    "why": "52 mutual; fintech/AI founder and SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Paul Chilemya",
+    "company": "Other",
+    "role": "Software Developer, Byte-Hub",
+    "why": "software developer.",
+    "importance": 68
+  },
+  {
+    "name": "Pranav Varshney",
+    "company": "Other",
+    "role": "Founder, Nodus Compute (YC F26); ex-AWS/Google engineer",
+    "why": "founder with AWS/Google engineering history.",
+    "importance": 68
+  },
+  {
+    "name": "Pratik Paudel",
+    "company": "Other",
+    "role": "Engineering, StackAI (YC23)",
+    "why": "54 mutual; YC-backed startup engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Qhelani Moyo",
+    "company": "Other",
+    "role": "CS @ WVSU; previously SWE @ F5",
+    "why": "connected 24 Feb 2026; ex-F5 SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Ruvimbo Joy Sithole",
+    "company": "Other",
+    "role": "SWE | Cloud Engineer (AWS & GCP) | ML & Data Science (Harare)",
+    "why": "20 mutual; cloud/ML engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Saeed Ahmed",
+    "company": "Other",
+    "role": "Agentic AI / Full Stack Developer, DEVOWL AI (Kolkata)",
+    "why": "agentic AI/full-stack developer.",
+    "importance": 68
+  },
+  {
+    "name": "Santh Prakash Gangadhara",
+    "company": "Other",
+    "role": "DevOps Engineering Professional | Cloud & Kubernetes Specialist | Cloud Architect (Irving, TX)",
+    "why": "16+ mutual; DevOps/cloud architect.",
+    "importance": 68
+  },
+  {
+    "name": "Shivpratap Singh Panwar",
+    "company": "Other",
+    "role": "ML Engineer, Kody Technolab (India)",
+    "why": "ML engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Sumaya Abdirahman",
+    "company": "Other",
+    "role": "Software Engineer | Tech & AI Sales | SDR/BDR (Johannesburg)",
+    "why": "SWE with Salesforce B2B Commerce experience.",
+    "importance": 68
+  },
+  {
+    "name": "Sumon Mondal",
+    "company": "Other",
+    "role": "Software Engineer | Project Management | HBCU Scholar (connected 6 Nov 2025)",
+    "why": "SWE and HBCU Scholar.",
+    "importance": 68
+  },
+  {
+    "name": "Takudzwa Nhawu",
+    "company": "Other",
+    "role": "Backend Software Engineer, InfraTech Africa",
+    "why": "backend SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Tomilola Jaiyeoba",
+    "company": "Other",
+    "role": "Computer Engineering Major; COO & Co-Founder, FEEDIFY Limited; Co-Founder @ YIIN; Robotics, AI, Software, Innovation (connected 30 Oct 2025)",
+    "why": "30 mutual; founder/COO.",
+    "importance": 68
+  },
+  {
+    "name": "Wisdom Innocent",
+    "company": "Other",
+    "role": "Software Engineer, IHS Towers (since June 2025, Lagos)",
+    "why": "current SWE.",
+    "importance": 68
+  },
+  {
+    "name": "Margaret Bibb",
+    "company": "P&G",
+    "role": "Digital Planning and Automation Process Engineer, Procter & Gamble",
+    "why": "10 mutual; process/automation engineer at P&G.",
+    "importance": 68
+  },
+  {
+    "name": "Joshua Smullen",
+    "company": "PA Government",
+    "role": "AI Engineer, PA Gov",
+    "why": "AI engineer in government.",
+    "importance": 68
+  },
+  {
+    "name": "Deepa Mahesh",
+    "company": "QuantumCyte",
+    "role": "Engineering @ QuantumCyte; R&D Engineer, Full-Stack (since Aug 2025)",
+    "why": "6 mutual; R&D engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Pawan Yadav",
+    "company": "Ripple Smart Metering",
+    "role": "Embedded SWE (R&D); Firmware Engineer at Ripple Smart Metering (since Dec 2024, Hyderabad)",
+    "why": "1 mutual; embedded/firmware engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Daniel Foster",
+    "company": "Robust.AI",
+    "role": "Robotics, Robust.AI (Atlanta)",
+    "why": "47 mutual; robotics engineer.",
+    "importance": 68
+  },
+  {
+    "name": "Abdulbasit Abdalla",
+    "company": "Amazon",
+    "role": "Previously @ Pinterest and Microsoft; Data Science @ UW (Seattle)",
+    "why": "18 mutual; ex-Pinterest/Microsoft data scientist.",
+    "importance": 66
+  },
+  {
+    "name": "Brighton Chisanga",
+    "company": "Capital One",
+    "role": "2x Microsoft Intern; Product Delivery @ The ZIG; CS @ Rust College '27",
+    "why": "peer with two Microsoft internships.",
+    "importance": 66
+  },
+  {
+    "name": "Nyla Crespo",
+    "company": "Capital One",
+    "role": "4th Year CS @ Howard; Previously @ Comcast NBCU; Capital One scholar",
+    "why": "student.",
+    "importance": 66
+  },
+  {
+    "name": "Mason Moses",
+    "company": "Carleton College",
+    "role": "Computer Science @ Carleton College; Previously @ PayPal; Gates Scholar; ColorStack (connected 14 Nov 2025)",
+    "why": "ex-PayPal student and Gates Scholar.",
+    "importance": 66
+  },
+  {
+    "name": "Foster Oppong",
+    "company": "JPMorgan",
+    "role": "2x BI analyst intern @ Atlas Copco; Math + Finance @ Wingate",
+    "why": "student.",
+    "importance": 66
+  },
+  {
+    "name": "Neriah Okolo",
+    "company": "Other",
+    "role": "Previously @ Two Sigma; CS & AI @ Rice",
+    "why": "connected 20 Apr 2026; ex-Two Sigma.",
+    "importance": 66
+  },
+  {
+    "name": "Faizan Khan",
+    "company": "Snowflake",
+    "role": "Data Science TA @ CTP; previously @ InZone; CodePath Tech Fellow; CS student @ Brooklyn",
+    "why": "student.",
+    "importance": 66
+  },
+  {
+    "name": "Jean-Carlos Vargas",
+    "company": "Snowflake",
+    "role": "Previously @ PayPal; CS @ Montclair",
+    "why": "9 mutual; ex-PayPal student.",
+    "importance": 66
+  },
+  {
+    "name": "Chinwe Uwolloh",
+    "company": "Other",
+    "role": "MSCS Grad Assistant @ NKU; 3x PM @ Microsoft; Ex-Explorer SWE+PM @ Microsoft; Co-Lead, Google Developer Student Club; Little Rock",
+    "why": "193 mutual; Microsoft PM/SWE-intern history in Arkansas.",
+    "importance": 63
+  },
+  {
+    "name": "Gargi Pathak",
+    "company": "Other",
+    "role": "Building GPS for drones: resQ; 10x Hackathon Winner; founder",
+    "why": "108 mutual; drone-tech founder.",
+    "importance": 63
+  },
+  {
+    "name": "Jay Williams",
+    "company": "Other",
+    "role": "HRIS Specialist, Arkansas National Guard (Maumelle, AR)",
+    "why": "19 mutual; HR contact in Arkansas.",
+    "importance": 62
+  },
+  {
+    "name": "Makele Ndessokia, MBA HRM",
+    "company": "Other",
+    "role": "HR Executive / People Strategist / Culture Architect",
+    "why": "HR executive contact.",
+    "importance": 62
+  },
+  {
+    "name": "Dr. JME-Edwards",
+    "company": "Pathway Talent Solutions",
+    "role": "COO/CPO, Principal Managing Partner, Pathway Talent Solutions (since Jan 2016); executive search",
+    "why": "72 mutual; executive-search partner.",
+    "importance": 62
+  },
+  {
+    "name": "Esther Ogundele",
+    "company": "Northeastern",
+    "role": "PM at Northeastern; BSc CS, Fisk; Previously SWE intern, eBay",
+    "why": "225 mutual; PM with an eBay SWE internship.",
+    "importance": 61
+  },
+  {
+    "name": "Vanessa Ezeh",
+    "company": "Other",
+    "role": "Previously SWE Intern @ Bloomberg and Meta; SWE Fellow @ Uber; Google BASTA Fellow (GSU)",
+    "why": "238 mutual; peer with Bloomberg, Meta, Uber and Google internship/fellowship history.",
+    "importance": 61
+  },
+  {
+    "name": "Wisdom Ariagbofo",
+    "company": "Other",
+    "role": "MS CS @ UAPB; previously SWE intern @ Microsoft and Walton Enterprises; building Tether",
+    "why": "325 mutual; UAPB peer with Microsoft + Walton internship history.",
+    "importance": 61
+  },
+  {
+    "name": "Thane Douglass",
+    "company": "Adobe",
+    "role": "Founder @ AyoChat + AyoCouncil (Washington, DC)",
+    "why": "36 mutual; founder.",
+    "importance": 60
+  },
+  {
+    "name": "Joshua Tewobola",
+    "company": "Capital One",
+    "role": "MBBS founder",
+    "why": "student.",
+    "importance": 60
+  },
+  {
+    "name": "George Nuyekpe",
+    "company": "GM73 Technolutions",
+    "role": "Founder @ GM73 Technolutions; Computer Science (Ghana)",
+    "why": "97 mutual; founder.",
+    "importance": 60
+  },
+  {
+    "name": "Himanshu Sharma",
+    "company": "Google",
+    "role": "Founder @ Runmeg (San Francisco)",
+    "why": "21 mutual; founder.",
+    "importance": 60
+  },
+  {
+    "name": "Vatsal Pandya",
+    "company": "Microsoft",
+    "role": "Founder & CEO @ tasksmind",
+    "why": "73 mutual; founder/CEO.",
+    "importance": 60
+  },
+  {
+    "name": "Faizan Ahmed",
+    "company": "Other",
+    "role": "Co-Founder & Head of ML, Headstarter (San Francisco)",
+    "why": "founder/ML lead.",
+    "importance": 60
+  },
+  {
+    "name": "Josh Payne",
+    "company": "Other",
+    "role": "Founder & CEO, Coframe (San Francisco)",
+    "why": "AI founder.",
+    "importance": 60
+  },
+  {
+    "name": "Tirth Patel",
+    "company": "Other",
+    "role": "CIO & Co-Founder, Nexus Battery Solutions; AI Consultant",
+    "why": "20 mutual; AI consultant/founder.",
+    "importance": 60
+  },
+  {
+    "name": "Shamika Williams",
+    "company": "SYW Strategies",
+    "role": "Founder & CEO, SYW Strategies; fractional HR",
+    "why": "8 mutual; fractional HR founder.",
+    "importance": 60
+  },
+  {
+    "name": "Karen-Marie Kasigila",
+    "company": "Snowflake",
+    "role": "Masters of Data Analytics @ UWO; Data Science Graduate; Harvard WECode Scholar; Founder @ KasiTec Innovations (London, Ontario)",
+    "why": "90+ mutual; data-science graduate and founder.",
+    "importance": 60
+  },
+  {
+    "name": "Mohammad Altiwainy",
+    "company": "Snowflake",
+    "role": "President of AWS Student Builder Group; Founder/Director of BuilderWars Hackathon; CS @ Wayne State (Detroit)",
+    "why": "28 mutual; AWS student-builder leader.",
+    "importance": 60
+  },
+  {
+    "name": "Peter Kibet",
+    "company": "Snowflake",
+    "role": "Founder, Spidey Labs; Co-founder, Fluent.ke; Claude Community Ambassador (Kenya)",
+    "why": "5,543 followers; founder.",
+    "importance": 60
+  },
+  {
+    "name": "Uraru Jamu",
+    "company": "FIU",
+    "role": "AI & Full-Stack Developer @ FIU",
+    "why": "AI/full-stack developer and student.",
+    "importance": 58
+  },
+  {
+    "name": "Iminabo Roberts",
+    "company": "Other",
+    "role": "Previously ML Engineering Intern @ Apple",
+    "why": "peer, ex-Apple intern.",
+    "importance": 58
+  },
+  {
+    "name": "Isha Shrestha",
+    "company": "Other",
+    "role": "Previously SWE Intern @ LinkedIn & @ Bentley Systems; Computer Science (Honors) (connected 30 Oct 2025)",
+    "why": "peer with LinkedIn and Bentley internships.",
+    "importance": 58
+  },
+  {
+    "name": "Jennifer Obinwanne",
+    "company": "Other",
+    "role": "Previously SWE Intern @ Netflix, Meta, HRT; CS, Little Rock, AR",
+    "why": "peer with three top internships, no current employer shown.",
+    "importance": 58
+  },
+  {
+    "name": "Ayan Dasgupta",
+    "company": "TCS",
+    "role": "Systems Engineer @ TCS; Ex-R&D Intern @ Hyland; SQL/AI/ML (India)",
+    "why": "11 mutual; systems engineer.",
+    "importance": 58
+  },
+  {
+    "name": "Nicole Dacurawat",
+    "company": "Extern",
+    "role": "Recruiter, Extern (since Aug 2021); curates externship programmes for community-college students",
+    "why": "88 mutual; recruiter running externship programmes.",
+    "importance": 56
+  },
+  {
+    "name": "Kathy Coleman",
+    "company": "Other",
+    "role": "Talent Acquisition Partner + AI Fanatic + Marketing Professional (Monroe, LA)",
+    "why": "76+ mutual; talent acquisition partner (no employer shown).",
+    "importance": 56
+  },
+  {
+    "name": "Albert Haerr",
+    "company": "Employbridge",
+    "role": "Search Consultant, Employbridge",
+    "why": "staffing search consultant.",
+    "importance": 55
+  },
+  {
+    "name": "Sofie Finch",
+    "company": "LOFT",
+    "role": "Sourcing Coordinator, LOFT",
+    "why": "sourcing coordinator.",
+    "importance": 55
+  },
+  {
+    "name": "Chris Townsend",
+    "company": "MAA",
+    "role": "Talent Sourcing and Engagement Coordinator, MAA (Memphis)",
+    "why": "sourcing coordinator.",
+    "importance": 55
+  },
+  {
+    "name": "AAKIB ALI SHAIKH",
+    "company": "Other",
+    "role": "Career Advisor / US IT Staffing Specialist (H1B, OPT, GC & USC recruitment)",
+    "why": "connected 5 Nov 2026; staffing specialist, not a direct employer — lower priority.",
+    "importance": 55
+  },
+  {
+    "name": "Emmanuel Asibor Ejemhenmhen",
+    "company": "Other",
+    "role": "Recruiter, joinrelentless.com",
+    "why": "connected 17 Jun 2026; recruiter.",
+    "importance": 55
+  },
+  {
+    "name": "Mohammed Salem",
+    "company": "PSCwork",
+    "role": "Recruitment Consultant, PSCwork (since Jan 2023)",
+    "why": "4 mutual; recruitment consultant.",
+    "importance": 55
+  },
+  {
+    "name": "Anthony Graham",
+    "company": "UAPB",
+    "role": "Chancellor, University of Arkansas at Pine Bluff",
+    "why": "connected 28 Apr 2026; UAPB chancellor — worth a DM for UAPB network and introductions, not SWE hiring.",
+    "importance": 55
+  },
+  {
+    "name": "SAAIDA BOURRI",
+    "company": "Adobe",
+    "role": "Manager, sales and customer service @ Macy's",
+    "why": "sales/customer-service manager (secondary).",
+    "importance": 50
+  },
+  {
+    "name": "Euan Canoy",
+    "company": "Amazon",
+    "role": "SWE Intern @ Home Depot",
+    "why": "student intern (secondary).",
+    "importance": 50
+  },
+  {
+    "name": "Julius Mcgraw",
+    "company": "Amazon",
+    "role": "Account Manager @ Amazon (Preston, MS)",
+    "why": "Amazon account manager (not SWE, secondary).",
+    "importance": 50
+  },
+  {
+    "name": "Nze Nwachukwu",
+    "company": "Capital One",
+    "role": "Ambassador @ Taptap Send; ADA s. Intern '26; Crimson's Scholar '25; Biogen '24",
+    "why": "249+ mutual; student.",
+    "importance": 50
+  },
+  {
+    "name": "Oluwatosin Jaiye-Williams",
+    "company": "Capital One",
+    "role": "Previously Technology Advisory Intern @ KPMG; Honors CS @ AAMU",
+    "why": "170+ mutual; ex-KPMG intern.",
+    "importance": 50
+  },
+  {
+    "name": "Sabih Qadri",
+    "company": "UNOMi",
+    "role": "SWE Intern @ UNOMi",
+    "why": "intern (secondary).",
+    "importance": 50
+  },
+  {
+    "name": "Megan Sideri",
+    "company": "Adobe",
+    "role": "Secretary at Fashion Student Organization (Lewis Center, OH)",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Richard Kasongo",
+    "company": "Adobe",
+    "role": "Finance Tracker at Personal Project (Daytona Beach)",
+    "why": "207+ mutual; finance (secondary).",
+    "importance": 45
+  },
+  {
+    "name": "Menard Simoya",
+    "company": "Capital One",
+    "role": "CS & Econ @ Oberlin",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Praise Gavi",
+    "company": "Citi",
+    "role": "Citi Markets",
+    "why": "LAMP Mentee at Citi; past PayPal Career Academy — 207+ mutual; Citi markets contact with PayPal programme history.",
+    "importance": 45
+  },
+  {
+    "name": "Christotes Muange Nartey-Tetteh",
+    "company": "Goldman Sachs",
+    "role": "CMO @ Campus Hustle; president @ NABA Grambling; Accounting + CIS",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Danielle Amaegbo",
+    "company": "Goldman Sachs",
+    "role": "PhD student; Genentech intern; Goldman Sachs VIS '24",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Joseph Kofi Tsekpe",
+    "company": "Goldman Sachs",
+    "role": "Accounting and CIS @ Grambling State University",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Sameer Ahmed",
+    "company": "Goldman Sachs",
+    "role": "CS Student (Hyderabad)",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Silas Darko",
+    "company": "Goldman Sachs",
+    "role": "CS @ Grambling; Colorstack Fellow; previously Extern @ Alcon",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Tafui Leggard",
+    "company": "Goldman Sachs",
+    "role": "MBA, Stanford; aspiring Talent and People Ops Strategist",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Anamika Koonakkampilly Sunilal",
+    "company": "JPMorgan",
+    "role": "Masters AI @ DBS Ireland; Technical Lead @ IEDC",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Ankit Rijal",
+    "company": "JPMorgan",
+    "role": "Previously intern @ Google; Research Intern @ Fisk; Data for Good Hackathon @ JPMorganChase",
+    "why": "student with Google and JPMorgan hackathon experience.",
+    "importance": 45
+  },
+  {
+    "name": "Beni Inganji",
+    "company": "JPMorgan",
+    "role": "CS @ uOttawa (Canada)",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Olúwafẹràńmi Oyèlùdé",
+    "company": "JPMorgan",
+    "role": "CS & Math @ Howard; Data for Good finalist at JPMorganChase",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Parin Patel",
+    "company": "JPMorgan",
+    "role": "Penn State; JPMorgan Chase",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Sandra Adu",
+    "company": "JPMorgan",
+    "role": "Data Science & Math @ Bryn Mawr; JPMorganChase (Feb–Apr 2025)",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Tatenda Nyoni",
+    "company": "JPMorgan",
+    "role": "ColorStack; CS",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Valary Anguzuzu",
+    "company": "JPMorgan",
+    "role": "Data Science & CS '27 @ Northwestern; Salesforce Futureforce",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Mohammed Saabiq S. Abdulai",
+    "company": "Meta",
+    "role": "Building Nasari Speech AI; YC Startup School (Grambling)",
+    "why": "232 mutual; building speech AI for African dialects.",
+    "importance": 45
+  },
+  {
+    "name": "Adetayo Kalejaiye",
+    "company": "Oracle",
+    "role": "CS student / AI researcher (Grambling)",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Reneka Duke",
+    "company": "Oracle",
+    "role": "M.S. Business Data Analytics candidate; Oracle integration project (Nashville)",
+    "why": "student.",
+    "importance": 45
+  },
+  {
+    "name": "Angel Yuza",
+    "company": "Other",
+    "role": "UAPB CS; Adobe Student Ambassador",
+    "why": "UAPB peer and Adobe ambassador.",
+    "importance": 45
+  },
+  {
+    "name": "Shyiana Francis",
+    "company": "Other",
+    "role": "Data Science Student; Former Finastra Customer Insights Intern; Data Analyst (connected 6 Nov 2025)",
+    "why": "ex-Finastra intern.",
+    "importance": 45
+  },
+  {
+    "name": "Louisa Tembo",
+    "company": "Salesforce",
+    "role": "Salesforce admin intern @ ALSAC/St. Jude Children's Research Hospital; CS @ ASU",
+    "why": "Salesforce admin intern.",
+    "importance": 45
+  },
+  {
+    "name": "Leena Wilson",
+    "company": "ServiceNow",
+    "role": "Honors CS @ NC A&T; Previously at Shell; Shell AI Operations intern (Sugar Land, TX)",
+    "why": "30+ mutual; Shell AI intern.",
+    "importance": 45
+  },
+  {
+    "name": "Ousman Bah",
+    "company": "Accenture",
+    "role": "AI Studio Intern @ Accenture (Miami)",
+    "why": "intern (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Adeyori (Adeyori F.)",
+    "company": "Acclinate",
+    "role": "Infrastructure @ Acclinate; ML Researcher @ Adobe Aug–Oct 2026",
+    "why": "ex-Adobe ML researcher now in infra.",
+    "importance": 40
+  },
+  {
+    "name": "Adriana Carner",
+    "company": "Adobe",
+    "role": "MBA; Marketing professional (Greater Fayetteville, AR)",
+    "why": "marketing (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Alvin Caughman",
+    "company": "Adobe",
+    "role": "Experiential Marketing; Adobe skills (Columbia, SC)",
+    "why": "1,821 followers; experiential marketer.",
+    "importance": 40
+  },
+  {
+    "name": "Chloe Haynes",
+    "company": "Adobe",
+    "role": "Account Representative @ Alliant Insurance Services; Southern University Alumna; Harvard SVMP '26 (New York)",
+    "why": "insurance rep (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "David Akpoviroro Oke",
+    "company": "Adobe",
+    "role": "Software & Systems Architect; IT Security (PurpleTeamer); AI & Automation (Lagos)",
+    "why": "18,766 followers; software/systems architect.",
+    "importance": 40
+  },
+  {
+    "name": "Deashia Rogers",
+    "company": "Adobe",
+    "role": "Business Relationship Consultant at Florida Office of State Courts Administrator (Tallahassee)",
+    "why": "business-relationship consultant (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Gabrielle Kelley",
+    "company": "Adobe",
+    "role": "Red Bull Off Premise Sales Training Grad; Southern U Alumna; Former Apple and Dell Intern (Baton Rouge)",
+    "why": "33 mutual; former Apple and Dell intern.",
+    "importance": 40
+  },
+  {
+    "name": "Glenn Barnes III",
+    "company": "Adobe",
+    "role": "LEAD Operations Program Associate at Wabtec Corporations (Pine Bluff, AR)",
+    "why": "78 mutual; operations associate in Pine Bluff.",
+    "importance": 40
+  },
+  {
+    "name": "Harold Dauphin",
+    "company": "Adobe",
+    "role": "Tech professional; BS Electronics Technology; Python & Java developer; UX (New York)",
+    "why": "5 mutual; Python/Java developer.",
+    "importance": 40
+  },
+  {
+    "name": "Juana Casey",
+    "company": "Adobe",
+    "role": "Cybersecurity & Policy Researcher; Previously Cyber Strategy Consulting Intern @ RSM (New York)",
+    "why": "855 followers; cybersecurity researcher.",
+    "importance": 40
+  },
+  {
+    "name": "Luckson Chigarire",
+    "company": "Adobe",
+    "role": "Incoming Actuarial Assistant, New York Life",
+    "why": "3,190 followers; actuarial assistant (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Perry Williams",
+    "company": "Adobe",
+    "role": "Wells Fargo Audit Analyst; UAPB Alumni; Harvard SVMP '25; MLT CP '25 fellow (Pine Bluff, AR)",
+    "why": "Wells Fargo analyst and UAPB alumnus.",
+    "importance": 40
+  },
+  {
+    "name": "Methembe Moyo",
+    "company": "Aircall",
+    "role": "Product, Aircall",
+    "why": "connected 2 Apr 2026; product contact at Aircall.",
+    "importance": 40
+  },
+  {
+    "name": "Akachukwu Nicholas",
+    "company": "Amazon",
+    "role": "Product Designer at Amazon (May–Oct 2025)",
+    "why": "product designer with Amazon experience.",
+    "importance": 40
+  },
+  {
+    "name": "Chris Woodbury",
+    "company": "Best Buy",
+    "role": "Reverse Sr. Director at Best Buy (Minnetonka)",
+    "why": "15 mutual; senior director at Best Buy.",
+    "importance": 40
+  },
+  {
+    "name": "Kiabi Addison",
+    "company": "Bloomberg",
+    "role": "Wells Fargo WIM Analyst; Senior Agriculture Plant Science Major, Delaware State",
+    "why": "Wells Fargo analyst.",
+    "importance": 40
+  },
+  {
+    "name": "mohamed Alaa",
+    "company": "Bloomberg",
+    "role": "Cybersecurity | Offensive Security (OffSec PEN-200/300, WEB-300, EXP-401, AI-300) (Cairo)",
+    "why": "3 mutual; cybersecurity specialist.",
+    "importance": 40
+  },
+  {
+    "name": "Lincoln Chitswa",
+    "company": "Break Through Tech",
+    "role": "CS & Math; AI/ML @ Break Through Tech; ML intern @ DataWhys (Memphis)",
+    "why": "ML intern.",
+    "importance": 40
+  },
+  {
+    "name": "Mahesh Bhusanoor",
+    "company": "Capgemini",
+    "role": "Mobile Solution Architect, Capgemini (since Apr 2021, Dubai)",
+    "why": "mobile solutions architect.",
+    "importance": 40
+  },
+  {
+    "name": "Anthony A. Armstrong",
+    "company": "Capital One",
+    "role": "Senior Finance, Banking & Economic Development Executive (Little Rock)",
+    "why": "21,976 followers; senior finance executive in Arkansas.",
+    "importance": 40
+  },
+  {
+    "name": "Edmund Eric Gah",
+    "company": "Capital One",
+    "role": "AI/ML Researcher; Building @ Nexora.ai (Kumasi)",
+    "why": "148 mutual; AI/ML researcher.",
+    "importance": 40
+  },
+  {
+    "name": "Miranda Perez",
+    "company": "Capital One",
+    "role": "Program Coordinator at HBCUFI",
+    "why": "journalist/program coordinator (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Sujal Shah",
+    "company": "Capital One",
+    "role": "Analyst, Capital One (since Aug 2025, Cary, NC)",
+    "why": "business analyst at Capital One (not SWE, but inside a major tech-hiring bank).",
+    "importance": 40
+  },
+  {
+    "name": "Tinotenda Chikwanha",
+    "company": "Capital One",
+    "role": "Equity Research Trainee at BLK Capital Management; Dartmouth Economics",
+    "why": "equity-research trainee.",
+    "importance": 40
+  },
+  {
+    "name": "Tyrome Smith",
+    "company": "Capital One",
+    "role": "Business Innovation Facilitator (Bowie, MD)",
+    "why": "8,697 followers; innovation facilitator.",
+    "importance": 40
+  },
+  {
+    "name": "Chris Gibbs",
+    "company": "Deloitte",
+    "role": "Lead Cyber Security / Forensic Financial Analyst, Deloitte (since Nov 2025)",
+    "why": "tech-adjacent lead at Deloitte.",
+    "importance": 40
+  },
+  {
+    "name": "Mike Frizzel",
+    "company": "Fortis Hiring",
+    "role": "Business Development Manager, Fortis Hiring LLC (since Aug 2025)",
+    "why": "business development at a hiring firm.",
+    "importance": 40
+  },
+  {
+    "name": "Ashley Muka",
+    "company": "Goldman Sachs",
+    "role": "Baylor alumna (Richmond, TX)",
+    "why": "88 mutual; Baylor alumna.",
+    "importance": 40
+  },
+  {
+    "name": "Michael Kemakolam",
+    "company": "Goldman Sachs",
+    "role": "Business Analyst | Data Analytics & AI | Energy Sector (Washington, DC)",
+    "why": "4,070 followers; business analyst.",
+    "importance": 40
+  },
+  {
+    "name": "Ebuka Uche",
+    "company": "Google",
+    "role": "Motion Designer (Mountain View)",
+    "why": "motion designer (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Thomas Torku",
+    "company": "JPMorgan",
+    "role": "Data Scientist, Quant Analyst Assoc Sr, JPMorgan (since Sep 2023)",
+    "why": "data/quant contact at JPMorgan.",
+    "importance": 40
+  },
+  {
+    "name": "Kavell Brown",
+    "company": "LinkedIn",
+    "role": "Social Impact @ LinkedIn",
+    "why": "LinkedIn employee, connected 4 Jun 2026 (social impact, not SWE hiring).",
+    "importance": 40
+  },
+  {
+    "name": "Apurba Pandey",
+    "company": "Meta",
+    "role": "Metrics Lead @ Meta (since Sep 2025, Toronto)",
+    "why": "14 mutual; Meta metrics lead.",
+    "importance": 40
+  },
+  {
+    "name": "Deepak Thukral",
+    "company": "Meta",
+    "role": "Tech Lead, Meta (London)",
+    "why": "senior technical lead.",
+    "importance": 40
+  },
+  {
+    "name": "Alletha Muzorewa",
+    "company": "Microsoft",
+    "role": "Workforce & Economic Development Leader; Responsible AI (Las Vegas)",
+    "why": "16 mutual; workforce/AI leader.",
+    "importance": 40
+  },
+  {
+    "name": "Kaci Ward",
+    "company": "Microsoft",
+    "role": "Sales Operations | Client Experience & People Strategy Leader (Atlanta)",
+    "why": "sales-operations leader.",
+    "importance": 40
+  },
+  {
+    "name": "Victoria Booker",
+    "company": "Microsoft",
+    "role": "Data Analyst @ Payscale (Sanford, FL)",
+    "why": "52+ mutual; data analyst.",
+    "importance": 40
+  },
+  {
+    "name": "Angie Martínez Moreno",
+    "company": "Oak Hill Advisors",
+    "role": "Analyst at Oak Hill Advisors, L.P. (New York)",
+    "why": "98 mutual; analyst at an investment firm.",
+    "importance": 40
+  },
+  {
+    "name": "Alshan Regmi",
+    "company": "Oracle",
+    "role": "Sr. Java Developer",
+    "why": "21 mutual; senior Java developer.",
+    "importance": 40
+  },
+  {
+    "name": "Markita Andrews",
+    "company": "Oracle",
+    "role": "Accounting Clerk / Tax Specialist / Notary (Little Rock)",
+    "why": "44 mutual; accounting/tax (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Tadiwanashe Rukasha",
+    "company": "Oracle",
+    "role": "Financial Analyst at Toshiba Global Commerce Solutions",
+    "why": "32 mutual; financial analyst.",
+    "importance": 40
+  },
+  {
+    "name": "Alyssa Brown",
+    "company": "Other",
+    "role": "Tech Risk Analyst, EY (Nashville)",
+    "why": "tech-risk analyst.",
+    "importance": 40
+  },
+  {
+    "name": "Charlotte Farmer",
+    "company": "Other",
+    "role": "Chairperson of the Board, SAFE Standard AI (Chicago)",
+    "why": "11 mutual; AI-governance board chair.",
+    "importance": 40
+  },
+  {
+    "name": "Ryan Lawton",
+    "company": "Other",
+    "role": "Android Developer, Popstock",
+    "why": "137 mutual; Android developer.",
+    "importance": 40
+  },
+  {
+    "name": "Seong Lepcha",
+    "company": "Other",
+    "role": "Strategic Human Partnerships Lead, TravXplo (India)",
+    "why": "human-partnerships lead.",
+    "importance": 40
+  },
+  {
+    "name": "Benjamin Lilly",
+    "company": "Runway",
+    "role": "Head of Software, Runway (Fayetteville, AR); previously Walton Enterprises (shared Walton history)",
+    "why": "8 mutual; software leader now hiring at a startup.",
+    "importance": 40
+  },
+  {
+    "name": "Alonzo Ogunde",
+    "company": "Salesforce",
+    "role": "Finance Graduate | Financial Analysis | Corporate Finance",
+    "why": "finance graduate (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Arielle Anderson",
+    "company": "Salesforce",
+    "role": "Operational Resilience and Compliance Intern (Charlotte)",
+    "why": "intern (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Noel Thomas",
+    "company": "Salesforce",
+    "role": "Operations & Supply Chain LDP at Kohler Co. (East Lansing)",
+    "why": "1,177 followers; operations/supply-chain LDP.",
+    "importance": 40
+  },
+  {
+    "name": "Sangam Subedi",
+    "company": "Snowflake",
+    "role": "Building prera ai; 4x hackathon wins; research @ Vanderbilt; ACCESS (NSF) researcher; Breakthrough AI fellow; ai4all intern (Nashville)",
+    "why": "56 mutual; AI researcher/builder.",
+    "importance": 40
+  },
+  {
+    "name": "Tanjanay Hardy",
+    "company": "Snowflake",
+    "role": "Data Analyst (Lansing)",
+    "why": "7 mutual; data analyst.",
+    "importance": 40
+  },
+  {
+    "name": "Desmond Aikins",
+    "company": "TAQA Ghana",
+    "role": "Data Analyst at TAQA Ghana",
+    "why": "data analyst.",
+    "importance": 40
+  },
+  {
+    "name": "Pinky Kumari",
+    "company": "Tech Mamas",
+    "role": "Business Development Executive at Tech Mamas",
+    "why": "84 mutual; business development.",
+    "importance": 40
+  },
+  {
+    "name": "Adrien John Wiersma",
+    "company": "Toyota Makati",
+    "role": "Freelance Marketing Professional at Toyota Makati",
+    "why": "marketing (secondary).",
+    "importance": 40
+  },
+  {
+    "name": "Recco Bolton",
+    "company": "Valvoline",
+    "role": "Operations Manager at Valvoline (Rochester, PA)",
+    "why": "26 mutual; operations manager.",
+    "importance": 40
+  }
+]
