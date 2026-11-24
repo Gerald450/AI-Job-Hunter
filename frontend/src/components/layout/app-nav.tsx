@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/", label: "Jobs" },
   { href: "/conferences", label: "Conferences" },
   { href: "/applications", label: "Applications" },
+  { href: "/reachout", label: "Reach Out" },
 ] as const;
 
 export function AppNav() {
@@ -16,7 +17,7 @@ export function AppNav() {
 
   return (
     <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[900px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link
           href="/"
           className="text-sm font-semibold tracking-wide text-blue-600"
